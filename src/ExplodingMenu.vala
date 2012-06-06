@@ -51,24 +51,17 @@ public class ExplodingMenu {
             
             double mouse_x, mouse_y;
             window.get_mouse_pos(out mouse_x, out mouse_y);
+
+            render_shadowed_rectangle(ctx, (int)start_x, (int)start_y, 150, 90);
+            render_menu_item(ctx, (int)start_x, (int)start_y, 150, 30, "Neu", "filenew", false);
+            render_menu_item(ctx, (int)start_x, (int)start_y+30, 150, 30, "Öffnen...", "stock_open", true);
+            render_menu_item(ctx, (int)start_x, (int)start_y+60, 150, 30, "Speichern", "stock_save", false);
             
             ctx.set_line_width(5);
-            //ctx.set_source_rgba (1.0, 0.8, 0.2, 0.8);
+            ctx.set_source_rgba (0.0, 0.0, 0.0, 0.6);
             ctx.move_to(start_x, start_y);
             ctx.line_to(mouse_x, mouse_y);
             ctx.stroke();
-            
-            
-            
-            
-            
-            
-            render_shadowed_rectangle(ctx, (int)start_x+2, (int)start_y+2, 100, 100);
-            render_menu_item(ctx, (int)start_x, (int)start_y, 100, 30, "Neu", false);
-            render_menu_item(ctx, (int)start_x, (int)start_y+30, 100, 30, "Öffnen...", true);
-            render_menu_item(ctx, (int)start_x, (int)start_y+60, 100, 30, "Speichern", false);
-            
-            
         });
     }
     
@@ -78,17 +71,22 @@ public class ExplodingMenu {
         window.get_mouse_pos(out start_x, out start_y);
     }
     
-    private void render_menu_item(Cairo.Context ctx, int x, int y, int width, int height, string label, bool prelight) {
+    private void render_menu_item(Cairo.Context ctx, int x, int y, int width, int height, string label, string icon_name, bool prelight) {
         
         window.get_style_context().add_class(Gtk.STYLE_CLASS_MENUITEM);
         
         if (prelight) {
             window.get_style_context().set_state(Gtk.StateFlags.PRELIGHT);
-            window.get_style_context().render_background(ctx, x+3, y+3, width-2, height-2);
+            window.get_style_context().render_background(ctx, x+1, y+1, width-2, height);
         }
         
         var layout = window.create_pango_layout(label);
-        window.get_style_context().render_layout(ctx, x+10, y+10, layout);
+        window.get_style_context().render_layout(ctx, x+8+20, y+8, layout);
+        
+        if (icon_name != "") {
+            var icon = new Icon(icon_name, 16);
+            window.get_style_context().render_icon(ctx, icon.to_pixbuf(), x+6, y+6);
+        }
         
         window.get_style_context().remove_class(Gtk.STYLE_CLASS_MENUITEM);
         window.get_style_context().set_state(Gtk.StateFlags.NORMAL);
