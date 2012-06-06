@@ -24,6 +24,8 @@ namespace GnomePie {
 /////////////////////////////////////////////////////////////////////////
 
 public class InvisibleWindow : Gtk.Window {
+
+    public signal void on_draw(Cairo.Context ctx, double frame_time);
     
     /////////////////////////////////////////////////////////////////////
     /// A timer used for calculating the frame time.
@@ -106,6 +108,11 @@ public class InvisibleWindow : Gtk.Window {
         }); 
     }
     
+    public void get_mouse_pos(out double mouse_x, out double mouse_y) {
+        // get the mouse position
+        this.get_pointer(out mouse_x, out mouse_y);
+    }
+    
     /////////////////////////////////////////////////////////////////////
     /// Gets the center position of the window.
     /////////////////////////////////////////////////////////////////////
@@ -124,26 +131,16 @@ public class InvisibleWindow : Gtk.Window {
     /////////////////////////////////////////////////////////////////////
 
     private bool draw_window(Cairo.Context ctx) { 
-
         // paint the background image if there is no compositing
         ctx.set_operator (Cairo.Operator.CLEAR);
         ctx.paint();
         ctx.set_operator (Cairo.Operator.OVER);
         
-        // align the context to the center of the PieWindow
-        ctx.translate(this.width_request*0.5, this.height_request*0.5);
-        
-        // get the mouse position
-        double mouse_x = 0.0, mouse_y = 0.0;
-        this.get_pointer(out mouse_x, out mouse_y);
-        
         // store the frame time
         double frame_time = this.timer.elapsed();
         this.timer.reset();
         
-        message("draw!");
-        ctx.set_source_rgba (0.6, 0.8, 1.0, 0.5);
-        ctx.paint(); 
+        this.on_draw(ctx, frame_time);
         
         return true;
     }
