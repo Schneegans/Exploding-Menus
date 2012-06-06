@@ -48,30 +48,21 @@ public class FocusGrabber : GLib.Object {
     /////////////////////////////////////////////////////////////////////
     
     public static void ungrab(bool keyboard = true, bool pointer = true) {
-        #if HAVE_GTK_3
+        var display = Gdk.Display.get_default();
+        var manager = display.get_device_manager();
         
-            var display = Gdk.Display.get_default();
-            var manager = display.get_device_manager();
-            
-            #if VALA_0_16
-                GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
-            #else
-                unowned GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
-            #endif
-            
-            foreach(var device in list) {
-                if ((device.input_source == Gdk.InputSource.KEYBOARD && keyboard)
-                 || (device.input_source != Gdk.InputSource.KEYBOARD && pointer)) 
-                 
-                    device.ungrab(Gdk.CURRENT_TIME);
-            }
-            
+        #if VALA_0_16
+            GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
         #else
-        
-            if (pointer)  Gdk.pointer_ungrab(Gdk.CURRENT_TIME);
-            if (keyboard) Gdk.keyboard_ungrab(Gdk.CURRENT_TIME);
-            
+            unowned GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
         #endif
+        
+        foreach(var device in list) {
+            if ((device.input_source == Gdk.InputSource.KEYBOARD && keyboard)
+             || (device.input_source != Gdk.InputSource.KEYBOARD && pointer)) 
+             
+                device.ungrab(Gdk.CURRENT_TIME);
+        }
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -79,50 +70,33 @@ public class FocusGrabber : GLib.Object {
     /////////////////////////////////////////////////////////////////////
     
     private static bool try_grab_window(Gdk.Window window, bool keyboard, bool pointer, bool owner_events) {
-        #if HAVE_GTK_3
+        var display = Gdk.Display.get_default();
+        var manager = display.get_device_manager();
         
-            var display = Gdk.Display.get_default();
-            var manager = display.get_device_manager();
-            
-            bool grabbed_all = true;
-            
-            #if VALA_0_16
-                GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
-            #else
-                unowned GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
-            #endif
-            
-            foreach(var device in list) {
-                if ((device.input_source == Gdk.InputSource.KEYBOARD && keyboard) 
-                 || (device.input_source != Gdk.InputSource.KEYBOARD && pointer)) {
-                 
-                    var status = device.grab(window, Gdk.GrabOwnership.APPLICATION, owner_events, 
-                                             Gdk.EventMask.ALL_EVENTS_MASK, null, Gdk.CURRENT_TIME);
-                    
-                    if (status != Gdk.GrabStatus.SUCCESS)
-                        grabbed_all = false;
-                }
-            }
-            
-            if (grabbed_all)
-                return true;
-            
-            ungrab(keyboard, pointer);
-            
+        bool grabbed_all = true;
+        
+        #if VALA_0_16
+            GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
         #else
-        
-            if (!pointer || Gdk.pointer_grab(window, owner_events, Gdk.EventMask.BUTTON_PRESS_MASK |
-                                             Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.POINTER_MOTION_MASK,
-                                 null, null, Gdk.CURRENT_TIME) == Gdk.GrabStatus.SUCCESS) {
-                
-                if (!keyboard || Gdk.keyboard_grab(window, owner_events, Gdk.CURRENT_TIME) == Gdk.GrabStatus.SUCCESS) {
-                    return true;
-                } else if (pointer) {
-                    ungrab(false, true);
-                    return false;
-                }
-            }
+            unowned GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
         #endif
+        
+        foreach(var device in list) {
+            if ((device.input_source == Gdk.InputSource.KEYBOARD && keyboard) 
+             || (device.input_source != Gdk.InputSource.KEYBOARD && pointer)) {
+             
+                var status = device.grab(window, Gdk.GrabOwnership.APPLICATION, owner_events, 
+                                         Gdk.EventMask.ALL_EVENTS_MASK, null, Gdk.CURRENT_TIME);
+                
+                if (status != Gdk.GrabStatus.SUCCESS)
+                    grabbed_all = false;
+            }
+        }
+        
+        if (grabbed_all)
+            return true;
+        
+        ungrab(keyboard, pointer);
         
         return false;
     }  

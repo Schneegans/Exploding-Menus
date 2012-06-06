@@ -160,7 +160,7 @@ public class BindingManager : GLib.Object {
             }
         }
         
-        return _("Not bound");
+        return "Not bound";
     }
     
     /////////////////////////////////////////////////////////////////////

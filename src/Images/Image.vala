@@ -75,12 +75,7 @@ public class Image : GLib.Object {
     
     public Image.capture_screen(int posx, int posy, int width, int height) {
         Gdk.Window root = Gdk.get_default_root_window();
-        #if HAVE_GTK_3
-            Gdk.Pixbuf pixbuf = Gdk.pixbuf_get_from_window(root, posx, posy, width, height);
-        #else
-            Gdk.Pixbuf pixbuf = Gdk.pixbuf_get_from_drawable(null, root, null, posx, posy, 0, 0, width, height);
-        #endif
-
+        Gdk.Pixbuf pixbuf = Gdk.pixbuf_get_from_window(root, posx, posy, width, height);
 
         this.load_pixbuf(pixbuf);
     }

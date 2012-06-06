@@ -160,14 +160,14 @@ public class Trigger : GLib.Object {
                 Gtk.accelerator_parse(check_string, null, out this._modifiers);
                 this.label = Gtk.accelerator_get_label(0, this.modifiers);
                 
-                string button_text = _("Button %i").printf(this.key_code);
+                string button_text = "Button %i".printf(this.key_code);
                 
                 if (this.key_code == 1)
-                    button_text = _("LeftButton");
+                    button_text = "LeftButton";
                 else if (this.key_code == 3)
-                    button_text = _("RightButton");
+                    button_text = "RightButton";
                 else if (this.key_code == 2)
-                    button_text = _("MiddleButton");
+                    button_text = "MiddleButton";
                 
                 this.label += button_text;
             } else {
@@ -185,19 +185,19 @@ public class Trigger : GLib.Object {
             this.label_with_specials = GLib.Markup.escape_text(this.label);
             
             if (this.turbo && this.delayed && this.centered)
-                this.label_with_specials += ("  <small><span weight='light'>[ " + _("Turbo") + " | " + _("Delayed") + " | " + _("Centered") + " ]</span></small>");
+                this.label_with_specials += ("  <small><span weight='light'>[ " + "Turbo" + " | " + "Delayed" + " | " + "Centered" + " ]</span></small>");
             else if (this.turbo && this.centered)
-                this.label_with_specials += ("  <small><span weight='light'>[ " + _("Turbo") + " | " + _("Centered") + " ]</span></small>");
+                this.label_with_specials += ("  <small><span weight='light'>[ " + "Turbo" + " | " + "Centered" + " ]</span></small>");
             else if (this.turbo && this.delayed)
-                this.label_with_specials += ("  <small><span weight='light'>[ " + _("Turbo") + " | " + _("Delayed") + " ]</span></small>");
+                this.label_with_specials += ("  <small><span weight='light'>[ " + "Turbo" + " | " + "Delayed" + " ]</span></small>");
             else if (this.centered && this.delayed)
-                this.label_with_specials += ("  <small><span weight='light'>[ " + _("Delayed") + " | " + _("Centered") + " ]</span></small>");
+                this.label_with_specials += ("  <small><span weight='light'>[ " + "Delayed" + " | " + "Centered" + " ]</span></small>");
             else if (this.turbo)
-                this.label_with_specials += ("  <small><span weight='light'>[ " + _("Turbo") + " ]</span></small>");
+                this.label_with_specials += ("  <small><span weight='light'>[ " + "Turbo" + " ]</span></small>");
             else if (this.delayed)
-                this.label_with_specials += ("  <small><span weight='light'>[ " + _("Delayed") + " ]</span></small>");
+                this.label_with_specials += ("  <small><span weight='light'>[ " + "Delayed" + " ]</span></small>");
             else if (this.centered)
-                this.label_with_specials += ("  <small><span weight='light'>[ " + _("Centered") + " ]</span></small>");
+                this.label_with_specials += ("  <small><span weight='light'>[ " + "Centered" + " ]</span></small>");
             
         } else {
             this.set_unbound();
@@ -209,8 +209,8 @@ public class Trigger : GLib.Object {
     /////////////////////////////////////////////////////////////////////
     
     private void set_unbound() {
-        this.label = _("Not bound");
-        this.label_with_specials = _("Not bound");
+        this.label = "Not bound";
+        this.label_with_specials = "Not bound";
         this.name = "";
         this.key_code = 0;
         this.key_sym = 0;

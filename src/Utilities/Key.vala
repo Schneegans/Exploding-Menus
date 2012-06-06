@@ -62,7 +62,7 @@ public class Key : GLib.Object {
         this.accelerator = "";
         this.modifiers = 0;
         this.key_code = 0;
-        this.label = _("Not bound");
+        this.label = "Not bound";
     }
     
     /////////////////////////////////////////////////////////////////////
