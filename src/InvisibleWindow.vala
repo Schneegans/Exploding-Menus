@@ -26,7 +26,8 @@ namespace GnomePie {
 public class InvisibleWindow : Gtk.Window {
 
     public signal void on_draw(Cairo.Context ctx, double frame_time);
-    public signal void on_click();
+    public signal void on_release(uint button);
+    public signal void on_press(uint button);
     public signal void on_scroll(bool up);
     
     /////////////////////////////////////////////////////////////////////
@@ -61,9 +62,7 @@ public class InvisibleWindow : Gtk.Window {
 
         // activate on left click
         this.button_release_event.connect ((e) => {
-            if (e.button == 1) {
-                on_click();
-            }
+            on_release(e.button);
             return true;
         });
         
@@ -75,10 +74,7 @@ public class InvisibleWindow : Gtk.Window {
         
          // cancel on right click
         this.button_press_event.connect ((e) => {
-            if (e.button == 3) {
-
-                this.close();
-            }
+            on_press(e.button);
             return true;
         });
         

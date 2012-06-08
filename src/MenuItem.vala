@@ -22,70 +22,102 @@ public class MenuItem {
     public string label;
     public string icon_name;
     
+    private AnimatedValue animation = null;
+    private bool scrolled_up = true;
+    
     public MenuItem(string label, string icon_name) {
         this.label = label;
         this.icon_name = icon_name;
+        
+        this.animation = new AnimatedValue.linear(1, 1, 0);
     }
     
-    public void draw(Cairo.Context ctx, Gtk.Window window, int center_x, int center_y, int position, bool prelight) {
+    public void draw(Cairo.Context ctx, Gtk.Window window, int center_x, int center_y, int position, bool prelight, double frame_time) {
+    
+        animation.update(frame_time);   
+        
+        double scale = 0.75*(1-animation.val) + animation.val;     
         
         int radius = 50;
         
         int pivot_x, pivot_y;
-        int pos_x, pos_y;
+        int offset_x = 0;
         
-        int width = 150, height = 30;
-        int label_x;
+        int width = (int)(150*scale);
+        int height = (int)(30*scale);
+        int label_offset_x;
+        
+        int preview_x;
+        int preview_y;
         
         switch (position) {
             case 0: {
                 pivot_x = center_x - (int)(radius*0.707106781);
                 pivot_y = center_y - (int)(radius*0.707106781);
                 width += (int)(radius*0.292893219);
-                label_x = pivot_x - width + 5;
-                pos_x = pivot_x - width;
-                pos_y = pivot_y - height/2;
+                label_offset_x = - width + 5;
+                offset_x = - width;
+                
+                preview_x = center_x - width;
+                preview_y = scrolled_up ? center_y - radius - 20 : center_y + radius + 20;
+                
                 break;
             } case 2: {
                 pivot_x = center_x - radius;
                 pivot_y = center_y;
-                label_x = pivot_x - width + 5;
-                pos_x = pivot_x - width;
-                pos_y = pivot_y - height/2;
+                label_offset_x = - width + 5;
+                offset_x = - width;
+                
+                preview_x = center_x - width;
+                preview_y = scrolled_up ? center_y - radius - 40 : center_y + radius + 40;
+                
                 break;
             } case 4: {
                 pivot_x = center_x - (int)(radius*0.707106781);
                 pivot_y = center_y + (int)(radius*0.707106781);
                 width += (int)(radius*0.292893219);
-                label_x = pivot_x - width + 5;
-                pos_x = pivot_x - width;
-                pos_y = pivot_y - height/2;
+                label_offset_x = - width + 5;
+                offset_x = - width;
+                
+                preview_x = center_x - width;
+                preview_y = scrolled_up ? center_y - radius - 60 : center_y + radius + 60;
+                
                 break;
             } case 1: {
                 pivot_x = center_x + (int)(radius*0.707106781);
                 pivot_y = center_y - (int)(radius*0.707106781);
                 width += (int)(radius*0.292893219);
-                label_x = pivot_x - 15 + (int)(radius*0.292893219);
-                pos_x = pivot_x;
-                pos_y = pivot_y - height/2;
+                label_offset_x = - 15 + (int)(radius*0.292893219);
+                
+                preview_x = center_x;
+                preview_y = scrolled_up ? center_y - radius - 20 : center_y + radius + 20;
+                
                 break;
             } case 3: {
                 pivot_x = center_x + radius;
                 pivot_y = center_y;
-                label_x = pivot_x - 15;
-                pos_x = pivot_x;
-                pos_y = pivot_y - height/2;
+                label_offset_x = - 15;
+                
+                preview_x = center_x;
+                preview_y = scrolled_up ? center_y - radius - 40 : center_y + radius + 40;
+                
                 break;
             } default: {
                 pivot_x = center_x + (int)(radius*0.707106781);
                 pivot_y = center_y + (int)(radius*0.707106781);
                 width += (int)(radius*0.292893219);
-                label_x = pivot_x - 15 + (int)(radius*0.292893219);
-                pos_x = pivot_x;
-                pos_y = pivot_y - height/2;
+                label_offset_x = - 15 + (int)(radius*0.292893219);
+                
+                preview_x = center_x;
+                preview_y = scrolled_up ? center_y - radius - 60 : center_y + radius + 60;
+                
                 break;
             }
         }
+        
+        int pos_y = (int)(preview_y*(1-animation.val) + (pivot_y - height/2)*animation.val);
+        int pos_x = (int)(preview_x*(1-animation.val) + (pivot_x + offset_x)*animation.val);
+        int label_x = pivot_x + label_offset_x;
         
         render_shadowed_rectangle(ctx, window, pos_x, pos_y, width, height);
         
@@ -115,6 +147,11 @@ public class MenuItem {
         
         window.get_style_context().remove_class(Gtk.STYLE_CLASS_MENUITEM);
         window.get_style_context().set_state(Gtk.StateFlags.NORMAL);   
+    }
+    
+    public void animate(bool up) {
+        animation = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 0, 1, 0.2);
+        scrolled_up = up;
     }
     
     private void render_shadowed_rectangle(Cairo.Context ctx, Gtk.Window window, int x, int y, int width, int height) {

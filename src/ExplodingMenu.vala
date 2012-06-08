@@ -53,6 +53,8 @@ public class ExplodingMenu {
     private int current_offset = 0;
     private int activated_item = -1;
     
+    private bool marking = true;
+    
     public ExplodingMenu() {
         window = new InvisibleWindow();
         
@@ -94,7 +96,7 @@ public class ExplodingMenu {
             if (activated_item >= 0) {
                 
                 fade_out_timer.update(frame_time);
-                items[activated_item].draw(ctx, window, (int)pos_x.val, (int)pos_y.val, activated_item%6, true);
+                items[activated_item].draw(ctx, window, (int)pos_x.val, (int)pos_y.val, activated_item%6, true, frame_time);
                 
                 if (fade_out_timer.val == 0) {
                     window.close();
@@ -153,12 +155,12 @@ public class ExplodingMenu {
                     top_preview.draw(ctx, window, (int)pos_x.val, (int)pos_y.val, active_item == -3, frame_time);   
                 
                 for (int i=0; i<6 && i < items.length-current_offset; ++i) {
-                    items[i+current_offset].draw(ctx, window, (int)pos_x.val, (int)pos_y.val, i, active_item == i+current_offset);
+                    items[i+current_offset].draw(ctx, window, (int)pos_x.val, (int)pos_y.val, i, active_item == i+current_offset, frame_time);
                 }
             }
             
             ctx.set_line_width(5);
-            ctx.set_source_rgba (0.0, 0.0, 0.0, 0.6);
+            ctx.set_source_rgba (0.0, 0.0, 0.0, 0.4);
             
             for (int i=0; i<line_x.length; ++i) {
                 ctx.move_to(line_x[i], line_y[i]);
@@ -171,10 +173,15 @@ public class ExplodingMenu {
             ctx.stroke();
         });
         
-        window.on_click.connect(() => {
+        window.on_press.connect((button) => {
+            
+        
+        });
+        
+        window.on_release.connect((button) => {
+            
             if (active_item == -2 && current_offset + 6 < items.length) {
-                current_offset += 6;
-                update_previews(true, true);
+                scroll(false);
                 
                 int x = 0, y = 0;
                 window.get_mouse_pos(out x, out y);
@@ -185,8 +192,7 @@ public class ExplodingMenu {
                 move_to(x, y);
                 
             } else if (active_item == -3 && current_offset > 0) {
-                current_offset -= 6;
-                update_previews(true, false);
+                scroll(true);
                 
                 int x = 0, y = 0;
                 window.get_mouse_pos(out x, out y);
@@ -195,9 +201,8 @@ public class ExplodingMenu {
                 line_y += y;
                 
                 move_to(x, y);
-            }
             
-            else if (active_item >= 0) {
+            } else if (active_item >= 0) {
                 activated_item = active_item;
                 
                 int x = 0, y = 0;
@@ -206,22 +211,15 @@ public class ExplodingMenu {
                 line_x += x;
                 line_y += y;
                 
-            } else {
-                window.close();
+            } else if (!marking || button != 3) {
+                    window.close();
             }
+            
+            marking = false;
         });
         
         window.on_scroll.connect((up) => {
-            debug("%d", current_offset);
-        
-            if (up && current_offset > 0) {
-                current_offset -= 6;
-                update_previews(true, false);
-                
-            } else if (!up && current_offset + 6 < items.length) {
-                current_offset += 6;
-                update_previews(true, true);
-            }
+            scroll(up);
             
             int x = 0, y = 0;
             window.get_mouse_pos(out x, out y);   
@@ -239,11 +237,12 @@ public class ExplodingMenu {
         current_offset = 0;
         activated_item = -1;
         active_item = -1;
+        marking = true;
         
         line_x = {};
         line_y = {};
         
-        update_previews();
+        scroll_previews();
         
         int x = 0, y = 0;
         window.get_mouse_pos(out x, out y);
@@ -262,9 +261,21 @@ public class ExplodingMenu {
         pos_y.reset_target(y, 0.2);
     }
     
-    private void update_previews(bool animate = false, bool down = false) {
+    private void scroll(bool up) {
+        if (up && current_offset > 0) {
+            current_offset -= 6;
+            scroll_previews(true, up);
+            scroll_items(up);
+        } else if (!up && current_offset + 6 < items.length) {
+            current_offset += 6;
+            scroll_previews(true, up);
+            scroll_items(up);
+        }
+    }
+    
+    private void scroll_previews(bool animate = false, bool up = true) {
         if (items.length-current_offset > 6) {
-            bottom_preview = new MenuItemPreview(false, animate, down);
+            bottom_preview = new MenuItemPreview(false, animate, !up);
             
             for (int i=6+current_offset; i<items.length; ++i) {
                 bottom_preview.add_entry(items[i].label, items[i].icon_name);
@@ -274,13 +285,19 @@ public class ExplodingMenu {
         }
         
         if (current_offset > 0) {
-            top_preview = new MenuItemPreview(true, animate, !down);
+            top_preview = new MenuItemPreview(true, animate, up);
             
             for (int i=0; i<current_offset; ++i) {
                 top_preview.add_entry(items[i].label, items[i].icon_name);
             }
         } else {
             top_preview = null;
+        }
+    }
+    
+    private void scroll_items(bool up) {
+        for (int i=current_offset; i<6+current_offset && i < items.length; ++i) {
+            items[i].animate(up);
         }
     }
 }
