@@ -26,6 +26,8 @@ namespace GnomePie {
 public class InvisibleWindow : Gtk.Window {
 
     public signal void on_draw(Cairo.Context ctx, double frame_time);
+    public signal void on_click();
+    public signal void on_scroll(bool up);
     
     /////////////////////////////////////////////////////////////////////
     /// A timer used for calculating the frame time.
@@ -53,18 +55,28 @@ public class InvisibleWindow : Gtk.Window {
         
         // set up event filter
         this.add_events(Gdk.EventMask.BUTTON_RELEASE_MASK |
+                        Gdk.EventMask.BUTTON_PRESS_MASK |
+                        Gdk.EventMask.SCROLL_MASK |
                         Gdk.EventMask.POINTER_MOTION_MASK);
 
         // activate on left click
         this.button_release_event.connect ((e) => {
-            message("Release!");
+            if (e.button == 1) {
+                on_click();
+            }
+            return true;
+        });
+        
+        this.scroll_event.connect ((e) => {
+            if (e.direction == Gdk.ScrollDirection.UP || e.direction == Gdk.ScrollDirection.DOWN)
+                on_scroll(e.direction == Gdk.ScrollDirection.UP);
             return true;
         });
         
          // cancel on right click
         this.button_press_event.connect ((e) => {
             if (e.button == 3) {
-                message("Right click!");
+
                 this.close();
             }
             return true;
@@ -72,7 +84,7 @@ public class InvisibleWindow : Gtk.Window {
         
         // notify the renderer of mouse move events
         this.motion_notify_event.connect((e) => {
-            message("Mouse move!");
+
             return true;
         });
         
@@ -108,7 +120,7 @@ public class InvisibleWindow : Gtk.Window {
         }); 
     }
     
-    public void get_mouse_pos(out double mouse_x, out double mouse_y) {
+    public void get_mouse_pos(out int mouse_x, out int mouse_y) {
         // get the mouse position
         this.get_pointer(out mouse_x, out mouse_y);
     }

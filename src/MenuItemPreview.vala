@@ -17,100 +17,91 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace GnomePie {
 
-public class MenuItem {
+public class MenuItemPreview {
 
-    public string label;
-    public string icon_name;
+    private bool top;
+    private AnimatedValue offset = null;
     
-    public MenuItem(string label, string icon_name) {
-        this.label = label;
-        this.icon_name = icon_name;
+    private string[] labels;
+    private string[] icons;
+    
+    public MenuItemPreview(bool top, bool animated = false, bool shrinking = false) {
+        labels = {};
+        icons = {};
+        
+        offset = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, animated ? (shrinking ? 3*20+10+10 : -3*20-10-10) : 0, 0, 0.2, 0);
+    
+        this.top = top;
     }
     
-    public void draw(Cairo.Context ctx, Gtk.Window window, int center_x, int center_y, int position, bool prelight) {
+    public void add_entry(string label, string icon) {
+        labels += label;
+        icons += icon;
+    }
+    
+    public void draw(Cairo.Context ctx, Gtk.Window window, int center_x, int center_y, bool prelight, double frame_time) {
         
-        int radius = 50;
+        offset.update(frame_time);
         
-        int pivot_x, pivot_y;
-        int pos_x, pos_y;
+        int separator_count = (labels.length-1)/6;
+        int width = 250;
+        int height = (labels.length+1)/2 * 20 + 10 + 10*separator_count;
+        int y = top ? (int)(center_y - 55 - height - offset.val) : (int)(center_y + 55 + offset.val);
+        int x = center_x - width/2;
         
-        int width = 150, height = 30;
-        int label_x;
-        
-        switch (position) {
-            case 0: {
-                pivot_x = center_x - (int)(radius*0.707106781);
-                pivot_y = center_y - (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_x = pivot_x - width + 5;
-                pos_x = pivot_x - width;
-                pos_y = pivot_y - height/2;
-                break;
-            } case 2: {
-                pivot_x = center_x - radius;
-                pivot_y = center_y;
-                label_x = pivot_x - width + 5;
-                pos_x = pivot_x - width;
-                pos_y = pivot_y - height/2;
-                break;
-            } case 4: {
-                pivot_x = center_x - (int)(radius*0.707106781);
-                pivot_y = center_y + (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_x = pivot_x - width + 5;
-                pos_x = pivot_x - width;
-                pos_y = pivot_y - height/2;
-                break;
-            } case 1: {
-                pivot_x = center_x + (int)(radius*0.707106781);
-                pivot_y = center_y - (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_x = pivot_x - 15 + (int)(radius*0.292893219);
-                pos_x = pivot_x;
-                pos_y = pivot_y - height/2;
-                break;
-            } case 3: {
-                pivot_x = center_x + radius;
-                pivot_y = center_y;
-                label_x = pivot_x - 15;
-                pos_x = pivot_x;
-                pos_y = pivot_y - height/2;
-                break;
-            } default: {
-                pivot_x = center_x + (int)(radius*0.707106781);
-                pivot_y = center_y + (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_x = pivot_x - 15 + (int)(radius*0.292893219);
-                pos_x = pivot_x;
-                pos_y = pivot_y - height/2;
-                break;
-            }
-        }
-        
-        render_shadowed_rectangle(ctx, window, pos_x, pos_y, width, height);
+        render_shadowed_rectangle(ctx, window, x, y, width, height);
         
         window.get_style_context().add_class(Gtk.STYLE_CLASS_MENUITEM);
         
         if (prelight) {
             window.get_style_context().set_state(Gtk.StateFlags.ACTIVE);
-            window.get_style_context().render_background(ctx, pos_x+1, pos_y, width-2, height);
+            window.get_style_context().render_background(ctx, x+1, y, width-2, height);
         } 
         
         window.get_style_context().remove_class(Gtk.STYLE_CLASS_MENUITEM);
         window.get_style_context().add_class(Gtk.STYLE_CLASS_RADIO);
-        window.get_style_context().render_option(ctx, pivot_x-17, pivot_y-17, 34, 34);
+        window.get_style_context().render_option(ctx, center_x-17, center_y + (top ? -50: 50) - 17, 34, 34);
         window.get_style_context().remove_class(Gtk.STYLE_CLASS_RADIO);
         window.get_style_context().add_class(Gtk.STYLE_CLASS_MENUITEM);
         
-        var layout = window.create_pango_layout(label);
-        if (position == 1 || position == 3 || position == 5)
-            layout.set_alignment(Pango.Alignment.RIGHT);
-        layout.set_width((int)(150.0*Pango.SCALE));
-        window.get_style_context().render_layout(ctx, label_x+4, pos_y+8, layout);
+        window.get_style_context().render_arrow(ctx, top ? 0 : GLib.Math.PI, center_x-12, center_y + (top ? -50: 50) - 12, 24);
         
-        if (icon_name != "") {
-            var icon = new Icon(icon_name, 20);
-            window.get_style_context().render_icon(ctx, icon.to_pixbuf(), pivot_x-10, pivot_y-10);
+        int current_y = y;
+        if (top) current_y += 4;
+        else     current_y += 12;
+        
+        for (int i=0; i<labels.length; ++i) {
+            if (i%6 == 0 && i != 0) {
+                window.get_style_context().render_line(ctx, x, current_y+2, x+width, current_y+2);
+                current_y += 10;
+            }
+        
+            var layout = window.create_pango_layout(labels[i]);
+            layout.set_font_description(Pango.FontDescription.from_string("8"));
+            layout.set_width((int)(150.0*Pango.SCALE));
+            
+            if (i%2 == 0) {
+                
+                layout.set_alignment(Pango.Alignment.RIGHT);
+            
+                window.get_style_context().render_layout(ctx, x - 30 + width/2 - 150, current_y, layout);
+                
+                if (icons[i] != "") {
+                    var icon = new Icon(icons[i], 12);
+                    window.get_style_context().render_icon(ctx, icon.to_pixbuf(), x-20+width/2 - 6, current_y);
+                }
+            } else {
+                
+        
+                window.get_style_context().render_layout(ctx, x + 30 + width/2, current_y, layout);
+                
+                if (icons[i] != "") {
+                    var icon = new Icon(icons[i], 12);
+                    window.get_style_context().render_icon(ctx, icon.to_pixbuf(), x+20+width/2 - 6, current_y);
+                }
+            
+                current_y += 20;
+            }
         }
         
         window.get_style_context().remove_class(Gtk.STYLE_CLASS_MENUITEM);
