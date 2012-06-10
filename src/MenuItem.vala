@@ -22,136 +22,131 @@ public class MenuItem {
     public string label;
     public string icon_name;
     
-    private AnimatedValue animation = null;
-    private bool scrolled_up = true;
+    private AnimatedValue pos_x = null;
+    private AnimatedValue pos_y = null;
+    private AnimatedValue scale = null;
+    
+    private bool selectable = false;
     
     public MenuItem(string label, string icon_name) {
         this.label = label;
         this.icon_name = icon_name;
         
-        this.animation = new AnimatedValue.linear(1, 1, 0);
+        this.pos_x = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
+        this.pos_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
+        this.scale = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
     }
     
-    public void draw(Cairo.Context ctx, Gtk.Window window, int center_x, int center_y, int position, bool prelight, double frame_time) {
+    public void draw(Cairo.Context ctx, Gtk.Window window, int center_x, int center_y, bool prelight, double frame_time) {
     
-        animation.update(frame_time);   
-        
-        double scale = 0.75*(1-animation.val) + animation.val;     
-        
-        int radius = 50;
-        
-        int pivot_x, pivot_y;
-        int offset_x = 0;
-        
-        int width = (int)(150*scale);
-        int height = (int)(30*scale);
-        int label_offset_x;
-        
-        int preview_x;
-        int preview_y;
-        
-        switch (position) {
-            case 0: {
-                pivot_x = center_x - (int)(radius*0.707106781);
-                pivot_y = center_y - (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_offset_x = - width + 5;
-                offset_x = - width;
-                
-                preview_x = center_x - width;
-                preview_y = scrolled_up ? center_y - radius - 20 : center_y + radius + 20;
-                
-                break;
-            } case 2: {
-                pivot_x = center_x - radius;
-                pivot_y = center_y;
-                label_offset_x = - width + 5;
-                offset_x = - width;
-                
-                preview_x = center_x - width;
-                preview_y = scrolled_up ? center_y - radius - 40 : center_y + radius + 40;
-                
-                break;
-            } case 4: {
-                pivot_x = center_x - (int)(radius*0.707106781);
-                pivot_y = center_y + (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_offset_x = - width + 5;
-                offset_x = - width;
-                
-                preview_x = center_x - width;
-                preview_y = scrolled_up ? center_y - radius - 60 : center_y + radius + 60;
-                
-                break;
-            } case 1: {
-                pivot_x = center_x + (int)(radius*0.707106781);
-                pivot_y = center_y - (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_offset_x = - 15 + (int)(radius*0.292893219);
-                
-                preview_x = center_x;
-                preview_y = scrolled_up ? center_y - radius - 20 : center_y + radius + 20;
-                
-                break;
-            } case 3: {
-                pivot_x = center_x + radius;
-                pivot_y = center_y;
-                label_offset_x = - 15;
-                
-                preview_x = center_x;
-                preview_y = scrolled_up ? center_y - radius - 40 : center_y + radius + 40;
-                
-                break;
-            } default: {
-                pivot_x = center_x + (int)(radius*0.707106781);
-                pivot_y = center_y + (int)(radius*0.707106781);
-                width += (int)(radius*0.292893219);
-                label_offset_x = - 15 + (int)(radius*0.292893219);
-                
-                preview_x = center_x;
-                preview_y = scrolled_up ? center_y - radius - 60 : center_y + radius + 60;
-                
-                break;
-            }
-        }
-        
-        int pos_y = (int)(preview_y*(1-animation.val) + (pivot_y - height/2)*animation.val);
-        int pos_x = (int)(preview_x*(1-animation.val) + (pivot_x + offset_x)*animation.val);
-        int label_x = pivot_x + label_offset_x;
-        
-        render_shadowed_rectangle(ctx, window, pos_x, pos_y, width, height);
+        pos_x.update(frame_time);   
+        pos_y.update(frame_time);
+        scale.update(frame_time);
+
+        render_shadowed_rectangle(ctx, window, (int)(pos_x.val + center_x), (int)(pos_y.val + center_y)+2, (int)(ExplodingMenu.ITEM_WIDTH*scale.val), (int)(ExplodingMenu.ITEM_HEIGHT*scale.val)-4);
         
         window.get_style_context().add_class(Gtk.STYLE_CLASS_MENUITEM);
         
         if (prelight) {
             window.get_style_context().set_state(Gtk.StateFlags.ACTIVE);
-            window.get_style_context().render_background(ctx, pos_x+1, pos_y, width-2, height);
-        } 
-        
-        window.get_style_context().remove_class(Gtk.STYLE_CLASS_MENUITEM);
-        window.get_style_context().add_class(Gtk.STYLE_CLASS_RADIO);
-        window.get_style_context().render_option(ctx, pivot_x-17, pivot_y-17, 34, 34);
-        window.get_style_context().remove_class(Gtk.STYLE_CLASS_RADIO);
-        window.get_style_context().add_class(Gtk.STYLE_CLASS_MENUITEM);
-        
-        var layout = window.create_pango_layout(label);
-        if (position == 1 || position == 3 || position == 5)
-            layout.set_alignment(Pango.Alignment.RIGHT);
-        layout.set_width((int)(150.0*Pango.SCALE));
-        window.get_style_context().render_layout(ctx, label_x+4, pos_y+8, layout);
-        
-        if (icon_name != "") {
-            var icon = new Icon(icon_name, 20);
-            window.get_style_context().render_icon(ctx, icon.to_pixbuf(), pivot_x-10, pivot_y-10);
+            window.get_style_context().render_background(ctx, (int)(pos_x.val + center_x)+1, (int)(pos_y.val + center_y)+2, (int)(ExplodingMenu.ITEM_WIDTH*scale.val)-2, (int)(ExplodingMenu.ITEM_HEIGHT*scale.val)-4);
+            
+        } else if (!selectable) {
+            window.get_style_context().set_state(Gtk.StateFlags.INSENSITIVE);
+            window.get_style_context().render_background(ctx, (int)(pos_x.val + center_x)+1, (int)(pos_y.val + center_y)+2, (int)(ExplodingMenu.ITEM_WIDTH*scale.val)-2, (int)(ExplodingMenu.ITEM_HEIGHT*scale.val)-4);
         }
         
+        window.get_style_context().set_state(Gtk.StateFlags.NORMAL);
+        
+//        
+//        window.get_style_context().remove_class(Gtk.STYLE_CLASS_MENUITEM);
+//        window.get_style_context().add_class(Gtk.STYLE_CLASS_RADIO);
+//        window.get_style_context().render_option(ctx, pivot_x-17, pivot_y-17, 34, 34);
+//        window.get_style_context().remove_class(Gtk.STYLE_CLASS_RADIO);
+//        window.get_style_context().add_class(Gtk.STYLE_CLASS_MENUITEM);
+//        
+        var layout = window.create_pango_layout(label);
+        if (pos_x.val < 0)
+            layout.set_alignment(Pango.Alignment.RIGHT);
+        layout.set_font_description(Pango.FontDescription.from_string("%d".printf((int)(5.0*scale.val+5))));
+        layout.set_width((int)((ExplodingMenu.ITEM_WIDTH-2*ExplodingMenu.ITEM_HEIGHT)*Pango.SCALE*scale.val));
+        window.get_style_context().render_layout(ctx,  (int)((pos_x.val + center_x)+(ExplodingMenu.ITEM_HEIGHT)*scale.val), (int)((pos_y.val + center_y)+2+7*scale.val), layout);
+        
+        if (icon_name != "") {
+            int icon_size = (int)((ExplodingMenu.ITEM_HEIGHT/2)*scale.val);
+        
+            var icon = new Icon(icon_name, icon_size);
+            
+            if (pos_x.val < 0)  window.get_style_context().render_icon(ctx, icon.to_pixbuf(), (int)(pos_x.val + center_x)-5-icon_size+ExplodingMenu.ITEM_WIDTH*scale.val, (int)(pos_y.val + center_y)+5);
+            else                window.get_style_context().render_icon(ctx, icon.to_pixbuf(), (int)(pos_x.val + center_x)+5, (int)(pos_y.val + center_y)+5);
+        }
+ 
         window.get_style_context().remove_class(Gtk.STYLE_CLASS_MENUITEM);
         window.get_style_context().set_state(Gtk.StateFlags.NORMAL);   
     }
     
-    public void animate(bool up) {
-        animation = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 0, 1, 0.2);
-        scrolled_up = up;
+    public void set_position(int position, int current_offset, bool animate) {
+
+        int x, y;
+        double s;
+
+        bool left = position%2 == 0;
+        
+        int max_active_row = (current_offset + ExplodingMenu.SLICE_PAIRS*2)/2-1;
+        int min_active_row = current_offset/2;
+        double center_row = (max_active_row + min_active_row)*0.5;
+        int current_row = position/2;
+        
+        double center_row_distance = current_row - center_row;
+
+        if (current_row >= min_active_row && current_row <= max_active_row) {
+            
+            // center items
+            
+            selectable = true;
+        
+            s = 1.0;
+            y = (int)((center_row_distance - 0.5) * ExplodingMenu.ITEM_HEIGHT);
+            
+            int offset_x = (int)((1.0 - 2*(GLib.Math.fabs(center_row_distance)+0.4)/ExplodingMenu.SLICE_PAIRS)*ExplodingMenu.LABEL_RADIUS);
+            
+            if (left) x = -ExplodingMenu.ITEM_WIDTH-offset_x;
+            else      x = offset_x;
+            
+        } else if (center_row_distance > 0) {
+        
+            // bottom items
+            
+            selectable = false;
+        
+            s = ExplodingMenu.MIN_SCALE;
+            y = (int)((center_row_distance - ExplodingMenu.SLICE_PAIRS/2) * ExplodingMenu.ITEM_HEIGHT*s + ExplodingMenu.SLICE_PAIRS/2*ExplodingMenu.ITEM_HEIGHT);
+            
+            y += (current_row - max_active_row - 1)/ExplodingMenu.SLICE_PAIRS*20;
+            
+            if (left) x = (int)(-ExplodingMenu.ITEM_WIDTH*s-ExplodingMenu.CENTER_RADIUS/3);
+            else      x = (int)( ExplodingMenu.CENTER_RADIUS/3);
+            
+        } else {
+        
+            // top items
+            
+            selectable = false;
+        
+            s = ExplodingMenu.MIN_SCALE;
+            y = (int)((center_row_distance + ExplodingMenu.SLICE_PAIRS/2 - 1) * ExplodingMenu.ITEM_HEIGHT*s - ExplodingMenu.SLICE_PAIRS/2*ExplodingMenu.ITEM_HEIGHT);
+            
+            y -= (min_active_row - current_row - 1)/ExplodingMenu.SLICE_PAIRS*20; 
+            
+            if (left) x = (int)(-ExplodingMenu.ITEM_WIDTH*s-ExplodingMenu.CENTER_RADIUS/3);
+            else      x = (int)( ExplodingMenu.CENTER_RADIUS/3);
+        }
+        
+        double duration = animate ? ExplodingMenu.ANIMATION_TIME : 0.0;
+
+        pos_x.reset_target(x, duration);
+        pos_y.reset_target(y, duration);
+        scale.reset_target(s, duration);
     }
     
     private void render_shadowed_rectangle(Cairo.Context ctx, Gtk.Window window, int x, int y, int width, int height) {
