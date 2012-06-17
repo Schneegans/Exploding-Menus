@@ -19,15 +19,15 @@ namespace GnomePie {
 
 public class ExplodingMenu {
 
-    public const int ITEM_WIDTH = 150;
+    public const int ITEM_WIDTH = 180;
     public const int ITEM_HEIGHT = 30;
     public const int CENTER_RADIUS = 20;
     public const int LABEL_RADIUS = 80;
     public const int SLICE_HINT_RADIUS = 250;
     public const double SLICE_HINT_GAP = 0.05;
-    public const int SLICE_PAIRS = 5;
+    public const int SLICE_PAIRS = 3;
     public const double MIN_SCALE = 0.75;
-    public const double ANIMATION_TIME = 0.3;
+    public const double ANIMATION_TIME = 0.2;
 
     private static BindingManager bindings = null;
     
@@ -183,12 +183,11 @@ public class ExplodingMenu {
                 }
                 
                 for (int i=0; i < sectors; ++i) {
-                    if (i==loc)
-                        render_slice(ctx, (int)pos_x.val, (int)pos_y.val, 2.0*i*GLib.Math.PI/sectors - GLib.Math.PI*0.5, i==loc);
+                     render_slice(ctx, (int)pos_x.val, (int)pos_y.val, 2.0*i*GLib.Math.PI/sectors - GLib.Math.PI*0.5, i==loc, i != 0 && i != sectors/2);
                 }
                 
                 for (int i=0; i < items.length; ++i) {
-                    items[i].draw(ctx, window, (int)pos_x.val, (int)pos_y.val, active_item == i, frame_time);
+//                    items[i].draw(ctx, window, (int)pos_x.val, (int)pos_y.val, active_item == i, frame_time);
                 }
             }
             
@@ -310,27 +309,49 @@ public class ExplodingMenu {
         }
     }
     
-    private void render_slice(Cairo.Context ctx, int x, int y, double angle, bool prelight) {
+    private void render_slice(Cairo.Context ctx, int x, int y, double angle, bool prelight, bool draw_inner) {
     
         double start_angle = angle-GLib.Math.PI/(SLICE_PAIRS*2+2)+SLICE_HINT_GAP;
         double end_angle = angle+GLib.Math.PI/(SLICE_PAIRS*2+2)-SLICE_HINT_GAP;
         
         var gradient = new Cairo.Pattern.radial(x, y, CENTER_RADIUS, x, y, SLICE_HINT_RADIUS);
             
-        if (prelight) {
-            gradient.add_color_stop_rgba(0.0, 0.4, 0.4, 0.9, 1.0);
-            gradient.add_color_stop_rgba(1.0, 0.4, 0.4, 0.9, 0.0);
-        } else {
-            gradient.add_color_stop_rgba(0.0, 0.5, 0.5, 0.5, 0.5);
+//        if (prelight) {
+//            gradient.add_color_stop_rgba(0.0, 0.4, 0.4, 0.9, 0.8);
+//            gradient.add_color_stop_rgba(1.0, 0.4, 0.4, 0.9, 0.0);
+//        } else {
+            gradient.add_color_stop_rgba(0.0, 0.5, 0.5, 0.5, 0.4);
             gradient.add_color_stop_rgba(1.0, 0.5, 0.5, 0.5, 0.0);
-        }
+//        }
+//        
+//        if (prelight) {
+            ctx.set_source(gradient);
         
-        ctx.set_source(gradient);
-    
-        ctx.arc_negative(x, y, CENTER_RADIUS, end_angle, start_angle);
-        ctx.arc(x, y, SLICE_HINT_RADIUS, start_angle, end_angle);
-        ctx.close_path();
-        ctx.fill();
+            ctx.arc_negative(x, y, CENTER_RADIUS, end_angle, start_angle);
+            ctx.arc(x, y, SLICE_HINT_RADIUS, start_angle, end_angle);
+            ctx.close_path();
+            ctx.fill();
+//        }
+        
+//        if (draw_inner) {
+//            ctx.set_source_rgba(0.0, 0.0, 0.0, 0.3);
+
+//            ctx.arc_negative(x+1, y, CENTER_RADIUS, end_angle, start_angle);
+//            ctx.arc(x+1, y, LABEL_RADIUS*0.8, start_angle, end_angle);
+//            ctx.close_path();
+//            ctx.fill();
+//            
+//            if (prelight) {
+//                ctx.set_source_rgb(0.4, 0.4, 0.9);
+//            } else {
+//                ctx.set_source_rgb(1, 1, 1);
+//            }
+//            
+//            ctx.arc_negative(x, y, CENTER_RADIUS, end_angle, start_angle);
+//            ctx.arc(x, y, LABEL_RADIUS*0.9, start_angle, end_angle);
+//            ctx.close_path();
+//            ctx.fill();
+//        }
     }
 }
 

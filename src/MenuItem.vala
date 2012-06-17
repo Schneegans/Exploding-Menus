@@ -68,7 +68,7 @@ public class MenuItem {
         var layout = window.create_pango_layout(label);
         if (pos_x.val < 0)
             layout.set_alignment(Pango.Alignment.RIGHT);
-        layout.set_font_description(Pango.FontDescription.from_string("%d".printf((int)(5.0*scale.val+5))));
+        layout.set_font_description(Pango.FontDescription.from_string("%d".printf((int)(7.0*scale.val+3))));
         layout.set_width((int)((ExplodingMenu.ITEM_WIDTH-2*ExplodingMenu.ITEM_HEIGHT)*Pango.SCALE*scale.val));
         window.get_style_context().render_layout(ctx,  (int)((pos_x.val + center_x)+(ExplodingMenu.ITEM_HEIGHT)*scale.val), (int)((pos_y.val + center_y)+2+7*scale.val), layout);
         
