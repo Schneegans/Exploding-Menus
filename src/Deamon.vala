@@ -67,7 +67,7 @@ public class Deamon : GLib.Object {
         
         Gdk.threads_enter();
         Icon.init();
-        ExplodingMenu.init();
+        Menu.init();
 
         // connect SigHandlers
         Posix.signal(Posix.SIGINT, sig_handler);
