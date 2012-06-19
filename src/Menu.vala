@@ -30,8 +30,8 @@ public class Menu {
     public const int PREVIEW_PIE_RADIUS = 14;
     public const int PREVIEW_ITEM_RADIUS = 4;
     
-    public const int TRAIL_ITEM_RADIUS = 35;
-    public const int TRAIL_PREVIEW_PIE_RADIUS = 45;
+    public const int TRAIL_ITEM_RADIUS = 30;
+    public const int TRAIL_PREVIEW_PIE_RADIUS = 39;
     public const int TRAIL_PREVIEW_ITEM_RADIUS = 7;
 
     public const int SLICE_HINT_RADIUS = 300;

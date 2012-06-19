@@ -41,6 +41,7 @@ public class MenuItem {
     private AnimatedValue draw_center_x = null;
     private AnimatedValue draw_center_y = null;
     private AnimatedValue draw_radius = null;
+    private AnimatedValue label_alpha = null;
     
     private State state = State.INVISIBLE;
     
@@ -60,6 +61,7 @@ public class MenuItem {
         this.draw_center_x = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
         this.draw_center_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
         this.draw_radius = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 0, 0, 0, 1);
+        this.label_alpha = new AnimatedValue.linear(1, 1, 1);
     }
     
     public void add_child(MenuItem child) {
@@ -199,6 +201,7 @@ public class MenuItem {
         this.draw_center_x.update(frame_time);   
         this.draw_center_y.update(frame_time);
         this.draw_radius.update(frame_time);
+        this.label_alpha.update(frame_time);
         
         Vector center = new Vector((int)draw_center_x.val, (int)draw_center_y.val);
         
@@ -287,7 +290,12 @@ public class MenuItem {
                 if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                 else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
                 
-                ctx.move_to(center.x, center.y);
+                var active_child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
+                var active_child_center = direction_to_coords(active_child_dir, Menu.TRAIL_PREVIEW_PIE_RADIUS);
+                    active_child_center.x += center.x;
+                    active_child_center.y += center.y;
+                ctx.set_line_cap(Cairo.LineCap.ROUND);
+                ctx.move_to(active_child_center.x, active_child_center.y);
                 ctx.set_line_width(draw_radius.val*0.5);
                 ctx.line_to(active_child_pos.x, active_child_pos.y);
                 ctx.stroke();
@@ -336,6 +344,7 @@ public class MenuItem {
                 draw_center_x.reset_target(center.x, time);
                 draw_center_y.reset_target(center.y, time);
                 draw_radius.reset_target(0.0, time);
+                label_alpha.reset_target(0.0, time);
                 
                 break;
                 
@@ -343,6 +352,7 @@ public class MenuItem {
                 draw_center_x.reset_target(center.x, time);
                 draw_center_y.reset_target(center.y, time);
                 draw_radius.reset_target(Menu.TRAIL_PREVIEW_ITEM_RADIUS, time);
+                label_alpha.reset_target(0.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
                     children[i].update_position(center, dir, time);
@@ -354,6 +364,7 @@ public class MenuItem {
                 draw_center_x.reset_target(center.x, time);
                 draw_center_y.reset_target(center.y, time);
                 draw_radius.reset_target(Menu.PREVIEW_ITEM_RADIUS, time);
+                label_alpha.reset_target(0.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
                     children[i].update_position(center, dir, time);
@@ -366,6 +377,7 @@ public class MenuItem {
                     draw_center_x.reset_target(center.x, time);
                     draw_center_y.reset_target(center.y, time);
                     draw_radius.reset_target(Menu.SELECTABLE_ITEM_RADIUS_SMALL, time);
+                    label_alpha.reset_target(1.0, time);
                     
                     for (int i=0; i<children.size; ++i) {
                         var child_dir = index_to_direction(i, children.size, (dir+4)%8);
@@ -379,6 +391,7 @@ public class MenuItem {
                     draw_center_x.reset_target(center.x, time);
                     draw_center_y.reset_target(center.y, time);
                     draw_radius.reset_target(Menu.SELECTABLE_ITEM_RADIUS, time);
+                    label_alpha.reset_target(1.0, time);
                 }
                 
                 break;
@@ -388,6 +401,7 @@ public class MenuItem {
                 draw_center_x.reset_target(center.x, time);
                 draw_center_y.reset_target(center.y, time);
                 draw_radius.reset_target(Menu.ACTIVE_ITEM_RADIUS, time);
+                label_alpha.reset_target(1.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
                     var child_dir = index_to_direction(i, children.size, (dir+4)%8);
@@ -404,6 +418,7 @@ public class MenuItem {
                 draw_center_x.reset_target(center.x, time);
                 draw_center_y.reset_target(center.y, time);
                 draw_radius.reset_target(Menu.TRAIL_ITEM_RADIUS, time);
+                label_alpha.reset_target(1.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
                     if (i != active_child) {
