@@ -19,23 +19,28 @@ namespace GnomePie {
 
 public class Menu {
 
-    public const int ITEM_HEIGHT = 30;
-    public const int ITEM_RADIUS = 50;
-    public const int ACTIVE_RADIUS = 30;
+    public const int LABEL_HEIGHT = 35;
     
-    public const int CIRCLE_PREVIEW_RADIUS = 2;
-    public const int CIRCLE_NORMAL_SUB_RADIUS = 8;
-    public const int CIRCLE_NORMAL_RADIUS = 10;
-    public const int CIRCLE_CENTER_RADIUS = 40;
+    public const int ACTIVE_ITEM_RADIUS = 35;
     
-    public const int SLICE_HINT_RADIUS = 250;
+    public const int SELECTABLE_PIE_RADIUS = 55;
+    public const int SELECTABLE_ITEM_RADIUS = 13;
+    public const int SELECTABLE_ITEM_RADIUS_SMALL = 10;
+    
+    public const int PREVIEW_PIE_RADIUS = 14;
+    public const int PREVIEW_ITEM_RADIUS = 4;
+    
+    public const int TRAIL_ITEM_RADIUS = 35;
+    public const int TRAIL_PREVIEW_PIE_RADIUS = 45;
+    public const int TRAIL_PREVIEW_ITEM_RADIUS = 7;
+
+    public const int SLICE_HINT_RADIUS = 300;
     public const double SLICE_HINT_GAP = 0.0;
     public const double ANIMATION_TIME = 0.2;
+    public const double FADE_OUT_TIME = 0.5;
 
     private static BindingManager bindings = null;
     private static Menu menu;
-    
-    private Vector start = null;
     
     public static void init() {
     
@@ -52,10 +57,64 @@ public class Menu {
     private InvisibleWindow window;
     private MenuItem root;
     
+    private Vector center;
+    private bool first_release;
+    
     public Menu() {
         window = new InvisibleWindow();
-        start = new Vector(0, 0);
+        center = new Vector(0, 0);
         
+        setup_menu();
+        
+        window.on_draw.connect((ctx, frame_time) => {
+            root.draw(ctx, window, MenuItem.Direction.S, false, frame_time);
+        });
+        
+        window.on_press.connect((button) => {
+            first_release = false;
+        });
+        
+        window.on_release.connect((button) => {
+            if (!first_release) {
+                if (button == 3 || !root.activate(window.get_mouse_pos())) {
+                    
+                    var activated = root.got_selected();
+                    
+                    root.close(activated);
+                    
+                    if (activated) {
+                        GLib.Timeout.add((uint)((FADE_OUT_TIME+ANIMATION_TIME)*1000), () => {
+                            window.hide();
+                            return false;
+                        });
+                    } else {
+                        GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
+                            window.hide();
+                            return false;
+                        });
+                    }
+                }
+                root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
+            }
+        });
+        
+        window.on_scroll.connect((up) => {
+           
+        });
+    }
+    
+    public void show() {
+        setup_menu();
+        
+        first_release = true;
+        
+        window.open();
+        center = window.get_mouse_pos();
+        root.set_state(MenuItem.State.ACTIVE);
+        root.update_position(center, MenuItem.Direction.S, 0.0);
+    }
+    
+    private void setup_menu() {
         root = new MenuItem("root", "");
         
         root.add_child(new MenuItem("Rückgängig", "stock_undo"));
@@ -70,7 +129,14 @@ public class Menu {
             tmp.add_child(new MenuItem("Rich-Text Datei", "inkscape"));
             tmp.add_child(new MenuItem("Tabelle", "blender"));
             tmp.add_child(new MenuItem("Webseite", "blender"));
-        
+            
+                var tmp2 = new MenuItem("Etwas anderes...", "stock_save");
+                tmp2.add_child(new MenuItem("Bild", "gimp"));
+                tmp2.add_child(new MenuItem("JPEG", "inkscape"));
+                tmp2.add_child(new MenuItem("3D-Date", "blender"));
+            
+            tmp.add_child(tmp2);
+            
         root.add_child(tmp);
         
             tmp = new MenuItem("Öffnen mit...", "stock_open");
@@ -78,27 +144,6 @@ public class Menu {
             tmp.add_child(new MenuItem("Inkscape", "inkscape"));
             tmp.add_child(new MenuItem("Blender", "blender"));
         root.add_child(tmp);
-
-        window.on_draw.connect((ctx, frame_time) => {
-            root.draw_root(ctx, window, start, frame_time);
-        });
-        
-        window.on_press.connect((button) => {
-            
-        });
-        
-        window.on_release.connect((button) => {
-            window.hide();
-        });
-        
-        window.on_scroll.connect((up) => {
-           
-        });
-    }
-    
-    public void show() {
-        window.open();
-        window.get_mouse_pos(out start.x, out start.y);
     }
 }
 

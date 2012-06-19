@@ -116,9 +116,13 @@ public class InvisibleWindow : Gtk.Window {
         }); 
     }
     
-    public void get_mouse_pos(out int mouse_x, out int mouse_y) {
+    public Vector get_mouse_pos() {
+        var result = new Vector(0, 0);
+    
         // get the mouse position
-        this.get_pointer(out mouse_x, out mouse_y);
+        this.get_pointer(out result.x, out result.y);
+        
+        return result;
     }
     
     /////////////////////////////////////////////////////////////////////
