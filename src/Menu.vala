@@ -19,22 +19,22 @@ namespace GnomePie {
 
 public class Menu {
 
-    public const int LABEL_HEIGHT = 35;
+    public const int LABEL_HEIGHT = 36;
     
     public const int ACTIVE_ITEM_RADIUS = 35;
     
     public const int SELECTABLE_PIE_RADIUS = 55;
-    public const int SELECTABLE_ITEM_RADIUS = 13;
-    public const int SELECTABLE_ITEM_RADIUS_SMALL = 10;
+    public const int SELECTABLE_ITEM_RADIUS = 18;
+    public const int SELECTABLE_ITEM_RADIUS_SMALL = 12;
     
-    public const int PREVIEW_PIE_RADIUS = 14;
-    public const int PREVIEW_ITEM_RADIUS = 4;
+    public const int PREVIEW_PIE_RADIUS = 16;
+    public const int PREVIEW_ITEM_RADIUS = 5;
     
-    public const int TRAIL_ITEM_RADIUS = 30;
-    public const int TRAIL_PREVIEW_PIE_RADIUS = 39;
-    public const int TRAIL_PREVIEW_ITEM_RADIUS = 7;
+    public const int TRAIL_ITEM_RADIUS = SELECTABLE_ITEM_RADIUS_SMALL;
+    public const int TRAIL_PREVIEW_PIE_RADIUS = PREVIEW_PIE_RADIUS;
+    public const int TRAIL_PREVIEW_ITEM_RADIUS = PREVIEW_ITEM_RADIUS;
 
-    public const int SLICE_HINT_RADIUS = 300;
+    public const int SLICE_HINT_RADIUS = 250;
     public const double SLICE_HINT_GAP = 0.0;
     public const double ANIMATION_TIME = 0.2;
     public const double FADE_OUT_TIME = 0.5;
@@ -80,6 +80,9 @@ public class Menu {
                     
                     var activated = root.got_selected();
                     
+                    move(root.get_move_offset());
+                    
+                    root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
                     root.close(activated);
                     
                     if (activated) {
@@ -93,8 +96,9 @@ public class Menu {
                             return false;
                         });
                     }
+                } else {
+                    root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
                 }
-                root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
             }
         });
         
@@ -114,36 +118,72 @@ public class Menu {
         root.update_position(center, MenuItem.Direction.S, 0.0);
     }
     
+    private void move(Vector s) {
+        center.x += s.x;
+        center.y += s.y;
+    }
+    
     private void setup_menu() {
-        root = new MenuItem("root", "");
+    
+        root = new MenuItem("Hauptmenü", "");
         
-        root.add_child(new MenuItem("Rückgängig", "stock_undo"));
-        root.add_child(new MenuItem("Wiederholen", "stock_redo"));
-        root.add_child(new MenuItem("Ausschneiden", "stock_cut"));
-        root.add_child(new MenuItem("Kopieren", "stock_copy"));
-        root.add_child(new MenuItem("Einfügen", "stock_paste"));
-        root.add_child(new MenuItem("Neu", "filenew"));
+            var file = new MenuItem("Datei", "");
+                file.add_child(new MenuItem("Neu...", ""));
+                file.add_child(new MenuItem("Öffnen...", ""));
+                file.add_child(new MenuItem("Speichern", ""));
+                
+                var tmp = new MenuItem("Speichern als", "");
+                    tmp.add_child(new MenuItem("Text-Datei", ""));
+                    tmp.add_child(new MenuItem("Bild-Datei", ""));
+                    tmp.add_child(new MenuItem("Sound-Datei", ""));
+                    tmp.add_child(new MenuItem("Video-Datei", ""));
+                file.add_child(tmp);
+                
+                file.add_child(new MenuItem("Zurücksetzen", ""));
+                file.add_child(new MenuItem("Drucken...", ""));
+                file.add_child(new MenuItem("Druckvorschau", ""));
+            
+            root.add_child(file);
+            
+            var edit = new MenuItem("Bearbeiten", "");
+                edit.add_child(new MenuItem("Rückgängig", ""));
+                edit.add_child(new MenuItem("Wiederholen", ""));
+                edit.add_child(new MenuItem("Ausschneiden", ""));
+                edit.add_child(new MenuItem("Kopieren", ""));
+                edit.add_child(new MenuItem("Einfügen", ""));
+                edit.add_child(new MenuItem("Einstellungen", ""));
+            root.add_child(edit);
+            
+            var view = new MenuItem("Ansicht", "");
+                view.add_child(new MenuItem("Vollbild", ""));
+                
+                tmp = new MenuItem("Hervorhebungsmodus", "");
+                    tmp.add_child(new MenuItem("Reiner Text", ""));
+                    tmp.add_child(new MenuItem("HTML", ""));
+                    tmp.add_child(new MenuItem("C++", ""));
+                    tmp.add_child(new MenuItem("Vala", ""));
+                    tmp.add_child(new MenuItem("Python", ""));
+                    tmp.add_child(new MenuItem("Ruby", ""));
+                    tmp.add_child(new MenuItem("Shell", ""));
+                view.add_child(tmp);
+                
+            root.add_child(view);
+            
+            var search = new MenuItem("Suchen", "");
+            root.add_child(search);
+            
+            var tools = new MenuItem("Werkzeuge", "");
+            root.add_child(tools);
+            
+            var project = new MenuItem("Projekt", "");
+            root.add_child(project);
+            
+            var documents = new MenuItem("Dokumente", "");
+            root.add_child(documents);
+            
+            var help = new MenuItem("Hilfe", "");
+            root.add_child(help);
         
-        var tmp = new MenuItem("Speichern als...", "stock_save");
-            tmp.add_child(new MenuItem("Textdatei", "gimp"));
-            tmp.add_child(new MenuItem("Rich-Text Datei", "inkscape"));
-            tmp.add_child(new MenuItem("Tabelle", "blender"));
-            tmp.add_child(new MenuItem("Webseite", "blender"));
-            
-                var tmp2 = new MenuItem("Etwas anderes...", "stock_save");
-                tmp2.add_child(new MenuItem("Bild", "gimp"));
-                tmp2.add_child(new MenuItem("JPEG", "inkscape"));
-                tmp2.add_child(new MenuItem("3D-Date", "blender"));
-            
-            tmp.add_child(tmp2);
-            
-        root.add_child(tmp);
-        
-            tmp = new MenuItem("Öffnen mit...", "stock_open");
-            tmp.add_child(new MenuItem("Gimp", "gimp"));
-            tmp.add_child(new MenuItem("Inkscape", "inkscape"));
-            tmp.add_child(new MenuItem("Blender", "blender"));
-        root.add_child(tmp);
     }
 }
 

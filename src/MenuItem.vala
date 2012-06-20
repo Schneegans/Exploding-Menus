@@ -23,13 +23,13 @@ public class MenuItem {
     public const double FG_G = 0.2;
     public const double FG_B = 0.2;
     
-    public const double BG_R = 0.9;
-    public const double BG_G = 0.9;
-    public const double BG_B = 0.9;
+    public const double BG_R = 0.8;
+    public const double BG_G = 0.8;
+    public const double BG_B = 0.8;
     
-    public const double SEL_R = 0.7;
+    public const double SEL_R = 0.1;
     public const double SEL_G = 0.3;
-    public const double SEL_B = 0.1;
+    public const double SEL_B = 0.7;
 
     public string label;
     public string icon_name;
@@ -48,6 +48,7 @@ public class MenuItem {
     private int hovered_child = -1;
     private int active_child = -1;
     private Vector active_child_pos;
+    private Vector parent_move_offset;
     
     private Gee.ArrayList<MenuItem> children;
     
@@ -55,6 +56,7 @@ public class MenuItem {
         this.label = label;
         this.icon_name = icon_name;
         this.active_child_pos = new Vector(0, 0);
+        this.parent_move_offset = new Vector(0, 0);
         
         this.children = new Gee.ArrayList<MenuItem>();
         
@@ -62,6 +64,20 @@ public class MenuItem {
         this.draw_center_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
         this.draw_radius = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 0, 0, 0, 1);
         this.label_alpha = new AnimatedValue.linear(1, 1, 1);
+    }
+    
+    public Vector get_move_offset() {
+        var result = new Vector(parent_move_offset.x, parent_move_offset.y);
+        parent_move_offset = new Vector(0, 0);
+        
+        if (result.x == 0 && result.y == 0) {
+            foreach (var child in children) {
+                result = child.get_move_offset();
+                if (result.x != 0 || result.y != 0) break;
+            }
+        }
+        
+        return result;
     }
     
     public void add_child(MenuItem child) {
@@ -75,10 +91,12 @@ public class MenuItem {
         if (delayed) {
             GLib.Timeout.add((uint)(Menu.FADE_OUT_TIME*1000), () => {
                 this.draw_radius.reset_target(0.0, Menu.ANIMATION_TIME);
+                this.label_alpha.reset_target(0.0, Menu.ANIMATION_TIME);
                 return false;
             });           
         } else {
             this.draw_radius.reset_target(0.0, Menu.ANIMATION_TIME);
+            this.label_alpha.reset_target(0.0, Menu.ANIMATION_TIME);
         }                 
     }
     
@@ -133,6 +151,9 @@ public class MenuItem {
                     
                     active_child_pos = mouse_pos;
                     active_child = hovered_child;
+                    
+                    // move parents
+                    //parent_move_offset = new Vector(100, 100);
                     
                     return keep_open;
                 } 
@@ -209,6 +230,9 @@ public class MenuItem {
         
          switch (state) {
             case State.PREVIEW: case State.TRAIL_PREVIEW:
+            
+                // draw label
+                draw_label(ctx, window, center, dir, prelight);
                 
                 if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                 else          ctx.set_source_rgb(FG_R, FG_G, FG_B);
@@ -239,17 +263,18 @@ public class MenuItem {
             case State.ACTIVE:
 
                 // draw center circle
-                if (label != "root") {
+                //if (label != "root") {
+                    
                     ctx.set_source_rgb(FG_R, FG_G, FG_B);
                     ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
                     ctx.fill();
                 
                     // draw label
-                    var img = new RenderedText(label, (int)(Menu.ACTIVE_ITEM_RADIUS*0.9)*2, (int)(Menu.ACTIVE_ITEM_RADIUS*0.9)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
+                    var img = new RenderedText(label, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
                     ctx.translate(center.x, center.y);
-                    img.paint_on(ctx);
+                    img.paint_on(ctx, GLib.Math.fmax(0, 2*label_alpha.val-1));
                     ctx.translate(-center.x, -center.y);
-                }
+                //}
                 
                 var active = a_slice_is_active(window, center);
                 var active_dir = get_mouse_direction(window, center);
@@ -260,11 +285,13 @@ public class MenuItem {
                     
                     if (active && child_dir == active_dir) {
                         hovered_child = i;
-                        draw_sector(ctx, window, center, child_dir, frame_time);
+                        draw_sector(ctx, window, center, child_dir, true, frame_time);
+                    } else {
+                        draw_sector(ctx, window, center, child_dir, false, frame_time);
                     }
                 }
                 
-                if (hovered_child == -1 && active && active_dir == (dir+4)%8 && label != "root") {
+                if (hovered_child == -1 && active && active_dir == (dir+4)%8 /*&& label != "root"*/) {
                     hovered_child = -2;
                 }
                 
@@ -281,45 +308,42 @@ public class MenuItem {
                 if (children[active_child].hovered_child == -2) {
                     var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
                     var child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
-                    draw_sector(ctx, window, child_pos, (child_dir+4)%8, frame_time);
+                    draw_sector(ctx, window, child_pos, (child_dir+4)%8, true, frame_time);
                     
                     prelight = true;
+                } else if (children[active_child].active_child == -1 && !got_selected()) {
+                    var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
+                    var child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
+                    draw_sector(ctx, window, child_pos, (child_dir+4)%8, false, frame_time);
                 }
-
+                
+                var active_child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
+                
+                // draw center circle
+                //if (label != "root") {  
+                    draw_label(ctx, window, center, (active_child_dir+4)%8, prelight);
+                    
+                    if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                    else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                    
+                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
+                    ctx.fill();  
+               // }
+                
                 // draw line to child circle
                 if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                 else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
                 
-                var active_child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
-                var active_child_center = direction_to_coords(active_child_dir, Menu.TRAIL_PREVIEW_PIE_RADIUS);
-                    active_child_center.x += center.x;
-                    active_child_center.y += center.y;
+                
+                var offset = direction_to_coords(active_child_dir, Menu.TRAIL_PREVIEW_PIE_RADIUS);
+                    offset.x += center.x;
+                    offset.y += center.y;
                 ctx.set_line_cap(Cairo.LineCap.ROUND);
-                ctx.move_to(active_child_center.x, active_child_center.y);
-                ctx.set_line_width(draw_radius.val*0.5);
-                ctx.line_to(active_child_pos.x, active_child_pos.y);
+                ctx.move_to(offset.x, offset.y);
+                
+                ctx.set_line_width(draw_radius.val);
+                ctx.line_to((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
                 ctx.stroke();
-                
-                // draw circle
-                if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
-                
-                ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
-                ctx.fill();
-                
-                // draw center circle
-                if (label != "root") {
-                    if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                    else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
-                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
-                    ctx.fill();
-                
-                    // draw label
-                    var img = new RenderedText(label, (int)(Menu.ACTIVE_ITEM_RADIUS*0.9)*2, (int)(Menu.ACTIVE_ITEM_RADIUS*0.9)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
-                    ctx.translate(center.x, center.y);
-                    img.paint_on(ctx);
-                    ctx.translate(-center.x, -center.y);
-                }
                 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
@@ -438,72 +462,100 @@ public class MenuItem {
     }
     
     private void draw_label(Cairo.Context ctx, InvisibleWindow window, Vector center, Direction dir, bool prelight) {
-        var layout = window.create_pango_layout(label);
-        var label_size = new Vector(0, 0);
-        layout.get_pixel_size(out label_size.x, out label_size.y);
-        label_size.x += Menu.LABEL_HEIGHT;
         
-        var label_pos = new Vector(center.x, center.y-7);
+        if (label_alpha.val > 0) {
         
-        // draw label background
-        ctx.set_source_rgb(BG_R, BG_G, BG_B);
-        ctx.set_line_width(Menu.LABEL_HEIGHT);
-        ctx.set_line_join(Cairo.LineJoin.ROUND);
-        ctx.set_line_cap(Cairo.LineCap.ROUND);
-        ctx.move_to(center.x, center.y);
-        
-        switch (get_label_direction(dir)) {
-            case LabelDirection.LEFT:
-                ctx.line_to(center.x-label_size.x - Menu.LABEL_HEIGHT/2 , center.y);
-                label_pos.x -= label_size.x;
-                break;
-            case LabelDirection.RIGHT:
-                ctx.line_to(center.x+label_size.x + Menu.LABEL_HEIGHT/2, center.y);
-                label_pos.x += Menu.LABEL_HEIGHT;
-                break;
-            case LabelDirection.TOP_LEFT:
-                ctx.line_to(center.x, center.y - Menu.LABEL_HEIGHT/2 - 5);
-                ctx.line_to(center.x-label_size.x, center.y - Menu.LABEL_HEIGHT/2 - 5);
-                label_pos.x -= label_size.x;
-                label_pos.y -= Menu.LABEL_HEIGHT/2 + 5;
-                break;
-            case LabelDirection.BOTTOM_RIGHT:
-                ctx.line_to(center.x, center.y + Menu.LABEL_HEIGHT/2 + 5);
-                ctx.line_to(center.x+label_size.x, center.y + Menu.LABEL_HEIGHT/2 + 5);
-                label_pos.x += Menu.LABEL_HEIGHT;
-                label_pos.y += Menu.LABEL_HEIGHT/2 + 5;
-                break;
+            var layout = window.create_pango_layout(label);
+            var label_size = new Vector(0, 0);
+            layout.get_pixel_size(out label_size.x, out label_size.y);
+            
+            
+            
+            // draw label background
+            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val*0.7);
+            ctx.set_line_width(Menu.LABEL_HEIGHT*label_alpha.val);
+            ctx.set_line_join(Cairo.LineJoin.ROUND);
+            ctx.set_line_cap(Cairo.LineCap.ROUND);
+            ctx.move_to(center.x, center.y);
+            
+            var offset = direction_to_coords(dir, 25);
+                offset.x += center.x;
+                offset.y += center.y;
+            ctx.line_to(offset.x, offset.y);
+            
+            var label_pos = new Vector(offset.x, offset.y-7);
+            
+            switch (get_label_direction(dir)) {
+                case LabelDirection.LEFT:
+                    ctx.line_to(offset.x-(label_size.x)*label_alpha.val , offset.y);
+                    label_pos.x -= label_size.x ;
+                    break;
+                case LabelDirection.RIGHT:
+                    ctx.line_to(offset.x+(label_size.x)*label_alpha.val, offset.y);
+                    break;
+                case LabelDirection.TOP_LEFT:
+                    ctx.line_to(offset.x, offset.y - (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    ctx.line_to(offset.x-(label_size.x)*label_alpha.val, offset.y - (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    label_pos.x -= label_size.x;
+                    label_pos.y -= Menu.LABEL_HEIGHT/2 + 8;
+                    break;
+                case LabelDirection.BOTTOM_RIGHT:
+                    ctx.line_to(offset.x, offset.y + (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    ctx.line_to(offset.x+(label_size.x)*label_alpha.val, offset.y + (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    label_pos.y += Menu.LABEL_HEIGHT/2 + 8;
+                    break;
+            }
+            
+            ctx.stroke();
+
+            // draw label
+            if (prelight || got_selected()) ctx.set_source_rgba(SEL_R, SEL_G, SEL_B, label_alpha.val);
+            else                            ctx.set_source_rgba(0.0, 0.0, 0.0, GLib.Math.fmax(0, 2*label_alpha.val-1));
+
+            ctx.move_to(label_pos.x, label_pos.y);
+            Pango.cairo_update_layout(ctx, layout);
+            Pango.cairo_show_layout(ctx, layout);
+            ctx.stroke();
         }
-        
-        ctx.stroke();
-
-        // draw label
-        if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-        else                            ctx.set_source_rgb(0.0, 0.0, 0.0);
-
-        ctx.move_to(label_pos.x, label_pos.y);
-        Pango.cairo_update_layout(ctx, layout);
-        Pango.cairo_show_layout(ctx, layout);
-        ctx.stroke();
     }
 
     public void draw_sector(Cairo.Context ctx, InvisibleWindow window, Vector center,
-                             Direction dir, double frame_time) {
-        
+                             Direction dir, bool prelight, double frame_time) {
+
         double start_angle = (dir-2)*(GLib.Math.PI/4)-GLib.Math.PI/8+Menu.SLICE_HINT_GAP;
         double end_angle = (dir-2)*(GLib.Math.PI/4)+GLib.Math.PI/8-Menu.SLICE_HINT_GAP;
+
+        // draw glow
+        if (prelight) {
+
+            var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS);
+
+            gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.4);
+            gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0);
+
+            ctx.set_source(gradient);
         
-        var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS);
+            ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, end_angle, start_angle);
+            ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS, start_angle, end_angle);
+            ctx.close_path();
+            ctx.fill();
+        } else {
+        
+//            var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS/2);
+//            
+//            gradient.add_color_stop_rgba(0.0, BG_R, BG_G, BG_B, 0.5);
+//            gradient.add_color_stop_rgba(0.7, BG_R, BG_G, BG_B, 0.5);
+//            gradient.add_color_stop_rgba(1.0, BG_R, BG_G, BG_B, 0.0);
 
-        gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.6);
-        gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0);
-
-        ctx.set_source(gradient);
-    
-        ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, end_angle, start_angle);
-        ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS, start_angle, end_angle);
-        ctx.close_path();
-        ctx.fill();
+//            
+//            ctx.set_source(gradient);
+//        
+//            ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, end_angle, start_angle);
+//            ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS/2, start_angle, end_angle);
+//            ctx.close_path();
+//            ctx.fill();
+        }
+        
     }
     
     private Direction index_to_direction(int index, int item_count, Direction parent_direction) {
