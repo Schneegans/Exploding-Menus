@@ -27,9 +27,9 @@ public class MenuItem {
     public const double BG_G = 0.8;
     public const double BG_B = 0.8;
     
-    public const double SEL_R = 0.1;
-    public const double SEL_G = 0.3;
-    public const double SEL_B = 0.7;
+    public const double SEL_R = 0.6;
+    public const double SEL_G = 0.1;
+    public const double SEL_B = 0.3;
 
     public string label;
     public string icon_name;
@@ -37,6 +37,8 @@ public class MenuItem {
     public enum Direction { N, NE, E, SE, S, SW, W, NW }
     public enum LabelDirection { LEFT, RIGHT, TOP_LEFT, BOTTOM_RIGHT }
     public enum State { INVISIBLE, PREVIEW, SELECTABLE, ACTIVE, TRAIL, TRAIL_PREVIEW, SELECTED }
+    
+    private weak MenuItem parent = null;
     
     private AnimatedValue draw_center_x = null;
     private AnimatedValue draw_center_y = null;
@@ -47,16 +49,14 @@ public class MenuItem {
     
     private int hovered_child = -1;
     private int active_child = -1;
-    private Vector active_child_pos;
-    private Vector parent_move_offset;
+    private Vector center_offset;
     
     private Gee.ArrayList<MenuItem> children;
     
     public MenuItem(string label, string icon_name) {
         this.label = label;
         this.icon_name = icon_name;
-        this.active_child_pos = new Vector(0, 0);
-        this.parent_move_offset = new Vector(0, 0);
+        this.center_offset = new Vector(0,0);
         
         this.children = new Gee.ArrayList<MenuItem>();
         
@@ -66,22 +66,19 @@ public class MenuItem {
         this.label_alpha = new AnimatedValue.linear(1, 1, 1);
     }
     
-    public Vector get_move_offset() {
-        var result = new Vector(parent_move_offset.x, parent_move_offset.y);
-        parent_move_offset = new Vector(0, 0);
-        
-        if (result.x == 0 && result.y == 0) {
-            foreach (var child in children) {
-                result = child.get_move_offset();
-                if (result.x != 0 || result.y != 0) break;
-            }
-        }
-        
-        return result;
+    public void move(Vector offset) {
+        this.center_offset.x += offset.x;
+        this.center_offset.y += offset.y;
+    }
+    
+    public void move_parents(Vector offset) {
+        if (parent != null) parent.move_parents(offset);
+        else move(offset);
     }
     
     public void add_child(MenuItem child) {
         this.children.add(child);
+        child.parent = this;
     }
     
     public void close(bool delayed) {
@@ -111,7 +108,7 @@ public class MenuItem {
         return false;
     }
     
-    public bool activate(Vector mouse_pos) {
+    public bool activate(int mouse_x, int mouse_y) {
         
         switch (this.state) {
             case State.INVISIBLE:
@@ -127,6 +124,14 @@ public class MenuItem {
                 break;
                 
             case State.SELECTABLE:
+                
+//                double distance = GLib.Math.sqrt(mouse_x*mouse_x + mouse_y*mouse_y);
+//                var ideal_offset = direction_to_coords(index_to_direction(parent.hovered_child), distance);
+                
+//                move_parents(
+                move(new Vector(mouse_x, mouse_y));
+//                move(new Vector(ideal_offset.x, ideal_offset.y));
+                
                 if (children.size > 0) {
                     set_state(State.ACTIVE);
                     return true;
@@ -142,14 +147,12 @@ public class MenuItem {
                 
                     for (int i=0; i<children.size; ++i) {
                         if (i == hovered_child) {
-                           keep_open = children[i].activate(mouse_pos);
+                           keep_open = children[i].activate(mouse_x - (int)draw_center_x.end, mouse_y - (int)draw_center_y.end);
                         } else {
                            children[i].set_state(State.TRAIL_PREVIEW);
                         }
                     }
                     set_state(State.TRAIL);
-                    
-                    active_child_pos = mouse_pos;
                     active_child = hovered_child;
                     
                     // move parents
@@ -163,11 +166,17 @@ public class MenuItem {
                 if (active_child >= 0) {
                     if (children[active_child].hovered_child == -2) {
                         children[active_child].set_state(State.SELECTABLE);
+                        children[active_child].center_offset = new Vector(0,0);
+                        active_child = -1;
                         set_state(State.ACTIVE);
+                        
+                        //move_parents(new Vector(30, 30));
+                        move_parents(new Vector(-(int)draw_center_x.end + mouse_x, -(int)draw_center_y.end + mouse_y));
+                        
                         return true;
                     } 
                     
-                    return children[active_child].activate(mouse_pos);
+                    return children[active_child].activate(mouse_x - (int)draw_center_x.end, mouse_y - (int)draw_center_y.end);
                 }
                 break;
         }
@@ -216,7 +225,7 @@ public class MenuItem {
         }
     }
     
-    public void draw(Cairo.Context ctx, InvisibleWindow window,
+    public void draw(Cairo.Context ctx, InvisibleWindow window, Vector parent_center,
                      Direction dir, bool prelight, double frame_time) {
         
         this.draw_center_x.update(frame_time);   
@@ -224,7 +233,7 @@ public class MenuItem {
         this.draw_radius.update(frame_time);
         this.label_alpha.update(frame_time);
         
-        Vector center = new Vector((int)draw_center_x.val, (int)draw_center_y.val);
+        Vector center = new Vector((int)draw_center_x.val + parent_center.x, (int)draw_center_y.val + parent_center.y);
         
         hovered_child = -1;
         
@@ -256,25 +265,21 @@ public class MenuItem {
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
                     var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                    children[i].draw(ctx, window, child_dir, prelight, frame_time);
+                    children[i].draw(ctx, window, center, child_dir, prelight, frame_time);
                 }
                 break;
                 
             case State.ACTIVE:
-
-                // draw center circle
-                //if (label != "root") {
                     
-                    ctx.set_source_rgb(FG_R, FG_G, FG_B);
-                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
-                    ctx.fill();
-                
-                    // draw label
-                    var img = new RenderedText(label, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
-                    ctx.translate(center.x, center.y);
-                    img.paint_on(ctx, GLib.Math.fmax(0, 2*label_alpha.val-1));
-                    ctx.translate(-center.x, -center.y);
-                //}
+                ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
+                ctx.fill();
+            
+                // draw label
+                var img = new RenderedText(label, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
+                ctx.translate(center.x, center.y);
+                img.paint_on(ctx, GLib.Math.fmax(0, 2*label_alpha.val-1));
+                ctx.translate(-center.x, -center.y);
                 
                 var active = a_slice_is_active(window, center);
                 var active_dir = get_mouse_direction(window, center);
@@ -298,7 +303,7 @@ public class MenuItem {
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
                     var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                    children[i].draw(ctx, window, child_dir, active && child_dir == active_dir, frame_time);
+                    children[i].draw(ctx, window, center, child_dir, active && child_dir == active_dir, frame_time);
                 }
                 break;
                 
@@ -307,6 +312,8 @@ public class MenuItem {
                 // draw highlight if immediate child hovers
                 if (children[active_child].hovered_child == -2) {
                     var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
+                        child_pos.x += center.x;
+                        child_pos.y += center.y;
                     var child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
                     draw_sector(ctx, window, child_pos, (child_dir+4)%8, true, frame_time);
                     
@@ -320,15 +327,13 @@ public class MenuItem {
                 var active_child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
                 
                 // draw center circle
-                //if (label != "root") {  
-                    draw_label(ctx, window, center, (active_child_dir+4)%8, prelight);
-                    
-                    if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                    else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
-                    
-                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
-                    ctx.fill();  
-               // }
+                draw_label(ctx, window, center, (active_child_dir+4)%8, prelight);
+                
+                if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                
+                ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
+                ctx.fill();  
                 
                 // draw line to child circle
                 if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
@@ -342,17 +347,17 @@ public class MenuItem {
                 ctx.move_to(offset.x, offset.y);
                 
                 ctx.set_line_width(draw_radius.val);
-                ctx.line_to((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
+                ctx.line_to((int)children[active_child].draw_center_x.val + center.x, (int)children[active_child].draw_center_y.val + center.y);
                 ctx.stroke();
                 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
                     if (i != active_child) {
                         var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                        children[i].draw(ctx, window, child_dir, prelight, frame_time);
+                        children[i].draw(ctx, window, center, child_dir, prelight, frame_time);
                     } else {
                         var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                        children[i].draw(ctx, window, child_dir, prelight, frame_time);
+                        children[i].draw(ctx, window, center, child_dir, prelight, frame_time);
                     }
                 }
                 
@@ -360,9 +365,11 @@ public class MenuItem {
         }
     }
     
-    public void update_position(Vector center, Direction dir, double time) {
-    
-         switch (state) {
+    public void update_position(Vector offset, Direction dir, double time) {
+        
+        var center = new Vector(offset.x + center_offset.x, offset.y + center_offset.y);
+        
+        switch (state) {
          
             case State.INVISIBLE:
                 draw_center_x.reset_target(center.x, time);
@@ -379,7 +386,7 @@ public class MenuItem {
                 label_alpha.reset_target(0.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
-                    children[i].update_position(center, dir, time);
+                    children[i].update_position(new Vector(0,0), dir, time);
                 }
                 
                 break;
@@ -391,7 +398,7 @@ public class MenuItem {
                 label_alpha.reset_target(0.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
-                    children[i].update_position(center, dir, time);
+                    children[i].update_position(new Vector(0,0), dir, time);
                 }
                 
                 break;
@@ -406,8 +413,6 @@ public class MenuItem {
                     for (int i=0; i<children.size; ++i) {
                         var child_dir = index_to_direction(i, children.size, (dir+4)%8);
                         var child_center = direction_to_coords(child_dir, Menu.PREVIEW_PIE_RADIUS);
-                            child_center.x += center.x;
-                            child_center.y += center.y;
                         children[i].update_position(child_center, child_dir, time);
                     }
                     
@@ -430,8 +435,6 @@ public class MenuItem {
                 for (int i=0; i<children.size; ++i) {
                     var child_dir = index_to_direction(i, children.size, (dir+4)%8);
                     var child_center = direction_to_coords(child_dir, Menu.SELECTABLE_PIE_RADIUS);
-                        child_center.x += center.x;
-                        child_center.y += center.y;
                     children[i].update_position(child_center, child_dir, time);
                 }
                     
@@ -448,12 +451,10 @@ public class MenuItem {
                     if (i != active_child) {
                         var child_dir = index_to_direction(i, children.size, (dir+4)%8);
                         var child_center = direction_to_coords(child_dir, Menu.TRAIL_PREVIEW_PIE_RADIUS);
-                            child_center.x += center.x;
-                            child_center.y += center.y;
                         children[i].update_position(child_center, child_dir, time);
                     } else {
                         var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                        children[i].update_position(active_child_pos, child_dir, time);
+                        children[i].update_position(new Vector(0,0), child_dir, time);
                     }
                 }
                 
@@ -468,9 +469,7 @@ public class MenuItem {
             var layout = window.create_pango_layout(label);
             var label_size = new Vector(0, 0);
             layout.get_pixel_size(out label_size.x, out label_size.y);
-            
-            
-            
+
             // draw label background
             ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val*0.7);
             ctx.set_line_width(Menu.LABEL_HEIGHT*label_alpha.val);
@@ -530,7 +529,7 @@ public class MenuItem {
 
             var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS);
 
-            gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.4);
+            gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.6);
             gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0);
 
             ctx.set_source(gradient);

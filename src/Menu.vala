@@ -19,7 +19,7 @@ namespace GnomePie {
 
 public class Menu {
 
-    public const int LABEL_HEIGHT = 36;
+    public const int LABEL_HEIGHT = 32;
     
     public const int ACTIVE_ITEM_RADIUS = 35;
     
@@ -27,8 +27,8 @@ public class Menu {
     public const int SELECTABLE_ITEM_RADIUS = 18;
     public const int SELECTABLE_ITEM_RADIUS_SMALL = 12;
     
-    public const int PREVIEW_PIE_RADIUS = 16;
-    public const int PREVIEW_ITEM_RADIUS = 5;
+    public const int PREVIEW_PIE_RADIUS = 15;
+    public const int PREVIEW_ITEM_RADIUS = 3;
     
     public const int TRAIL_ITEM_RADIUS = SELECTABLE_ITEM_RADIUS_SMALL;
     public const int TRAIL_PREVIEW_PIE_RADIUS = PREVIEW_PIE_RADIUS;
@@ -67,7 +67,7 @@ public class Menu {
         setup_menu();
         
         window.on_draw.connect((ctx, frame_time) => {
-            root.draw(ctx, window, MenuItem.Direction.S, false, frame_time);
+            root.draw(ctx, window, new Vector(0,0), MenuItem.Direction.S, false, frame_time);
         });
         
         window.on_press.connect((button) => {
@@ -76,11 +76,9 @@ public class Menu {
         
         window.on_release.connect((button) => {
             if (!first_release) {
-                if (button == 3 || !root.activate(window.get_mouse_pos())) {
+                if (button == 3 || !root.activate(window.get_mouse_pos().x, window.get_mouse_pos().y)) {
                     
                     var activated = root.got_selected();
-                    
-                    move(root.get_move_offset());
                     
                     root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
                     root.close(activated);
@@ -118,17 +116,12 @@ public class Menu {
         root.update_position(center, MenuItem.Direction.S, 0.0);
     }
     
-    private void move(Vector s) {
-        center.x += s.x;
-        center.y += s.y;
-    }
-    
     private void setup_menu() {
     
         root = new MenuItem("Hauptmenü", "");
         
             var file = new MenuItem("Datei", "");
-                file.add_child(new MenuItem("Neu...", ""));
+                file.add_child(new MenuItem("Neu... | Öffnen... | Speichern | Speichern als | Zurücksetzen | Drucken... | Druckvorschau", ""));
                 file.add_child(new MenuItem("Öffnen...", ""));
                 file.add_child(new MenuItem("Speichern", ""));
                 
@@ -170,9 +163,22 @@ public class Menu {
             root.add_child(view);
             
             var search = new MenuItem("Suchen", "");
+                search.add_child(new MenuItem("Suchen...", ""));
+                search.add_child(new MenuItem("Ersetzen...", ""));
+                search.add_child(new MenuItem("Gehe zu Zeile...", ""));
             root.add_child(search);
             
             var tools = new MenuItem("Werkzeuge", "");
+                tools.add_child(new MenuItem("Rechtschreibung prüfen...", ""));
+                tools.add_child(new MenuItem("Rechtschreibfehler hervorheben", ""));
+                
+                tmp = new MenuItem("Sprache festlegen", "");
+                    tmp.add_child(new MenuItem("Deutsch", ""));
+                    tmp.add_child(new MenuItem("Englisch (Britisch)", ""));
+                    tmp.add_child(new MenuItem("Englisch (Amerikanisch)", ""));
+                tools.add_child(tmp);
+                
+                tools.add_child(new MenuItem("Statistik zum Dokument...", ""));
             root.add_child(tools);
             
             var project = new MenuItem("Projekt", "");
