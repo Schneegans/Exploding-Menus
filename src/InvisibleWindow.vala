@@ -28,6 +28,7 @@ public class InvisibleWindow : Gtk.Window {
     public signal void on_draw(Cairo.Context ctx, double frame_time);
     public signal void on_release(uint button);
     public signal void on_press(uint button);
+    public signal void on_motion(double x, double y, Gdk.ModifierType state);
     public signal void on_scroll(bool up);
     
     /////////////////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ public class InvisibleWindow : Gtk.Window {
         
         // notify the renderer of mouse move events
         this.motion_notify_event.connect((e) => {
-
+            on_motion(e.x, e.y, e.state);
             return true;
         });
         

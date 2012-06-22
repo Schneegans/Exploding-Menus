@@ -56,47 +56,79 @@ public class Menu {
     
     private InvisibleWindow window;
     private MenuItem root;
+    private Mark mark;
     
     private Vector center;
-    private bool first_release;
+    private bool released;
+    private bool closing;
     
     public Menu() {
         window = new InvisibleWindow();
         center = new Vector(0, 0);
+        mark   = new Mark();
         
         setup_menu();
         
+        mark.on_direction_changed.connect(() => {
+            do_action();
+        });
+        
+        mark.on_long_stroke.connect(() => {
+            do_action();
+        });
+        
+        mark.on_paused.connect(() => {
+            if (!closing) {
+                if (!released && root.in_marking_mode() && root.submenu_is_hovered()) {
+                    root.set_marking_mode(false);
+                    do_action();
+                } 
+            }
+        });
+        
+        mark.on_stutter.connect(() => {
+            do_action();
+        });
+        
+        window.on_motion.connect((x, y, state) => {
+            if (!released && !root.in_marking_mode() && (state & Gdk.ModifierType.BUTTON3_MASK) != 0) {
+                root.set_marking_mode(true);
+                root.update_position(center, MenuItem.Direction.S, Menu.ANIMATION_TIME);
+            }
+        });
+        
         window.on_draw.connect((ctx, frame_time) => {
+            if (root.in_marking_mode() && !closing) {
+                mark.update(window.get_mouse_pos());
+            }
+            
             root.draw(ctx, window, new Vector(0,0), MenuItem.Direction.S, false, frame_time);
         });
         
         window.on_press.connect((button) => {
-            first_release = false;
+            if (button == 3) {
+                root.close(false);
+                closing = true;
+                GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
+                    window.hide();
+                    return false;
+                });
+            }
+            released = true;
         });
         
         window.on_release.connect((button) => {
-            if (!first_release) {
-                if (button == 3 || !root.activate(window.get_mouse_pos().x, window.get_mouse_pos().y)) {
-                    
-                    var activated = root.got_selected();
-                    
-                    root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
-                    root.close(activated);
-                    
-                    if (activated) {
-                        GLib.Timeout.add((uint)((FADE_OUT_TIME+ANIMATION_TIME)*1000), () => {
-                            window.hide();
-                            return false;
-                        });
-                    } else {
-                        GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
-                            window.hide();
-                            return false;
-                        });
-                    }
+            if (!closing) {
+                if (!released && root.in_marking_mode()) {
+                    root.set_marking_mode(false);
+                    do_action();
+                } else if (!released) {
+                    root.set_marking_mode(false);
                 } else {
-                    root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
+                    root.update_position(center, MenuItem.Direction.S, 0.0);
+                    do_action();
                 }
+                released = true;
             }
         });
         
@@ -107,8 +139,10 @@ public class Menu {
     
     public void show() {
         setup_menu();
+        mark.reset();
         
-        first_release = true;
+        released = false;
+        closing = false;
         
         window.open();
         center = window.get_mouse_pos();
@@ -116,12 +150,37 @@ public class Menu {
         root.update_position(center, MenuItem.Direction.S, 0.0);
     }
     
+    private void do_action() {
+        if (!root.activate(window.get_mouse_pos())) {
+                    
+            var activated = root.got_selected();
+            
+            root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
+            root.close(activated);
+            closing = true;
+            
+            if (activated) {
+                GLib.Timeout.add((uint)((FADE_OUT_TIME+ANIMATION_TIME)*1000), () => {
+                    window.hide();
+                    return false;
+                });
+            } else {
+                GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
+                    window.hide();
+                    return false;
+                });
+            }
+        } else {
+            root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
+        }
+    }
+    
     private void setup_menu() {
     
         root = new MenuItem("Hauptmenü", "");
         
             var file = new MenuItem("Datei", "");
-                file.add_child(new MenuItem("Neu... | Öffnen... | Speichern | Speichern als | Zurücksetzen | Drucken... | Druckvorschau", ""));
+                file.add_child(new MenuItem("Neu...", ""));
                 file.add_child(new MenuItem("Öffnen...", ""));
                 file.add_child(new MenuItem("Speichern", ""));
                 
@@ -151,13 +210,32 @@ public class Menu {
                 view.add_child(new MenuItem("Vollbild", ""));
                 
                 tmp = new MenuItem("Hervorhebungsmodus", "");
+                
                     tmp.add_child(new MenuItem("Reiner Text", ""));
-                    tmp.add_child(new MenuItem("HTML", ""));
-                    tmp.add_child(new MenuItem("C++", ""));
-                    tmp.add_child(new MenuItem("Vala", ""));
-                    tmp.add_child(new MenuItem("Python", ""));
-                    tmp.add_child(new MenuItem("Ruby", ""));
-                    tmp.add_child(new MenuItem("Shell", ""));
+                    
+                    var tmp2 = new MenuItem("Quellcode", "");
+                        tmp2.add_child(new MenuItem("HTML", ""));
+                        tmp2.add_child(new MenuItem("C++", ""));
+                        tmp2.add_child(new MenuItem("Vala", ""));
+                        tmp2.add_child(new MenuItem("Python", ""));
+                        tmp2.add_child(new MenuItem("Ruby", ""));
+                        tmp2.add_child(new MenuItem("Shell", ""));
+                    tmp.add_child(tmp2);
+                    
+                    tmp2 = new MenuItem("Auszeichnung", "");
+                        tmp2.add_child(new MenuItem("BibTex", ""));
+                        tmp2.add_child(new MenuItem("Latex", ""));
+                        tmp2.add_child(new MenuItem("XSLT", ""));
+                        tmp2.add_child(new MenuItem("XML", ""));
+                    tmp.add_child(tmp2);
+                
+                    tmp2 = new MenuItem("Wissenschaftlich", "");
+                        tmp2.add_child(new MenuItem("MatLab", ""));
+                        tmp2.add_child(new MenuItem("GAP", ""));
+                        tmp2.add_child(new MenuItem("Octave", ""));
+                        tmp2.add_child(new MenuItem("R", ""));
+                    tmp.add_child(tmp2);
+                    
                 view.add_child(tmp);
                 
             root.add_child(view);
@@ -182,12 +260,22 @@ public class Menu {
             root.add_child(tools);
             
             var project = new MenuItem("Projekt", "");
+                project.add_child(new MenuItem("Erstellen", ""));
+                project.add_child(new MenuItem("Säubern", ""));
+                project.add_child(new MenuItem("Ausführen", ""));
+                project.add_child(new MenuItem("Einstellungen", ""));
             root.add_child(project);
             
             var documents = new MenuItem("Dokumente", "");
+                documents.add_child(new MenuItem("Alle speichern", ""));
+                documents.add_child(new MenuItem("Alle schließen", ""));
             root.add_child(documents);
             
             var help = new MenuItem("Hilfe", "");
+                help.add_child(new MenuItem("Inhalte...", ""));
+                help.add_child(new MenuItem("Online Hilfe erhalten...", ""));
+                help.add_child(new MenuItem("Diese Anwendung Übersetzen...", ""));
+                help.add_child(new MenuItem("Info...", ""));
             root.add_child(help);
         
     }

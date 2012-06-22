@@ -17,11 +17,11 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace GnomePie {
 
-public class Vector {
-    public int x = 0;
-    public int y = 0;
+public class Vector : GLib.Object {
+    public double x = 0;
+    public double y = 0;
     
-    public Vector(int x, int y) {
+    public Vector(double x, double y) {
         this.x = x;
         this.y = y;
     }
@@ -32,6 +32,35 @@ public class Vector {
     
     public double length_sqr() {
         return x*x + y*y;
+    }
+    
+    public Vector copy() {
+        return new Vector(x, y);
+    }
+    
+    public void normalize() {
+        double length = length();
+        
+        if (length > 0) {
+            x /= length;
+            y /= length;
+        }
+    }
+    
+    public static Vector direction(Vector from, Vector to) {
+        return new Vector(to.x - from.x, to.y - from.y);
+    }
+    
+    public static double distance(Vector from, Vector to) {
+        return direction(from, to).length();
+    }
+    
+    public static double angle(Vector a, Vector b) {
+        return GLib.Math.acos(dot(a, b)/(a.length() * b.length()));
+    }
+    
+    public static double dot(Vector a, Vector b) {
+        return a.x*b.x + a.y*b.y;
     }
 }
 
