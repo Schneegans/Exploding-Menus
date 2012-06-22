@@ -24,47 +24,61 @@ public class Mark : GLib.Object {
     public signal void on_paused();
     public signal void on_stutter();
     
-    private const int SAMPLING_DISTANCE = 20;
+    private const int SAMPLING_DISTANCE = 5;
     
-    private const double MIN_THRESHOLD_ANGLE = 2.0*GLib.Math.PI/18.0;
-    private const double MAX_THRESHOLD_ANGLE = GLib.Math.PI - 2.0*GLib.Math.PI/18.0;
+    private const double THRESHOLD_ANGLE = GLib.Math.PI/30.0;
     
-    private Vector mark_start = null;
-    private Vector sample_start = null;
-    private Vector last_sample_start = null;
+    private Vector[] stroke;
     private uint last_motion_time = 0;
     
-    public Mark() {}
+    public Mark() {
+        reset();
+    }
     
     public void reset() {
-        mark_start = null;
-        sample_start = null;
-        last_sample_start = null;
+        stroke = {};
+    }
+    
+    public void draw(Cairo.Context ctx) {
+        ctx.set_source_rgb(1, 0, 0);
+        
+        for(int i=0; i<stroke.length;++i) {
+            ctx.arc(stroke[i].x, stroke[i].y, 10, 0, GLib.Math.PI*2);
+            ctx.fill();
+        }
     }
 
     public void update(Vector mouse) {
-        if (mark_start == null) {
-            mark_start = mouse.copy();
-            sample_start = mouse.copy();
+    
+
+        if (stroke.length == 0) {
+            stroke += mouse;
             last_motion_time = get_now();
             return;
         } 
         
-        if (Vector.distance(mouse, sample_start) > SAMPLING_DISTANCE) {
-            
-            if (last_sample_start != null) {
-                double angle = Vector.angle(Vector.direction(last_sample_start, sample_start), Vector.direction(sample_start, mouse));
-                
-                if (angle < MAX_THRESHOLD_ANGLE && angle > MIN_THRESHOLD_ANGLE) {
-                    on_direction_changed();        
-                    reset();
-                    return;
-                }
+        double dist = Vector.distance(mouse, stroke[stroke.length-1]);
+
+        if (dist > SAMPLING_DISTANCE) {
+            int insert_samples = (int)(dist/SAMPLING_DISTANCE);
+            var last = stroke[stroke.length-1];
+
+            for (int i=1; i<=dist/SAMPLING_DISTANCE; ++i) {
+                double t = (double)i/insert_samples;
+                stroke += new Vector(t*mouse.x + (1-t)*last.x, t*mouse.y + (1-t)*last.y);
             }
-        
-            last_sample_start = sample_start;
-            sample_start = mouse.copy();
             last_motion_time = get_now();
+        }
+            
+        if (stroke.length >= 2) {
+        
+            double angle = Vector.angle(get_stroke_direction(), Vector.direction(stroke[0], mouse));
+            
+            if (angle > THRESHOLD_ANGLE) {
+                on_direction_changed();        
+                reset();
+                return;
+            }
         }
         
         if (get_now() - last_motion_time > 500) {
@@ -73,11 +87,26 @@ public class Mark : GLib.Object {
             return;
         }
         
+        
+
     }
     
     private uint get_now() {
         var now = new DateTime.now_local();
         return now.get_microsecond()/1000 + now.get_second()*1000;
+    }
+    
+    private Vector get_stroke_direction() {
+        Vector result = new Vector(0, 0);
+        
+        if (stroke.length > 1) {
+            for(int i=1; i<stroke.length;++i) {
+                result.x += stroke[i].x / (stroke.length-1);
+                result.y += stroke[i].y / (stroke.length-1);
+            }
+        }
+        
+        return Vector.direction(stroke[0], result);
     }
 
 }

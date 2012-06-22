@@ -95,6 +95,10 @@ public class Menu {
                 root.set_marking_mode(true);
                 root.update_position(center, MenuItem.Direction.S, Menu.ANIMATION_TIME);
             }
+            
+            if (root.in_marking_mode() && !closing) {
+                mark.update(window.get_mouse_pos());
+            }
         });
         
         window.on_draw.connect((ctx, frame_time) => {
@@ -103,6 +107,7 @@ public class Menu {
             }
             
             root.draw(ctx, window, new Vector(0,0), MenuItem.Direction.S, false, frame_time);
+           // mark.draw(ctx);
         });
         
         window.on_press.connect((button) => {
@@ -148,6 +153,7 @@ public class Menu {
         center = window.get_mouse_pos();
         root.set_state(MenuItem.State.ACTIVE);
         root.update_position(center, MenuItem.Direction.S, 0.0);
+        mark.update(center);
     }
     
     private void do_action() {

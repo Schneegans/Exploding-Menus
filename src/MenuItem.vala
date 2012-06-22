@@ -23,12 +23,12 @@ public class MenuItem {
     public const double FG_G = 0.2;
     public const double FG_B = 0.2;
     
-    public const double BG_R = 0.8;
-    public const double BG_G = 0.8;
-    public const double BG_B = 0.8;
+    public const double BG_R = 0.9;
+    public const double BG_G = 0.9;
+    public const double BG_B = 0.9;
     
-    public const double SEL_R = 0.6;
-    public const double SEL_G = 0.1;
+    public const double SEL_R = 0.8;
+    public const double SEL_G = 0.2;
     public const double SEL_B = 0.3;
 
     public string label;
@@ -48,6 +48,7 @@ public class MenuItem {
     private State state = State.INVISIBLE;
     
     private bool marking_mode = false;
+    private bool closing = false;
     
     private int hovered_child = -1;
     private int active_child = -1;
@@ -93,6 +94,8 @@ public class MenuItem {
     public void close(bool delayed) {
         foreach (var child in children)
             child.close(delayed);
+            
+        closing = true;
         
         if (delayed) {
             GLib.Timeout.add((uint)(Menu.FADE_OUT_TIME*1000), () => {
@@ -380,8 +383,13 @@ public class MenuItem {
                     hovered_child = -2;
                 }
                 
-                if (hovered_child >= 0 && marking_mode)
-                    children[hovered_child].set_state(State.AT_MOUSE);
+                if (marking_mode && hovered_child >= 0 && children[hovered_child].state != State.AT_MOUSE) {
+                    for (int i=0; i<children.size; ++i) {
+                        if (hovered_child == i) children[i].set_state(State.AT_MOUSE);
+                      //  else                    children[i].set_state(State.SELECTABLE);
+                    }
+                   // update_position(parent_center, dir, Menu.ANIMATION_TIME);
+                }
                 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
@@ -621,39 +629,41 @@ public class MenuItem {
 
     public void draw_sector(Cairo.Context ctx, InvisibleWindow window, Vector center,
                              Direction dir, bool prelight, double frame_time) {
-
-        double start_angle = (dir-2)*(GLib.Math.PI/4)-GLib.Math.PI/8+Menu.SLICE_HINT_GAP;
-        double end_angle = (dir-2)*(GLib.Math.PI/4)+GLib.Math.PI/8-Menu.SLICE_HINT_GAP;
-
-        // draw glow
-        if (prelight) {
-
-            var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS);
-
-            gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.6);
-            gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0);
-
-            ctx.set_source(gradient);
         
-            ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, end_angle, start_angle);
-            ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS, start_angle, end_angle);
-            ctx.close_path();
-            ctx.fill();
-        } else {
-        
-//            var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS/2);
-//            
-//            gradient.add_color_stop_rgba(0.0, BG_R, BG_G, BG_B, 0.5);
-//            gradient.add_color_stop_rgba(0.7, BG_R, BG_G, BG_B, 0.5);
-//            gradient.add_color_stop_rgba(1.0, BG_R, BG_G, BG_B, 0.0);
+        if (!closing) {
+            double start_angle = (dir-2)*(GLib.Math.PI/4)-GLib.Math.PI/8+Menu.SLICE_HINT_GAP;
+            double end_angle = (dir-2)*(GLib.Math.PI/4)+GLib.Math.PI/8-Menu.SLICE_HINT_GAP;
 
-//            
-//            ctx.set_source(gradient);
-//        
-//            ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, end_angle, start_angle);
-//            ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS/2, start_angle, end_angle);
-//            ctx.close_path();
-//            ctx.fill();
+            // draw glow
+            if (prelight) {
+
+                var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS);
+
+                gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.6);
+                gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0);
+
+                ctx.set_source(gradient);
+            
+                ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, end_angle, start_angle);
+                ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS, start_angle, end_angle);
+                ctx.close_path();
+                ctx.fill();
+            } else {
+            
+    //            var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS/2);
+    //            
+    //            gradient.add_color_stop_rgba(0.0, BG_R, BG_G, BG_B, 0.5);
+    //            gradient.add_color_stop_rgba(0.7, BG_R, BG_G, BG_B, 0.5);
+    //            gradient.add_color_stop_rgba(1.0, BG_R, BG_G, BG_B, 0.0);
+
+    //            
+    //            ctx.set_source(gradient);
+    //        
+    //            ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, end_angle, start_angle);
+    //            ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS/2, start_angle, end_angle);
+    //            ctx.close_path();
+    //            ctx.fill();
+            }
         }
         
     }
