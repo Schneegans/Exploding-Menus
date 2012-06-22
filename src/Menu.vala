@@ -70,7 +70,11 @@ public class Menu {
         setup_menu();
         
         mark.on_direction_changed.connect(() => {
-            do_action();
+            if (!closing) {
+                if (!released && root.in_marking_mode() && root.child_is_hovered()) {
+                    do_action();
+                } 
+            }
         });
         
         mark.on_long_stroke.connect(() => {
@@ -102,11 +106,13 @@ public class Menu {
         });
         
         window.on_draw.connect((ctx, frame_time) => {
+            root.draw(ctx, window, new Vector(0,0), MenuItem.Direction.S, false, frame_time);
+            
             if (root.in_marking_mode() && !closing) {
                 mark.update(window.get_mouse_pos());
             }
             
-            root.draw(ctx, window, new Vector(0,0), MenuItem.Direction.S, false, frame_time);
+            
            // mark.draw(ctx);
         });
         

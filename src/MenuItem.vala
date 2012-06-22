@@ -124,6 +124,17 @@ public class MenuItem {
         return false;
     }
     
+    public bool child_is_hovered() {
+        if (hovered_child >= 0)
+            return true;
+        
+        foreach (var child in children)
+            if (child.submenu_is_hovered())
+                return true;
+                
+        return false;
+    }
+    
     public bool got_selected() {
         if (this.state == State.SELECTED)
             return true;
@@ -386,9 +397,14 @@ public class MenuItem {
                 if (marking_mode && hovered_child >= 0 && children[hovered_child].state != State.AT_MOUSE) {
                     for (int i=0; i<children.size; ++i) {
                         if (hovered_child == i) children[i].set_state(State.AT_MOUSE);
-                      //  else                    children[i].set_state(State.SELECTABLE);
+                        else {
+                            children[i].set_state(State.SELECTABLE);
+                            
+                            var child_dir = index_to_direction(i, children.size, (dir+4)%8);
+                            var child_center = direction_to_coords(child_dir, Menu.TRAIL_PREVIEW_PIE_RADIUS);
+                            children[i].update_position(child_center, child_dir, 0.0);
+                        }
                     }
-                   // update_position(parent_center, dir, Menu.ANIMATION_TIME);
                 }
                 
                 // draw child circles
