@@ -38,6 +38,8 @@ public class Menu {
     public const double SLICE_HINT_GAP = 0.0;
     public const double ANIMATION_TIME = 0.3;
     public const double FADE_OUT_TIME = 0.5;
+    
+    public const int WARP_ZONE = 200;
 
     private static BindingManager bindings = null;
     private static Menu menu;
@@ -99,7 +101,7 @@ public class Menu {
         window.on_motion.connect((x, y, state) => {
             if (!released && !root.in_marking_mode() && (state & Gdk.ModifierType.BUTTON3_MASK) != 0) {
                 root.set_marking_mode(true);
-                root.update_position(center, MenuItem.Direction.S, Menu.ANIMATION_TIME);
+                root.update_position(center, Menu.ANIMATION_TIME);
             }
             
             if (root.in_marking_mode() && !closing) {
@@ -152,7 +154,7 @@ public class Menu {
                 } else if (!released) {
                     root.set_marking_mode(false);
                 } else {
-                    root.update_position(center, MenuItem.Direction.S, 0.0);
+                    root.update_position(center, 0.0);
                     do_action();
                 }
                 released = true;
@@ -175,17 +177,19 @@ public class Menu {
         
         window.open();
         center = window.get_mouse_pos();
-        root.set_state(MenuItem.State.ACTIVE);
-        root.update_position(center, MenuItem.Direction.S, 0.0);
+        
+        root.update_position(center, 0.0);
         mark.update(center);
     }
     
     private void do_action() {
-        if (!root.activate(window.get_mouse_pos())) {
+        var mouse = window.get_mouse_pos();
+        warp_pointer();
+        if (!root.activate(mouse)) {
                     
             var activated = root.got_selected();
             
-            root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
+            root.update_position(center, ANIMATION_TIME);
             root.close(activated);
             closing = true;
             
@@ -206,7 +210,38 @@ public class Menu {
                 });
             }
         } else {
-            root.update_position(center, MenuItem.Direction.S, ANIMATION_TIME);
+            
+            root.update_position(center, ANIMATION_TIME);
+        }
+    }
+    
+    private void warp_pointer() {
+        var mouse = window.get_mouse_pos();
+        var display = Gdk.Display.get_default();
+        var manager = display.get_device_manager();
+        var screen = Gdk.Screen.get_default();
+        
+        var warp = new Vector(0,0);
+        
+        if (mouse.x < WARP_ZONE)                warp.x = WARP_ZONE - mouse.x;
+        if (mouse.x > screen.width()-WARP_ZONE) warp.x = - WARP_ZONE - mouse.x + screen.width();
+        
+        if (mouse.y < WARP_ZONE)                 warp.y = WARP_ZONE - mouse.y;
+        if (mouse.y > screen.height()-WARP_ZONE) warp.y = - WARP_ZONE - mouse.y + screen.height();
+        
+        center.x += warp.x;
+        center.y += warp.y;
+
+        unowned GLib.List<weak Gdk.Device?> list = manager.list_devices(Gdk.DeviceType.MASTER);
+        
+        int win_x = 0;
+        int win_y = 0;
+        
+        window.get_window().get_origin(out win_x, out win_y);
+        
+        foreach(var device in list) {
+            if (device.input_source == Gdk.InputSource.MOUSE) 
+                device.warp(screen, (int)(mouse.x + warp.x + win_x), (int)(mouse.y + warp.y + win_y));
         }
     }
     
@@ -313,6 +348,8 @@ public class Menu {
                 help.add_child(new MenuItem("Info...", ""));
             root.add_child(help);
         
+        root.set_state(MenuItem.State.ACTIVE);
+        root.realize();
     }
 }
 
