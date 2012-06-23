@@ -81,7 +81,7 @@ public class Mark : GLib.Object {
             }
         }
         
-        if (get_now() - last_motion_time > 500) {
+        if (get_now() - last_motion_time > 400) {
             on_paused();    
             reset();
             return;

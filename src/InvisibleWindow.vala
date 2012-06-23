@@ -51,6 +51,7 @@ public class InvisibleWindow : Gtk.Window {
         this.set_resizable(false);
         this.icon_name = "gnome-pie";
         this.set_accept_focus(false);
+        this.set_app_paintable(true);
         this.maximize();
         
         this.set_visual(this.screen.get_rgba_visual());
@@ -144,7 +145,6 @@ public class InvisibleWindow : Gtk.Window {
     /////////////////////////////////////////////////////////////////////
 
     private bool draw_window(Cairo.Context ctx) { 
-        // paint the background image if there is no compositing
         ctx.set_operator (Cairo.Operator.CLEAR);
         ctx.paint();
         ctx.set_operator (Cairo.Operator.OVER);

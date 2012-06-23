@@ -36,7 +36,7 @@ public class Menu {
 
     public const int SLICE_HINT_RADIUS = 250;
     public const double SLICE_HINT_GAP = 0.0;
-    public const double ANIMATION_TIME = 0.2;
+    public const double ANIMATION_TIME = 0.3;
     public const double FADE_OUT_TIME = 0.5;
 
     private static BindingManager bindings = null;
@@ -57,6 +57,7 @@ public class Menu {
     private InvisibleWindow window;
     private MenuItem root;
     private Mark mark;
+    private AnimatedValue alpha;
     
     private Vector center;
     private bool released;
@@ -66,6 +67,7 @@ public class Menu {
         window = new InvisibleWindow();
         center = new Vector(0, 0);
         mark   = new Mark();
+        alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
         
         setup_menu();
         
@@ -106,20 +108,34 @@ public class Menu {
         });
         
         window.on_draw.connect((ctx, frame_time) => {
-            root.draw(ctx, window, new Vector(0,0), MenuItem.Direction.S, false, frame_time);
+            
+            if (alpha.val < 0.05) {
+                alpha.update(frame_time);
+                return;
+            }
+            
+            alpha.update(frame_time);
+            
+            ctx.push_group();
+            ctx.set_source_rgba(0,0,0, 0.3);
+            ctx.paint();
+            
+            root.draw(ctx, window, new Vector(0,0), false, frame_time);
+            
+            ctx.pop_group_to_source();
+            ctx.paint_with_alpha(alpha.val);
             
             if (root.in_marking_mode() && !closing) {
                 mark.update(window.get_mouse_pos());
             }
-            
-            
-           // mark.draw(ctx);
         });
         
         window.on_press.connect((button) => {
             if (button == 3) {
                 root.close(false);
                 closing = true;
+                alpha.reset_target(0, ANIMATION_TIME);
+                
                 GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
                     window.hide();
                     return false;
@@ -155,6 +171,8 @@ public class Menu {
         released = false;
         closing = false;
         
+        alpha.reset_target(1, ANIMATION_TIME);
+        
         window.open();
         center = window.get_mouse_pos();
         root.set_state(MenuItem.State.ACTIVE);
@@ -172,11 +190,16 @@ public class Menu {
             closing = true;
             
             if (activated) {
-                GLib.Timeout.add((uint)((FADE_OUT_TIME+ANIMATION_TIME)*1000), () => {
-                    window.hide();
+                GLib.Timeout.add((uint)(FADE_OUT_TIME*1000), () => {
+                    alpha.reset_target(0, ANIMATION_TIME);
+                    GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
+                        window.hide();
+                        return false;
+                    });
                     return false;
                 });
             } else {
+                alpha.reset_target(0, ANIMATION_TIME);
                 GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
                     window.hide();
                     return false;

@@ -46,6 +46,7 @@ public class MenuItem {
     private AnimatedValue label_alpha = null;
     
     private State state = State.INVISIBLE;
+    private Direction direction;
     
     private bool marking_mode = false;
     private bool closing = false;
@@ -164,12 +165,13 @@ public class MenuItem {
             case State.AT_MOUSE:   
             case State.SELECTABLE:
                 
-//                double distance = GLib.Math.sqrt(mouse_x*mouse_x + mouse_y*mouse_y);
-//                var ideal_offset = direction_to_coords(index_to_direction(parent.hovered_child), distance);
-                
-//                move_parents(
-                move(mouse);
-//                move(new Vector(ideal_offset.x, ideal_offset.y));
+                double distance = GLib.Math.sqrt(mouse.x*mouse.x + mouse.y*mouse.y);
+                if (distance < 200) distance = 200;
+                var offset = direction_to_coords(this.direction, (int)distance);
+                move(offset);
+                offset.x = mouse.x - offset.x;
+                offset.y = mouse.y - offset.y;
+                move_parents(offset);
                 
                 if (children.size > 0) {
                     set_state(State.ACTIVE);
@@ -194,9 +196,6 @@ public class MenuItem {
                     set_state(State.TRAIL);
                     active_child = hovered_child;
                     
-                    // move parents
-                    //parent_move_offset = new Vector(100, 100);
-                    
                     return keep_open;
                 } 
                 break;
@@ -209,7 +208,6 @@ public class MenuItem {
                         active_child = -1;
                         set_state(State.ACTIVE);
                         
-                        //move_parents(new Vector(30, 30));
                         move_parents(new Vector(-draw_center_x.end + mouse.x, -draw_center_y.end + mouse.y));
                         
                         return true;
@@ -271,7 +269,8 @@ public class MenuItem {
     }
     
     public void draw(Cairo.Context ctx, InvisibleWindow window, Vector parent_center,
-                             Direction dir, bool prelight, double frame_time) {
+                     bool prelight, double frame_time) {
+                     
         this.draw_center_x.update(frame_time);   
         this.draw_center_y.update(frame_time);
         this.draw_radius.update(frame_time);
@@ -285,7 +284,7 @@ public class MenuItem {
             case State.PREVIEW: case State.TRAIL_PREVIEW:
             
                 // draw label
-                draw_label(ctx, window, center, dir, prelight);
+                draw_label(ctx, window, center, direction, prelight);
                 
                 if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                 else          ctx.set_source_rgb(FG_R, FG_G, FG_B);
@@ -296,11 +295,11 @@ public class MenuItem {
                 
             case State.AT_MOUSE:
             
-                update_position(Vector.direction(parent_center, window.get_mouse_pos()), dir, 0);
+                update_position(Vector.direction(parent_center, window.get_mouse_pos()), direction, 0);
                 label_alpha.reset_target(1.0, 0);
                 
                 // draw label
-                draw_label(ctx, window, center, dir, prelight);
+                draw_label(ctx, window, center, direction, prelight);
                 
                 // draw circle
                 if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
@@ -311,15 +310,14 @@ public class MenuItem {
                 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
-                    var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                    children[i].draw(ctx, window, center, child_dir, prelight, frame_time);
+                    children[i].draw(ctx, window, center, prelight, frame_time);
                 }
                 break;
         
             case State.SELECTABLE: case State.SELECTED:
                 
                 // draw label
-                draw_label(ctx, window, center, dir, prelight);
+                draw_label(ctx, window, center, direction, prelight);
                 
                 // draw circle
                 if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
@@ -331,8 +329,7 @@ public class MenuItem {
                 // draw child circles
                 if (!marking_mode) {
                     for (int i=0; i<children.size; ++i) {
-                        var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                        children[i].draw(ctx, window, center, child_dir, prelight, frame_time);
+                        children[i].draw(ctx, window, center, prelight, frame_time);
                     }
                 }
                 break;
@@ -351,7 +348,7 @@ public class MenuItem {
                 
                 if (marking_mode) {
                     // draw center circle
-                    draw_label(ctx, window, center, dir, prelight);
+                    draw_label(ctx, window, center, direction, prelight);
                     
                     if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                     else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
@@ -377,7 +374,7 @@ public class MenuItem {
                 
                 // draw sector of active item
                 for (int i=0; i<children.size; ++i) {
-                    var child_dir = index_to_direction(i, children.size, (dir+4)%8);
+                    var child_dir = index_to_direction(i, children.size, (direction+4)%8);
                     
                     if (active && child_dir == active_dir) {
                         hovered_child = i;
@@ -390,7 +387,7 @@ public class MenuItem {
                     }
                 }
                 
-                if (hovered_child == -1 && active && active_dir == (dir+4)%8) {
+                if (hovered_child == -1 && active && active_dir == (direction+4)%8) {
                     hovered_child = -2;
                 }
                 
@@ -400,7 +397,7 @@ public class MenuItem {
                         else {
                             children[i].set_state(State.SELECTABLE);
                             
-                            var child_dir = index_to_direction(i, children.size, (dir+4)%8);
+                            var child_dir = index_to_direction(i, children.size, (direction+4)%8);
                             var child_center = direction_to_coords(child_dir, Menu.TRAIL_PREVIEW_PIE_RADIUS);
                             children[i].update_position(child_center, child_dir, 0.0);
                         }
@@ -409,8 +406,7 @@ public class MenuItem {
                 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
-                    var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                    children[i].draw(ctx, window, center, child_dir, active && child_dir == active_dir, frame_time);
+                    children[i].draw(ctx, window, center, active && children[i].direction == active_dir, frame_time);
                 }
                 break;
                 
@@ -421,20 +417,20 @@ public class MenuItem {
                     var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
                         child_pos.x += center.x;
                         child_pos.y += center.y;
-                    var child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
+                    var child_dir = index_to_direction(active_child, children.size, (direction+4)%8);
                     draw_sector(ctx, window, child_pos, (child_dir+4)%8, true, frame_time);
                     
                     prelight = true;
                 } else if (children[active_child].active_child == -1 && !got_selected()) {
                     var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
-                    var child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
+                    var child_dir = index_to_direction(active_child, children.size, (direction+4)%8);
                     draw_sector(ctx, window, child_pos, (child_dir+4)%8, false, frame_time);
                 }
                 
-                var active_child_dir = index_to_direction(active_child, children.size, (dir+4)%8);
+                var active_child_dir = index_to_direction(active_child, children.size, (direction+4)%8);
                 
                 // draw center circle
-                if (marking_mode) draw_label(ctx, window, center, dir, prelight);
+                if (marking_mode) draw_label(ctx, window, center, direction, prelight);
                 else              draw_label(ctx, window, center, (active_child_dir+4)%8, prelight);
                 
                 if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
@@ -460,8 +456,7 @@ public class MenuItem {
                 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
-                    var child_dir = index_to_direction(i, children.size, (dir+4)%8);
-                    children[i].draw(ctx, window, center, child_dir, prelight, frame_time);
+                    children[i].draw(ctx, window, center, prelight, frame_time);
                 }
                 
                 break;
@@ -471,6 +466,8 @@ public class MenuItem {
     public void update_position(Vector offset, Direction dir, double time) {
         
         var center = new Vector(offset.x + center_offset.x, offset.y + center_offset.y);
+        
+        this.direction = dir;
         
         switch (state) {
          
@@ -596,7 +593,7 @@ public class MenuItem {
             layout.get_pixel_size(out label_size.x, out label_size.y);
 
             // draw label background
-            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val*0.7);
+            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
             ctx.set_line_width(Menu.LABEL_HEIGHT*label_alpha.val);
             ctx.set_line_join(Cairo.LineJoin.ROUND);
             ctx.set_line_cap(Cairo.LineCap.ROUND);
