@@ -62,12 +62,14 @@ public class Menu {
     private AnimatedValue alpha;
     
     private Vector center;
+    private Vector pause_location;
     private bool released;
     private bool closing;
     
     public Menu() {
         window = new InvisibleWindow();
         center = new Vector(0, 0);
+        pause_location = new Vector(0, 0);
         mark   = new Mark();
         alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
         
@@ -90,6 +92,7 @@ public class Menu {
                 if (!released && root.in_marking_mode() && root.submenu_is_hovered()) {
                     root.set_marking_mode(false);
                     do_action();
+                    pause_location = window.get_mouse_pos();
                 } 
             }
         });
@@ -100,8 +103,10 @@ public class Menu {
         
         window.on_motion.connect((x, y, state) => {
             if (!released && !root.in_marking_mode() && (state & Gdk.ModifierType.BUTTON3_MASK) != 0) {
-                root.set_marking_mode(true);
-                root.update_position(center, Menu.ANIMATION_TIME);
+                if (Vector.direction(window.get_mouse_pos(), pause_location).length() > SELECTABLE_PIE_RADIUS) {
+                    root.set_marking_mode(true);
+                    root.update_position(center, Menu.ANIMATION_TIME);
+                }
             }
             
             if (root.in_marking_mode() && !closing) {
@@ -177,6 +182,7 @@ public class Menu {
         
         window.open();
         center = window.get_mouse_pos();
+        pause_location = window.get_mouse_pos();
         
         root.update_position(center, 0.0);
         mark.update(center);
@@ -184,9 +190,9 @@ public class Menu {
     
     private void do_action() {
         var mouse = window.get_mouse_pos();
-        warp_pointer();
+        
         if (!root.activate(mouse)) {
-                    
+            warp_pointer();
             var activated = root.got_selected();
             
             root.update_position(center, ANIMATION_TIME);
@@ -210,8 +216,9 @@ public class Menu {
                 });
             }
         } else {
-            
+            warp_pointer();
             root.update_position(center, ANIMATION_TIME);
+            
         }
     }
     
