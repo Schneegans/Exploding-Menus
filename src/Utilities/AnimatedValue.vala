@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2011 by Simon Schneegans
+Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -14,8 +14,6 @@ more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-
-namespace GnomePie {	
 
 /////////////////////////////////////////////////////////////////////////    
 /// A class which interpolates smoothly between to given values.
@@ -192,6 +190,4 @@ public class AnimatedValue : GLib.Object {
         if (this.state < 0.5) return update_ease_out(t*2, s, e - (e-s)*0.5);
         else                  return update_ease_in(t*2-1, s + (e-s)*0.5, e);
     }
-}
-
 }

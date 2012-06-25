@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2011 by Simon Schneegans
+Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -14,8 +14,6 @@ more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-
-namespace GnomePie {
 
 /////////////////////////////////////////////////////////////////////////    
 /// This class represents a hotkey, used to open pies. It supports any
@@ -266,6 +264,4 @@ public class Trigger : GLib.Object {
         
         return -1;
     }
-}
-
 }

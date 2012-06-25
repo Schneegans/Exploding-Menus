@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2011 by Simon Schneegans
+Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -14,8 +14,6 @@ more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-
-namespace GnomePie {
 
 /////////////////////////////////////////////////////////////////////////    
 /// A class which loads image files. It can load image files in various
@@ -191,6 +189,4 @@ public class Image : GLib.Object {
             return this.surface.get_height();
         return 0;
     }
-}
-
 }

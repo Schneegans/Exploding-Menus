@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2011 by Simon Schneegans
+Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -14,8 +14,6 @@ more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-
-namespace GnomePie {
 
 /////////////////////////////////////////////////////////////////////////    
 /// A class which represents a key stroke. It can be used to "press" 
@@ -156,6 +154,4 @@ public class Key : GLib.Object {
         if ((modifiers & Gdk.ModifierType.SUPER_MASK) > 0)
             X.Test.fake_key_event(this.display, this.super_code, down, 0);
     }
-}
-
 }

@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2011 by Simon Schneegans
+Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -14,8 +14,6 @@ more details.
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
-
-namespace GnomePie {
 
 public class Vector : GLib.Object {
     public double x = 0;
@@ -62,6 +60,4 @@ public class Vector : GLib.Object {
     public static double dot(Vector a, Vector b) {
         return a.x*b.x + a.y*b.y;
     }
-}
-
 }

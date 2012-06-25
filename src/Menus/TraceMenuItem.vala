@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2011 by Simon Schneegans
+Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -15,9 +15,7 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
 
-namespace GnomePie {
-
-public class MenuItem {
+public class TraceMenuItem {
     
     public const double FG_R = 0.2;
     public const double FG_G = 0.2;
@@ -38,7 +36,7 @@ public class MenuItem {
     public enum LabelDirection { LEFT, RIGHT, TOP_LEFT, BOTTOM_RIGHT }
     public enum State { INVISIBLE, PREVIEW, SELECTABLE, ACTIVE, TRAIL, TRAIL_PREVIEW, SELECTED, AT_MOUSE }
     
-    private weak MenuItem parent = null;
+    private weak TraceMenuItem parent = null;
     
     private AnimatedValue draw_center_x = null;
     private AnimatedValue draw_center_y = null;
@@ -59,14 +57,14 @@ public class MenuItem {
     private int active_child = -1;
     private Vector center_offset;
     
-    private Gee.ArrayList<MenuItem> children;
+    private Gee.ArrayList<TraceMenuItem> children;
     
-    public MenuItem(string label, string icon_name) {
+    public TraceMenuItem(string label, string icon_name) {
         this.label = label;
         this.icon_name = icon_name;
         this.center_offset = new Vector(0,0);
         
-        this.children = new Gee.ArrayList<MenuItem>();
+        this.children = new Gee.ArrayList<TraceMenuItem>();
         
         this.draw_center_x = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
         this.draw_center_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
@@ -91,7 +89,7 @@ public class MenuItem {
         else move(offset);
     }
     
-    public void add_child(MenuItem child) {
+    public void add_child(TraceMenuItem child) {
         this.children.add(child);
         child.parent = this;
     }
@@ -103,14 +101,14 @@ public class MenuItem {
         closing = true;
         
         if (delayed) {
-            GLib.Timeout.add((uint)(Menu.FADE_OUT_TIME*1000), () => {
-                this.draw_radius.reset_target(0.0, Menu.ANIMATION_TIME);
-                this.label_alpha.reset_target(0.0, Menu.ANIMATION_TIME);
+            GLib.Timeout.add((uint)(TraceMenu.FADE_OUT_TIME*1000), () => {
+                this.draw_radius.reset_target(0.0, TraceMenu.ANIMATION_TIME);
+                this.label_alpha.reset_target(0.0, TraceMenu.ANIMATION_TIME);
                 return false;
             });           
         } else {
-            this.draw_radius.reset_target(0.0, Menu.ANIMATION_TIME);
-            this.label_alpha.reset_target(0.0, Menu.ANIMATION_TIME);
+            this.draw_radius.reset_target(0.0, TraceMenu.ANIMATION_TIME);
+            this.label_alpha.reset_target(0.0, TraceMenu.ANIMATION_TIME);
         }                 
     }
     
@@ -330,7 +328,7 @@ public class MenuItem {
                     ctx.fill();
                 
                     // draw label
-                    var img = new RenderedText(label, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(Menu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
+                    var img = new RenderedText(label, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
                     ctx.translate(center.x, center.y);
                     img.paint_on(ctx, GLib.Math.fmax(0, 2*label_alpha.val-1));
                     ctx.translate(-center.x, -center.y);
@@ -362,7 +360,7 @@ public class MenuItem {
                         else {
                             children[i].set_state(State.SELECTABLE);
                             
-                            var child_center = direction_to_coords(children[i].direction, Menu.TRAIL_PREVIEW_PIE_RADIUS);
+                            var child_center = direction_to_coords(children[i].direction, TraceMenu.TRAIL_PREVIEW_PIE_RADIUS);
                             children[i].update_position(child_center, 0);
                         }
                     }
@@ -396,7 +394,7 @@ public class MenuItem {
                 if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                 else                            ctx.set_source_rgb(BG_R, BG_G, BG_B);
 
-                var offset = direction_to_coords(active_child_dir, Menu.TRAIL_PREVIEW_PIE_RADIUS);
+                var offset = direction_to_coords(active_child_dir, TraceMenu.TRAIL_PREVIEW_PIE_RADIUS);
                     offset.x += center.x;
                     offset.y += center.y;
                 ctx.set_line_cap(Cairo.LineCap.ROUND);
@@ -422,7 +420,7 @@ public class MenuItem {
     }
     
     public void realize() {
-        update_direction(MenuItem.Direction.S);
+        update_direction(TraceMenuItem.Direction.S);
     }
     
     private void update_direction(Direction dir) {
@@ -449,7 +447,7 @@ public class MenuItem {
                 break;
                 
             case State.TRAIL_PREVIEW:
-                draw_radius.reset_target(Menu.TRAIL_PREVIEW_ITEM_RADIUS, time);
+                draw_radius.reset_target(TraceMenu.TRAIL_PREVIEW_ITEM_RADIUS, time);
                 label_alpha.reset_target(0.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
@@ -458,7 +456,7 @@ public class MenuItem {
                 break;
          
             case State.PREVIEW:
-                draw_radius.reset_target(Menu.PREVIEW_ITEM_RADIUS, time);
+                draw_radius.reset_target(TraceMenu.PREVIEW_ITEM_RADIUS, time);
                 label_alpha.reset_target(0.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
@@ -468,53 +466,53 @@ public class MenuItem {
                 
             case State.AT_MOUSE:
                 if (children.size > 0) {
-                    draw_radius.reset_target(Menu.SELECTABLE_ITEM_RADIUS_SMALL, time);
+                    draw_radius.reset_target(TraceMenu.SELECTABLE_ITEM_RADIUS_SMALL, time);
                     label_alpha.reset_target(1.0, time);
                     
                     for (int i=0; i<children.size; ++i) {
-                        var child_center = direction_to_coords(children[i].direction, Menu.PREVIEW_PIE_RADIUS);
+                        var child_center = direction_to_coords(children[i].direction, TraceMenu.PREVIEW_PIE_RADIUS);
                         children[i].update_position(child_center, time);
                     }
                     
                 } else {
-                    draw_radius.reset_target(Menu.SELECTABLE_ITEM_RADIUS, time);
+                    draw_radius.reset_target(TraceMenu.SELECTABLE_ITEM_RADIUS, time);
                     label_alpha.reset_target(1.0, time);
                 }
                 break;
         
             case State.SELECTABLE: case State.SELECTED:
                 if (children.size > 0) {
-                    draw_radius.reset_target(marking_mode ? Menu.PREVIEW_ITEM_RADIUS : Menu.SELECTABLE_ITEM_RADIUS_SMALL, time);
+                    draw_radius.reset_target(marking_mode ? TraceMenu.PREVIEW_ITEM_RADIUS : TraceMenu.SELECTABLE_ITEM_RADIUS_SMALL, time);
                     label_alpha.reset_target(marking_mode ? 0.0 : 1.0, time);
                     
                     for (int i=0; i<children.size; ++i) {
-                        var child_center = direction_to_coords(children[i].direction, Menu.PREVIEW_PIE_RADIUS);
+                        var child_center = direction_to_coords(children[i].direction, TraceMenu.PREVIEW_PIE_RADIUS);
                         children[i].update_position(child_center, time);
                     }
                     
                 } else {
-                    draw_radius.reset_target(marking_mode ? Menu.PREVIEW_ITEM_RADIUS : Menu.SELECTABLE_ITEM_RADIUS, time);
+                    draw_radius.reset_target(marking_mode ? TraceMenu.PREVIEW_ITEM_RADIUS : TraceMenu.SELECTABLE_ITEM_RADIUS, time);
                     label_alpha.reset_target(marking_mode ? 0.0 : 1.0, time);
                 }
                 break;
                 
             case State.ACTIVE:
-                draw_radius.reset_target(marking_mode ? Menu.TRAIL_ITEM_RADIUS : Menu.ACTIVE_ITEM_RADIUS, time);
+                draw_radius.reset_target(marking_mode ? TraceMenu.TRAIL_ITEM_RADIUS : TraceMenu.ACTIVE_ITEM_RADIUS, time);
                 label_alpha.reset_target(1.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
-                    var child_center = direction_to_coords(children[i].direction, marking_mode ? Menu.TRAIL_PREVIEW_PIE_RADIUS : Menu.SELECTABLE_PIE_RADIUS);
+                    var child_center = direction_to_coords(children[i].direction, marking_mode ? TraceMenu.TRAIL_PREVIEW_PIE_RADIUS : TraceMenu.SELECTABLE_PIE_RADIUS);
                     children[i].update_position(child_center, time);
                 }
                 break;
                 
             case State.TRAIL:
-                draw_radius.reset_target(Menu.TRAIL_ITEM_RADIUS, time);
+                draw_radius.reset_target(TraceMenu.TRAIL_ITEM_RADIUS, time);
                 label_alpha.reset_target(1.0, time);
                 
                 for (int i=0; i<children.size; ++i) {
                     if (i != active_child) {
-                        var child_center = direction_to_coords(children[i].direction, Menu.TRAIL_PREVIEW_PIE_RADIUS);
+                        var child_center = direction_to_coords(children[i].direction, TraceMenu.TRAIL_PREVIEW_PIE_RADIUS);
                         children[i].update_position(child_center, time);
                     } else {
                         children[i].update_position(new Vector(0,0), time);
@@ -534,7 +532,7 @@ public class MenuItem {
 
             // draw label background
             ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
-            ctx.set_line_width(Menu.LABEL_HEIGHT*label_alpha.val);
+            ctx.set_line_width(TraceMenu.LABEL_HEIGHT*label_alpha.val);
             ctx.set_line_join(Cairo.LineJoin.ROUND);
             ctx.set_line_cap(Cairo.LineCap.ROUND);
             ctx.move_to(center.x, center.y);
@@ -555,15 +553,15 @@ public class MenuItem {
                     ctx.line_to(offset.x+(label_size.x)*label_alpha.val, offset.y);
                     break;
                 case LabelDirection.TOP_LEFT:
-                    ctx.line_to(offset.x, offset.y - (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
-                    ctx.line_to(offset.x-(label_size.x)*label_alpha.val, offset.y - (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    ctx.line_to(offset.x, offset.y - (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    ctx.line_to(offset.x-(label_size.x)*label_alpha.val, offset.y - (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
                     label_pos.x -= label_size.x;
-                    label_pos.y -= Menu.LABEL_HEIGHT/2 + 8;
+                    label_pos.y -= TraceMenu.LABEL_HEIGHT/2 + 8;
                     break;
                 case LabelDirection.BOTTOM_RIGHT:
-                    ctx.line_to(offset.x, offset.y + (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
-                    ctx.line_to(offset.x+(label_size.x)*label_alpha.val, offset.y + (Menu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
-                    label_pos.y += Menu.LABEL_HEIGHT/2 + 8;
+                    ctx.line_to(offset.x, offset.y + (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    ctx.line_to(offset.x+(label_size.x)*label_alpha.val, offset.y + (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
+                    label_pos.y += TraceMenu.LABEL_HEIGHT/2 + 8;
                     break;
             }
             
@@ -584,15 +582,15 @@ public class MenuItem {
         
         if (!closing) {
             if (prelight) {
-                var gradient = new Cairo.Pattern.radial(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, center.x, center.y, Menu.SLICE_HINT_RADIUS);
+                var gradient = new Cairo.Pattern.radial(center.x, center.y, TraceMenu.ACTIVE_ITEM_RADIUS, center.x, center.y, TraceMenu.SLICE_HINT_RADIUS);
 
                 gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.6);
                 gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0);
 
                 ctx.set_source(gradient);
             
-                ctx.arc_negative(center.x, center.y, Menu.ACTIVE_ITEM_RADIUS, max_angle, min_angle);
-                ctx.arc(center.x, center.y, Menu.SLICE_HINT_RADIUS, min_angle, max_angle);
+                ctx.arc_negative(center.x, center.y, TraceMenu.ACTIVE_ITEM_RADIUS, max_angle, min_angle);
+                ctx.arc(center.x, center.y, TraceMenu.SLICE_HINT_RADIUS, min_angle, max_angle);
                 ctx.close_path();
                 ctx.fill();
             } 
@@ -835,7 +833,7 @@ public class MenuItem {
     }
     
     private bool a_slice_is_active(InvisibleWindow window, Vector center) {
-        return Vector.direction(window.get_mouse_pos(), center).length_sqr() > Menu.ACTIVE_ITEM_RADIUS*Menu.ACTIVE_ITEM_RADIUS; 
+        return Vector.direction(window.get_mouse_pos(), center).length_sqr() > TraceMenu.ACTIVE_ITEM_RADIUS*TraceMenu.ACTIVE_ITEM_RADIUS; 
     }
     
     private double get_mouse_angle(InvisibleWindow window, Vector center) {
@@ -843,7 +841,7 @@ public class MenuItem {
         var diff = Vector.direction(center, mouse);
         double angle = 0;
 
-        if (diff.length_sqr() > Menu.ACTIVE_ITEM_RADIUS*Menu.ACTIVE_ITEM_RADIUS) {
+        if (diff.length_sqr() > TraceMenu.ACTIVE_ITEM_RADIUS*TraceMenu.ACTIVE_ITEM_RADIUS) {
             
             if (diff.x == 0) {
                 angle = diff.y < 0 ? 1.5*GLib.Math.PI : 0.5*GLib.Math.PI;
@@ -895,6 +893,4 @@ public class MenuItem {
         return angle_to_direction(get_mouse_angle(window, center));
     }
     
-}
-
 }

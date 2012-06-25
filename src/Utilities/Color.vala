@@ -1,5 +1,5 @@
 /* 
-Copyright (c) 2011 by Simon Schneegans
+Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
@@ -16,8 +16,6 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 using GLib.Math;
-
-namespace GnomePie {
 
 /////////////////////////////////////////////////////////////////////////    
 /// A Color class with full rgb/hsv support
@@ -300,6 +298,4 @@ public class Color: GLib.Object {
 		        break;
         }
     }
-}
-
 }
