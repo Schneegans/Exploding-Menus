@@ -49,6 +49,10 @@ public class Vector : GLib.Object {
         return new Vector(to.x - from.x, to.y - from.y);
     }
     
+    public static Vector sum(Vector a, Vector b) {
+        return new Vector(a.x + b.x, a.y + b.y);
+    }
+    
     public static double distance(Vector from, Vector to) {
         return direction(from, to).length();
     }

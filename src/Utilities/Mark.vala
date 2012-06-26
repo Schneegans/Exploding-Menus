@@ -51,7 +51,7 @@ public class Mark : GLib.Object {
 
         if (stroke.length == 0) {
             stroke += mouse;
-            last_motion_time = get_now();
+            last_motion_time = Time.get_now();
             return;
         } 
         
@@ -65,7 +65,7 @@ public class Mark : GLib.Object {
                 double t = (double)i/insert_samples;
                 stroke += new Vector(t*mouse.x + (1-t)*last.x, t*mouse.y + (1-t)*last.y);
             }
-            last_motion_time = get_now();
+            last_motion_time = Time.get_now();
         }
             
         if (stroke.length >= 2) {
@@ -79,7 +79,7 @@ public class Mark : GLib.Object {
             }
         }
         
-        if (get_now() - last_motion_time > 400) {
+        if (Time.get_now() - last_motion_time > 400) {
             on_paused();    
             reset();
             return;
@@ -87,11 +87,6 @@ public class Mark : GLib.Object {
         
         
 
-    }
-    
-    private uint get_now() {
-        var now = new DateTime.now_local();
-        return now.get_microsecond()/1000 + now.get_second()*1000;
     }
     
     private Vector get_stroke_direction() {

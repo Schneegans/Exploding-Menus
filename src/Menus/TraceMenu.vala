@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
 
-public class TraceMenu {
+public class TraceMenu: GLib.Object, Menu {
 
     public const int LABEL_HEIGHT = 32;
     
@@ -39,25 +39,13 @@ public class TraceMenu {
     
     public const int WARP_ZONE = 200;
 
-    private static BindingManager bindings = null;
-    private static TraceMenu menu;
-    
-    public static void init() {
-    
-        menu = new TraceMenu();
-    
-        bindings = new BindingManager();
-        bindings.bind(new Trigger.from_string("button3"), "button2");
-        
-        bindings.on_press.connect((id) => {
-            menu.show();
-        });
-    }
     
     private InvisibleWindow window;
     private TraceMenuItem root;
     private Mark mark;
     private AnimatedValue alpha;
+    
+    private uint open_time;
     
     private Vector center;
     private Vector pause_location;
@@ -70,9 +58,7 @@ public class TraceMenu {
         pause_location = new Vector(0, 0);
         mark   = new Mark();
         alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
-        
-        setup_menu();
-        
+
         mark.on_direction_changed.connect(() => {
             if (!closing) {
                 if (!released && root.in_marking_mode() && root.child_is_hovered()) {
@@ -169,8 +155,24 @@ public class TraceMenu {
         });
     }
     
+    public void set_structure(MenuItem top) {
+        root = create_items(top);
+        root.set_state(TraceMenuItem.State.ACTIVE);
+        root.realize();
+    }
+    
+    private TraceMenuItem create_items(MenuItem source) {
+        
+        var destination = new TraceMenuItem(source.name, source.icon);
+        
+        foreach (var child in source.children) {
+            destination.add_child(create_items(child));
+        }
+        
+        return destination;
+    }
+    
     public void show() {
-        setup_menu();
         mark.reset();
         
         released = false;
@@ -182,8 +184,12 @@ public class TraceMenu {
         center = window.get_mouse_pos();
         pause_location = window.get_mouse_pos();
         
+        warp_pointer();
+        
         root.update_position(center, 0.0);
         mark.update(center);
+        
+        open_time = Time.get_now();
     }
     
     private void do_action() {
@@ -196,6 +202,8 @@ public class TraceMenu {
             root.update_position(center, ANIMATION_TIME);
             root.close(activated);
             closing = true;
+
+            debug("Time: %u", Time.get_now() - open_time);            
             
             if (activated) {
                 GLib.Timeout.add((uint)(FADE_OUT_TIME*1000), () => {
@@ -248,112 +256,5 @@ public class TraceMenu {
             if (device.input_source == Gdk.InputSource.MOUSE) 
                 device.warp(screen, (int)(mouse.x + warp.x + win_x), (int)(mouse.y + warp.y + win_y));
         }
-    }
-    
-    private void setup_menu() {
-    
-        root = new TraceMenuItem("Hauptmenü", "");
-        
-            var file = new TraceMenuItem("Datei", "");
-                file.add_child(new TraceMenuItem("Neu...", ""));
-                file.add_child(new TraceMenuItem("Öffnen...", ""));
-                file.add_child(new TraceMenuItem("Speichern", ""));
-                
-                var tmp = new TraceMenuItem("Speichern als", "");
-                    tmp.add_child(new TraceMenuItem("Text-Datei", ""));
-                    tmp.add_child(new TraceMenuItem("Bild-Datei", ""));
-                    tmp.add_child(new TraceMenuItem("Sound-Datei", ""));
-                    tmp.add_child(new TraceMenuItem("Video-Datei", ""));
-                file.add_child(tmp);
-                
-                file.add_child(new TraceMenuItem("Zurücksetzen", ""));
-                file.add_child(new TraceMenuItem("Drucken...", ""));
-                file.add_child(new TraceMenuItem("Druckvorschau", ""));
-            
-            root.add_child(file);
-            
-            var edit = new TraceMenuItem("Bearbeiten", "");
-                edit.add_child(new TraceMenuItem("Rückgängig", ""));
-                edit.add_child(new TraceMenuItem("Wiederholen", ""));
-                edit.add_child(new TraceMenuItem("Ausschneiden", ""));
-                edit.add_child(new TraceMenuItem("Kopieren", ""));
-                edit.add_child(new TraceMenuItem("Einfügen", ""));
-                edit.add_child(new TraceMenuItem("Einstellungen", ""));
-            root.add_child(edit);
-            
-            var view = new TraceMenuItem("Ansicht", "");
-                view.add_child(new TraceMenuItem("Vollbild", ""));
-                
-                tmp = new TraceMenuItem("Hervorhebungsmodus", "");
-                
-                    tmp.add_child(new TraceMenuItem("Reiner Text", ""));
-                    
-                    var tmp2 = new TraceMenuItem("Quellcode", "");
-                        tmp2.add_child(new TraceMenuItem("HTML", ""));
-                        tmp2.add_child(new TraceMenuItem("C++", ""));
-                        tmp2.add_child(new TraceMenuItem("Vala", ""));
-                        tmp2.add_child(new TraceMenuItem("Python", ""));
-                        tmp2.add_child(new TraceMenuItem("Ruby", ""));
-                        tmp2.add_child(new TraceMenuItem("Shell", ""));
-                    tmp.add_child(tmp2);
-                    
-                    tmp2 = new TraceMenuItem("Auszeichnung", "");
-                        tmp2.add_child(new TraceMenuItem("BibTex", ""));
-                        tmp2.add_child(new TraceMenuItem("Latex", ""));
-                        tmp2.add_child(new TraceMenuItem("XSLT", ""));
-                        tmp2.add_child(new TraceMenuItem("XML", ""));
-                    tmp.add_child(tmp2);
-                
-                    tmp2 = new TraceMenuItem("Wissenschaftlich", "");
-                        tmp2.add_child(new TraceMenuItem("MatLab", ""));
-                        tmp2.add_child(new TraceMenuItem("GAP", ""));
-                        tmp2.add_child(new TraceMenuItem("Octave", ""));
-                        tmp2.add_child(new TraceMenuItem("R", ""));
-                    tmp.add_child(tmp2);
-                    
-                view.add_child(tmp);
-                
-            root.add_child(view);
-            
-            var search = new TraceMenuItem("Suchen", "");
-                search.add_child(new TraceMenuItem("Suchen...", ""));
-                search.add_child(new TraceMenuItem("Ersetzen...", ""));
-                search.add_child(new TraceMenuItem("Gehe zu Zeile...", ""));
-            root.add_child(search);
-            
-            var tools = new TraceMenuItem("Werkzeuge", "");
-                tools.add_child(new TraceMenuItem("Rechtschreibung prüfen...", ""));
-                tools.add_child(new TraceMenuItem("Rechtschreibfehler hervorheben", ""));
-                
-                tmp = new TraceMenuItem("Sprache festlegen", "");
-                    tmp.add_child(new TraceMenuItem("Deutsch", ""));
-                    tmp.add_child(new TraceMenuItem("Englisch (Britisch)", ""));
-                    tmp.add_child(new TraceMenuItem("Englisch (Amerikanisch)", ""));
-                tools.add_child(tmp);
-                
-                tools.add_child(new TraceMenuItem("Statistik zum Dokument...", ""));
-            root.add_child(tools);
-            
-            var project = new TraceMenuItem("Projekt", "");
-                project.add_child(new TraceMenuItem("Erstellen", ""));
-                project.add_child(new TraceMenuItem("Säubern", ""));
-                project.add_child(new TraceMenuItem("Ausführen", ""));
-                project.add_child(new TraceMenuItem("Einstellungen", ""));
-            root.add_child(project);
-            
-            var documents = new TraceMenuItem("Dokumente", "");
-                documents.add_child(new TraceMenuItem("Alle speichern", ""));
-                documents.add_child(new TraceMenuItem("Alle schließen", ""));
-            root.add_child(documents);
-            
-            var help = new TraceMenuItem("Hilfe", "");
-                help.add_child(new TraceMenuItem("Inhalte...", ""));
-                help.add_child(new TraceMenuItem("Online Hilfe erhalten...", ""));
-                help.add_child(new TraceMenuItem("Diese Anwendung Übersetzen...", ""));
-                help.add_child(new TraceMenuItem("Info...", ""));
-            root.add_child(help);
-        
-        root.set_state(TraceMenuItem.State.ACTIVE);
-        root.realize();
     }
 }

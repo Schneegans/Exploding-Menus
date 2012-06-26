@@ -138,6 +138,14 @@ public class InvisibleWindow : Gtk.Window {
         out_y = y + height/2;
     }
     
+    public double width() {
+        return get_window().get_width();
+    }
+    
+    public double height() {
+        return get_window().get_height();
+    }
+    
     /////////////////////////////////////////////////////////////////////
     /// Draw the Pie.
     /////////////////////////////////////////////////////////////////////

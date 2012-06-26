@@ -169,7 +169,7 @@ public class TraceMenuItem {
                 }
                 
                 set_state(State.SELECTED);
-                debug("Selected: %s", label);
+               // debug("Selected: %s", label);
                 break;
                 
             case State.ACTIVE:
@@ -326,7 +326,7 @@ public class TraceMenuItem {
                     ctx.set_source_rgb(FG_R, FG_G, FG_B);
                     ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
                     ctx.fill();
-                
+
                     // draw label
                     var img = new RenderedText(label, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
                     ctx.translate(center.x, center.y);
@@ -529,6 +529,9 @@ public class TraceMenuItem {
             var layout = window.create_pango_layout(label);
             var label_size = new Vector(0, 0);
             layout.get_pixel_size(out label_size.x, out label_size.y);
+            
+            if (icon_name != "")
+                label_size.x += TraceMenu.LABEL_HEIGHT/2;
 
             // draw label background
             ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
@@ -543,6 +546,9 @@ public class TraceMenuItem {
             ctx.line_to(offset.x, offset.y);
             
             var label_pos = new Vector(offset.x, offset.y-7);
+            
+            if (icon_name != "")
+                label_pos.x += TraceMenu.LABEL_HEIGHT/2;
             
             switch (get_label_direction(dir)) {
                 case LabelDirection.LEFT:
@@ -575,6 +581,17 @@ public class TraceMenuItem {
             Pango.cairo_update_layout(ctx, layout);
             Pango.cairo_show_layout(ctx, layout);
             ctx.stroke();
+            
+            
+            // draw icon
+            if (icon_name != "") {
+                int icon_size = TraceMenu.LABEL_HEIGHT/2;
+                var icon = new Icon(icon_name, icon_size);
+                ctx.push_group();
+                window.get_style_context().render_icon(ctx, icon.to_pixbuf(), label_pos.x - TraceMenu.LABEL_HEIGHT/2 - 4, label_pos.y);
+                ctx.pop_group_to_source();
+                ctx.paint_with_alpha(GLib.Math.fmax(0, 2*label_alpha.val-1));
+            }
         }
     }
 
