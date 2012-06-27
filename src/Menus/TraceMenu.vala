@@ -22,7 +22,7 @@ public class TraceMenu: GLib.Object, Menu {
     public const int ACTIVE_ITEM_RADIUS = 35;
     
     public const int SELECTABLE_PIE_RADIUS = 55;
-    public const int SELECTABLE_ITEM_RADIUS = 18;
+    public const int SELECTABLE_ITEM_RADIUS = 16;
     public const int SELECTABLE_ITEM_RADIUS_SMALL = 12;
     
     public const int PREVIEW_PIE_RADIUS = 15;
@@ -32,7 +32,7 @@ public class TraceMenu: GLib.Object, Menu {
     public const int TRAIL_PREVIEW_PIE_RADIUS = PREVIEW_PIE_RADIUS;
     public const int TRAIL_PREVIEW_ITEM_RADIUS = PREVIEW_ITEM_RADIUS;
 
-    public const int SLICE_HINT_RADIUS = 250;
+    public const int SLICE_HINT_RADIUS = 150;
     public const double SLICE_HINT_GAP = 0.0;
     public const double ANIMATION_TIME = 0.3;
     public const double FADE_OUT_TIME = 0.5;

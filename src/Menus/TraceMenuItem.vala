@@ -325,10 +325,10 @@ public class TraceMenuItem {
                         hovered_child = i;
                         
                         if (!marking_mode) 
-                            draw_sector(ctx, center, children[i].min_angle, children[i].max_angle, true, frame_time);
+                            draw_sector(ctx, center, children[i].min_angle, children[i].max_angle, true, children[i].label_alpha.val, frame_time);
                             
                     } else if (!marking_mode) {
-                        draw_sector(ctx, center, children[i].min_angle, children[i].max_angle, false, frame_time);
+                        draw_sector(ctx, center, children[i].min_angle, children[i].max_angle, false, children[i].label_alpha.val, frame_time);
                     }
                 }
                 
@@ -349,7 +349,7 @@ public class TraceMenuItem {
                 }
             
                 if (marking_mode) {
-                    ctx.set_source_rgb(BG_R, BG_G, BG_B);
+                    ctx.set_source_rgb(FG_R, FG_G, FG_B);
                     ctx.set_line_cap(Cairo.LineCap.ROUND);
                     ctx.move_to(center.x, center.y);
                     
@@ -387,23 +387,22 @@ public class TraceMenuItem {
 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
-                    children[i].draw(ctx, window, center, (active && i == hovered_child) || prelight, frame_time);
+                    children[i].draw(ctx, window, center, (active && i == hovered_child) || (prelight && marking_mode), frame_time);
                 }
                 break;
                 
             case State.TRAIL:
             
                 // draw highlight if immediate child hovers
-                if (children[active_child].hovered_child == -2) { 
-                    if (!marking_mode) {
-                        var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
-                            child_pos.x += center.x;
-                            child_pos.y += center.y;
-                        draw_sector(ctx, child_pos, children[active_child].back_min_angle, children[active_child].back_max_angle, true, frame_time);
-                    }
-                    prelight = true;
+                if (!marking_mode && children[active_child].active_child < 0) {
+                    var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
+                        child_pos.x += center.x;
+                        child_pos.y += center.y;
+                    draw_sector(ctx, child_pos, children[active_child].back_min_angle, children[active_child].back_max_angle, children[active_child].hovered_child == -2, children[active_child].label_alpha.val, frame_time);
                 }
-                
+                if (children[active_child].hovered_child == -2)
+                    prelight = true;
+
                 var active_child_dir = index_to_direction(active_child, children.size, (direction+4)%8);
                 
                 // draw center circle
@@ -411,8 +410,12 @@ public class TraceMenuItem {
                 else              draw_label(ctx, window, center, (active_child_dir+4)%8, prelight);
                 
                 // draw line to child circle
-                if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                else          ctx.set_source_rgb(BG_R, BG_G, BG_B);
+//                if (children[active_child].active_child < 0 || got_selected()) { 
+                    if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                    else          ctx.set_source_rgb(FG_R, FG_G, FG_B);
+//                } else {
+//                    ctx.set_source_rgba(FG_R, FG_G, FG_B, 0.7);
+//                }
 
                 var offset = direction_to_coords(active_child_dir, TraceMenu.TRAIL_PREVIEW_PIE_RADIUS);
                     offset.x += center.x;
@@ -583,8 +586,8 @@ public class TraceMenuItem {
             
             var label_pos = new Vector(offset.x, offset.y-7);
             
-            if (icon_name != "")
-                label_pos.x += TraceMenu.LABEL_HEIGHT/2;
+//            if (icon_name != "")
+//                label_pos.x += TraceMenu.LABEL_HEIGHT/2;
             
             switch (get_label_direction(dir)) {
                 case LabelDirection.LEFT:
@@ -620,33 +623,37 @@ public class TraceMenuItem {
             
             
             // draw icon
-            if (icon_name != "") {
-                int icon_size = TraceMenu.LABEL_HEIGHT/2;
-                var icon = new Icon(icon_name, icon_size);
-                ctx.push_group();
-                window.get_style_context().render_icon(ctx, icon.to_pixbuf(), label_pos.x - TraceMenu.LABEL_HEIGHT/2 - 4, label_pos.y);
-                ctx.pop_group_to_source();
-                ctx.paint_with_alpha(GLib.Math.fmax(0, 2*label_alpha.val-1));
-            }
+//            if (icon_name != "") {
+//                int icon_size = TraceMenu.LABEL_HEIGHT/2;
+//                var icon = new Icon(icon_name, icon_size);
+//                ctx.push_group();
+//                window.get_style_context().render_icon(ctx, icon.to_pixbuf(), label_pos.x - TraceMenu.LABEL_HEIGHT/2 - 4, label_pos.y);
+//                ctx.pop_group_to_source();
+//                ctx.paint_with_alpha(GLib.Math.fmax(0, 2*label_alpha.val-1));
+//            }
         }
     }
 
-    public void draw_sector(Cairo.Context ctx, Vector center, double min_angle, double max_angle, bool prelight, double frame_time) {
+    public void draw_sector(Cairo.Context ctx, Vector center, double min_angle, double max_angle, bool prelight, double alpha, double frame_time) {
         
-        if (!closing) {
-            if (prelight) {
-                var gradient = new Cairo.Pattern.radial(center.x, center.y, TraceMenu.ACTIVE_ITEM_RADIUS, center.x, center.y, TraceMenu.SLICE_HINT_RADIUS);
-
-                gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.6);
-                gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0);
-
-                ctx.set_source(gradient);
+        if (!closing && alpha > 0) {
             
-                ctx.arc_negative(center.x, center.y, TraceMenu.ACTIVE_ITEM_RADIUS, max_angle, min_angle);
-                ctx.arc(center.x, center.y, TraceMenu.SLICE_HINT_RADIUS, min_angle, max_angle);
-                ctx.close_path();
-                ctx.fill();
-            } 
+            var gradient = new Cairo.Pattern.radial(center.x, center.y, TraceMenu.ACTIVE_ITEM_RADIUS, center.x, center.y, TraceMenu.SLICE_HINT_RADIUS);
+            
+            if (prelight) {
+                gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.8*alpha);
+                gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0*alpha);
+            } else {
+                gradient.add_color_stop_rgba(0.0, FG_R, FG_G, FG_B, 0.4*alpha);
+                gradient.add_color_stop_rgba(1.0, FG_R, FG_G, FG_B, 0.0*alpha);
+            }
+            ctx.set_source(gradient);
+           // ctx.set_line_width(3);
+        
+            ctx.arc_negative(center.x, center.y, TraceMenu.ACTIVE_ITEM_RADIUS, max_angle-0.02, min_angle+0.02);
+            ctx.arc(center.x, center.y, TraceMenu.SLICE_HINT_RADIUS, min_angle+0.02, max_angle-0.02);
+            ctx.close_path();
+            ctx.fill();
         }
     }
     
