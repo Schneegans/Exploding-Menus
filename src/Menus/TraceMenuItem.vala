@@ -94,6 +94,12 @@ public class TraceMenuItem {
         child.parent = this;
     }
     
+    public string get_path() {
+        if (parent == null) return "";
+        if (parent.parent == null) return label;
+        return parent.get_path() + " | " + label;
+    }
+    
     public void close(bool delayed) {
         foreach (var child in children)
             child.close(delayed);
@@ -169,8 +175,8 @@ public class TraceMenuItem {
                 }
                 
                 set_state(State.SELECTED);
-               // debug("Selected: %s", label);
-                break;
+                message("Selected: %s", get_path());
+                return false;
                 
             case State.ACTIVE:
                 if (hovered_child >= 0) {
@@ -187,7 +193,12 @@ public class TraceMenuItem {
                     active_child = hovered_child;
                     
                     return keep_open;
-                } 
+                } else if (marking_mode) {
+                    for (int i=0; i<children.size; ++i) {
+                        children[i].set_state(State.SELECTABLE);
+                    }
+                    return true;
+                }
                 break;
                 
             case State.TRAIL:
@@ -207,7 +218,7 @@ public class TraceMenuItem {
                 }
                 break;
         }
-        
+        message("Canceled.");
         return false;
     }
     
@@ -262,31 +273,34 @@ public class TraceMenuItem {
                 update_position(Vector.direction(parent_center, window.get_mouse_pos()), 0);
                 label_alpha.reset_target(1.0, 0);
                 
-                // draw label
-                draw_label(ctx, window, center, direction, prelight);
                 
-                // draw circle
-                if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                if (parent.hovered_child >= 0) {
+                    // draw label
+                    draw_label(ctx, window, center, direction, true);
+                    
+                    // draw circle
+                    ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                    
+                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
+                    ctx.fill();
                 
-                ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
-                ctx.fill();
                 
-                // draw child circles
-                for (int i=0; i<children.size; ++i) {
-                    children[i].draw(ctx, window, center, prelight, frame_time);
+                    // draw child circles
+                    for (int i=0; i<children.size; ++i) {
+                        children[i].draw(ctx, window, center, prelight, frame_time);
+                    }
                 }
                 break;
         
             case State.SELECTABLE: case State.SELECTED:
                 
                 // draw label
-                if (!marking_mode)
+                if (!(marking_mode && state == State.SELECTABLE))
                     draw_label(ctx, window, center, direction, prelight);
                 
                 // draw circle
-                if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                else          ctx.set_source_rgb(FG_R, FG_G, FG_B);
                 
                 ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
                 ctx.fill();
@@ -301,39 +315,7 @@ public class TraceMenuItem {
                 
             case State.ACTIVE:
             
-                if (marking_mode) {
-                    ctx.set_source_rgb(BG_R, BG_G, BG_B);
-                    ctx.set_line_cap(Cairo.LineCap.ROUND);
-                    ctx.move_to(center.x, center.y);
-                    
-                    ctx.set_line_width(draw_radius.val);
-                    ctx.line_to(window.get_mouse_pos().x, window.get_mouse_pos().y);
-                    ctx.stroke();
-                }
-                
-                if (marking_mode) {
-                    // draw center circle
-                    draw_label(ctx, window, center, direction, prelight);
-                    
-                    if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                    else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
-                    
-                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
-                    ctx.fill();  
-                    
-                } else {
-                    
-                    ctx.set_source_rgb(FG_R, FG_G, FG_B);
-                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
-                    ctx.fill();
-
-                    // draw label
-                    var img = new RenderedText(label, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
-                    ctx.translate(center.x, center.y);
-                    img.paint_on(ctx, GLib.Math.fmax(0, 2*label_alpha.val-1));
-                    ctx.translate(-center.x, -center.y);
-                }
-                
+                // get hovered / active child
                 var active = a_slice_is_active(window, center);
                 var mouse_angle = get_mouse_angle(window, center);
                 
@@ -365,22 +347,60 @@ public class TraceMenuItem {
                         }
                     }
                 }
+            
+                if (marking_mode) {
+                    ctx.set_source_rgb(BG_R, BG_G, BG_B);
+                    ctx.set_line_cap(Cairo.LineCap.ROUND);
+                    ctx.move_to(center.x, center.y);
+                    
+                    ctx.set_line_width(draw_radius.val);
+                    ctx.line_to(window.get_mouse_pos().x, window.get_mouse_pos().y);
+                    ctx.stroke();
+                }
                 
+                if (marking_mode) {
+                    // draw center circle
+                    if (hovered_child == -1)
+                        prelight = true;
+                        
+                    draw_label(ctx, window, center, direction, prelight);
+                    
+                    if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                    else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                    
+                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
+                    ctx.fill();  
+                    
+                } else {
+                    
+                    ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                    ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
+                    ctx.fill();
+
+                    // draw label
+                    var img = new RenderedText(label, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, (int)(TraceMenu.ACTIVE_ITEM_RADIUS*0.8)*2, "ubuntu 10", new Color.from_rgb(1, 1, 1), 1);
+                    ctx.translate(center.x, center.y);
+                    img.paint_on(ctx, GLib.Math.fmax(0, 2*label_alpha.val-1));
+                    ctx.translate(-center.x, -center.y);
+                }
+                
+
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
-                    children[i].draw(ctx, window, center, active && i == hovered_child, frame_time);
+                    children[i].draw(ctx, window, center, (active && i == hovered_child) || prelight, frame_time);
                 }
                 break;
                 
             case State.TRAIL:
             
                 // draw highlight if immediate child hovers
-                if (children[active_child].hovered_child == -2 && !marking_mode) {
-                    var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
-                        child_pos.x += center.x;
-                        child_pos.y += center.y;
-                    draw_sector(ctx, child_pos, children[active_child].back_min_angle, children[active_child].back_max_angle, true, frame_time);
-                    
+                if (children[active_child].hovered_child == -2) { 
+                    if (!marking_mode) {
+                        var child_pos = new Vector((int)children[active_child].draw_center_x.val, (int)children[active_child].draw_center_y.val);
+                            child_pos.x += center.x;
+                            child_pos.y += center.y;
+                        draw_sector(ctx, child_pos, children[active_child].back_min_angle, children[active_child].back_max_angle, true, frame_time);
+                    }
                     prelight = true;
                 }
                 
@@ -391,8 +411,8 @@ public class TraceMenuItem {
                 else              draw_label(ctx, window, center, (active_child_dir+4)%8, prelight);
                 
                 // draw line to child circle
-                if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                else                            ctx.set_source_rgb(BG_R, BG_G, BG_B);
+                if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                else          ctx.set_source_rgb(BG_R, BG_G, BG_B);
 
                 var offset = direction_to_coords(active_child_dir, TraceMenu.TRAIL_PREVIEW_PIE_RADIUS);
                     offset.x += center.x;
@@ -404,15 +424,15 @@ public class TraceMenuItem {
                 ctx.line_to((int)children[active_child].draw_center_x.val + center.x, (int)children[active_child].draw_center_y.val + center.y);
                 ctx.stroke();
                 
-                if (prelight || got_selected()) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
-                else                            ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                else          ctx.set_source_rgb(FG_R, FG_G, FG_B);
                 
                 ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
                 ctx.fill();  
                 
                 // draw child circles
                 for (int i=0; i<children.size; ++i) {
-                    children[i].draw(ctx, window, center, prelight, frame_time);
+                    children[i].draw(ctx, window, center, prelight && (i != active_child || !marking_mode), frame_time);
                 }
                 
                 break;
@@ -480,7 +500,7 @@ public class TraceMenuItem {
                 }
                 break;
         
-            case State.SELECTABLE: case State.SELECTED:
+            case State.SELECTABLE: 
                 if (children.size > 0) {
                     draw_radius.reset_target(marking_mode ? TraceMenu.PREVIEW_ITEM_RADIUS : TraceMenu.SELECTABLE_ITEM_RADIUS_SMALL, time);
                     label_alpha.reset_target(marking_mode ? 0.0 : 1.0, time);
@@ -493,6 +513,22 @@ public class TraceMenuItem {
                 } else {
                     draw_radius.reset_target(marking_mode ? TraceMenu.PREVIEW_ITEM_RADIUS : TraceMenu.SELECTABLE_ITEM_RADIUS, time);
                     label_alpha.reset_target(marking_mode ? 0.0 : 1.0, time);
+                }
+                break;
+                
+            case State.SELECTED:
+                if (children.size > 0) {
+                    draw_radius.reset_target(marking_mode ? TraceMenu.PREVIEW_ITEM_RADIUS : TraceMenu.SELECTABLE_ITEM_RADIUS_SMALL, time);
+                    label_alpha.reset_target(marking_mode ? 0.0 : 1.0, time);
+                    
+                    for (int i=0; i<children.size; ++i) {
+                        var child_center = direction_to_coords(children[i].direction, TraceMenu.PREVIEW_PIE_RADIUS);
+                        children[i].update_position(child_center, time);
+                    }
+                    
+                } else {
+                    draw_radius.reset_target(TraceMenu.SELECTABLE_ITEM_RADIUS, time);
+                    label_alpha.reset_target(1.0, time);
                 }
                 break;
                 
@@ -574,8 +610,8 @@ public class TraceMenuItem {
             ctx.stroke();
 
             // draw label
-            if (prelight || got_selected()) ctx.set_source_rgba(SEL_R, SEL_G, SEL_B, label_alpha.val);
-            else                            ctx.set_source_rgba(0.0, 0.0, 0.0, GLib.Math.fmax(0, 2*label_alpha.val-1));
+            if (prelight) ctx.set_source_rgba(SEL_R, SEL_G, SEL_B, label_alpha.val);
+            else          ctx.set_source_rgba(0.0, 0.0, 0.0, GLib.Math.fmax(0, 2*label_alpha.val-1));
 
             ctx.move_to(label_pos.x, label_pos.y);
             Pango.cairo_update_layout(ctx, layout);

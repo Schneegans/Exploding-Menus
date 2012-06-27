@@ -21,25 +21,28 @@ public class MenuManager {
     
     protected static Menu menu;
     
-    public static void init(string menu_type, string menu_mode) {
+    public static void init(string menu_mode) {
         bindings = new BindingManager();
         bindings.bind(new Trigger.from_string("button3"), "button2");
         
         bindings.on_press.connect((id) => {
-            menu.set_structure(setup_menu(menu_type, menu_mode));
+            menu.set_structure(setup_menu(menu_mode));
             menu.show();
         });
         
-        if (menu_type == "trace") menu = new TraceMenu();
-        else                      menu = new LinearMenu();
+        if (menu_mode == "numbers" || menu_mode == "random_linear" || menu_mode == "real_linear") 
+            menu = new LinearMenu();
+        else                      
+            menu = new TraceMenu();
             
-        menu.set_structure(setup_menu(menu_type, menu_mode));
+        menu.set_structure(setup_menu(menu_mode));
     }
     
-    private static MenuItem setup_menu(string menu_type, string menu_mode) {
-        if (menu_mode == "expert" && menu_type == "trace") return setup_direction_menu();
-        if (menu_mode == "expert" && menu_type == "linear") return setup_number_menu();
-        if (menu_mode == "novice") return setup_name_menu();
+    private static MenuItem setup_menu(string menu_mode) {
+        if (menu_mode == "compass") return setup_compass_menu();
+        if (menu_mode == "directions") return setup_direction_menu();
+        if (menu_mode == "numbers") return setup_number_menu();
+        if (menu_mode == "random_linear" || menu_mode == "random_circular") return setup_name_menu();
         
         return setup_gedit_menu();
     }
@@ -214,90 +217,41 @@ public class MenuManager {
         return root;
     }
     
-    private static MenuItem setup_direction_menu() {
+    private static MenuItem setup_compass_menu() {
     
+        string[] directions = { "Norden", "Nordwesten", "Westen", "Südwesten", "Nordosten", "Osten", "Südosten", "Süden"};
         var root = new MenuItem("Directions", "");
         
-            var tmp = new MenuItem("N", "");
-                tmp.add_child(new MenuItem("N", ""));
-                tmp.add_child(new MenuItem("NW", ""));
-                tmp.add_child(new MenuItem("W", ""));
-                tmp.add_child(new MenuItem("SW", ""));
-                tmp.add_child(new MenuItem("NE", ""));
-                tmp.add_child(new MenuItem("E", ""));
-                tmp.add_child(new MenuItem("SE", ""));
-            root.add_child(tmp);
+        for (int i=0; i<8; ++i) {
+            var tmp = new MenuItem(directions[i], "");
             
-            tmp = new MenuItem("NW", "");
-                tmp.add_child(new MenuItem("N", ""));
-                tmp.add_child(new MenuItem("NW", ""));
-                tmp.add_child(new MenuItem("W", ""));
-                tmp.add_child(new MenuItem("SW", ""));
-                tmp.add_child(new MenuItem("NE", ""));
-                tmp.add_child(new MenuItem("E", ""));
-                tmp.add_child(new MenuItem("S", ""));
-            root.add_child(tmp);
+            for (int j=0; j<8; ++j) {
+                if (7-i != j)
+                    tmp.add_child(new MenuItem(directions[j], "")); 
+            }
             
-            tmp = new MenuItem("W", "");
-                tmp.add_child(new MenuItem("N", ""));
-                tmp.add_child(new MenuItem("NW", ""));
-                tmp.add_child(new MenuItem("W", ""));
-                tmp.add_child(new MenuItem("SW", ""));
-                tmp.add_child(new MenuItem("NE", ""));
-                tmp.add_child(new MenuItem("SE", ""));
-                tmp.add_child(new MenuItem("S", ""));
             root.add_child(tmp);
+        }
+
+        return root;
+    }
+    
+    private static MenuItem setup_direction_menu() {
+    
+        string[] directions = { "Oben", "Oben links", "Links", "Unten links", "Oben rechts", "Rechts", "Unten rechts", "Unten"};
+        var root = new MenuItem("Directions", "");
+        
+        for (int i=0; i<8; ++i) {
+            var tmp = new MenuItem(directions[i], "");
             
-            tmp = new MenuItem("SW", "");
-                tmp.add_child(new MenuItem("N", ""));
-                tmp.add_child(new MenuItem("NW", ""));
-                tmp.add_child(new MenuItem("W", ""));
-                tmp.add_child(new MenuItem("SW", ""));
-                tmp.add_child(new MenuItem("E", ""));
-                tmp.add_child(new MenuItem("SE", ""));
-                tmp.add_child(new MenuItem("S", ""));
+            for (int j=0; j<8; ++j) {
+                if (7-i != j)
+                    tmp.add_child(new MenuItem(directions[j], "")); 
+            }
+            
             root.add_child(tmp);
-            
-            tmp = new MenuItem("NE", "");
-                tmp.add_child(new MenuItem("N", ""));
-                tmp.add_child(new MenuItem("NW", ""));
-                tmp.add_child(new MenuItem("W", ""));
-                tmp.add_child(new MenuItem("NE", ""));
-                tmp.add_child(new MenuItem("E", ""));
-                tmp.add_child(new MenuItem("SE", ""));
-                tmp.add_child(new MenuItem("S", ""));
-            root.add_child(tmp);
-            
-            tmp = new MenuItem("E", "");
-                tmp.add_child(new MenuItem("N", ""));
-                tmp.add_child(new MenuItem("NW", ""));
-                tmp.add_child(new MenuItem("SW", ""));
-                tmp.add_child(new MenuItem("NE", ""));
-                tmp.add_child(new MenuItem("E", ""));
-                tmp.add_child(new MenuItem("SE", ""));
-                tmp.add_child(new MenuItem("S", ""));
-            root.add_child(tmp);
-            
-            tmp = new MenuItem("SE", "");
-                tmp.add_child(new MenuItem("N", ""));
-                tmp.add_child(new MenuItem("W", ""));
-                tmp.add_child(new MenuItem("SW", ""));
-                tmp.add_child(new MenuItem("NE", ""));
-                tmp.add_child(new MenuItem("E", ""));
-                tmp.add_child(new MenuItem("SE", ""));
-                tmp.add_child(new MenuItem("S", ""));
-            root.add_child(tmp);
-            
-            tmp = new MenuItem("S", "");
-                tmp.add_child(new MenuItem("NW", ""));
-                tmp.add_child(new MenuItem("W", ""));
-                tmp.add_child(new MenuItem("SW", ""));
-                tmp.add_child(new MenuItem("NE", ""));
-                tmp.add_child(new MenuItem("E", ""));
-                tmp.add_child(new MenuItem("SE", ""));
-                tmp.add_child(new MenuItem("S", ""));
-            root.add_child(tmp);
-            
+        }
+
         return root;
     }
     
@@ -307,10 +261,10 @@ public class MenuManager {
         
         for (int i=1; i<=8; ++i) {
         
-            var tmp = new MenuItem("%i".printf(i), "");
+            var tmp = new MenuItem("%i. Eintrag".printf(i), "");
         
             for (int j=1; j<=7; ++j) {
-                tmp.add_child(new MenuItem("%i".printf(j), ""));
+                tmp.add_child(new MenuItem("%i. Eintrag".printf(j), ""));
             }
             
             root.add_child(tmp);

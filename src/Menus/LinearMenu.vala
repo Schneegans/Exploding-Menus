@@ -98,7 +98,7 @@ public class LinearMenu: GLib.Object, Menu {
             
             alpha.reset_target(0, ANIMATION_TIME);
             
-            debug("Time: %u", Time.get_now() - open_time);
+            message("Time: %u", Time.get_now() - open_time);
             
             GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
                 window.hide();

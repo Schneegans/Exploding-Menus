@@ -62,27 +62,26 @@ public class TraceMenu: GLib.Object, Menu {
         mark.on_direction_changed.connect(() => {
             if (!closing) {
                 if (!released && root.in_marking_mode() && root.child_is_hovered()) {
-                    do_action();
+                    do_action(false);
                 } 
             }
         });
         
         mark.on_long_stroke.connect(() => {
-            do_action();
+            do_action(false);
         });
         
         mark.on_paused.connect(() => {
             if (!closing) {
                 if (!released && root.in_marking_mode() && root.submenu_is_hovered()) {
-                    root.set_marking_mode(false);
-                    do_action();
+                    do_action(true);
                     pause_location = window.get_mouse_pos();
                 } 
             }
         });
         
         mark.on_stutter.connect(() => {
-            do_action();
+            do_action(false);
         });
         
         window.on_motion.connect((x, y, state) => {
@@ -137,14 +136,12 @@ public class TraceMenu: GLib.Object, Menu {
         
         window.on_release.connect((button) => {
             if (!closing) {
-                if (!released && root.in_marking_mode()) {
-                    root.set_marking_mode(false);
-                    do_action();
-                } else if (!released) {
-                    root.set_marking_mode(false);
-                } else {
+                if (!released && root.in_marking_mode()) {                    
+                    
+                    do_action(true);
+                } else if (released) {
                     root.update_position(center, 0.0);
-                    do_action();
+                    do_action(true);
                 }
                 released = true;
             }
@@ -192,7 +189,7 @@ public class TraceMenu: GLib.Object, Menu {
         open_time = Time.get_now();
     }
     
-    private void do_action() {
+    private void do_action(bool cancel_marking_mode) {
         var mouse = window.get_mouse_pos();
         
         if (!root.activate(mouse)) {
@@ -203,7 +200,7 @@ public class TraceMenu: GLib.Object, Menu {
             root.close(activated);
             closing = true;
 
-            debug("Time: %u", Time.get_now() - open_time);            
+            message("Time: %u", Time.get_now() - open_time);            
             
             if (activated) {
                 GLib.Timeout.add((uint)(FADE_OUT_TIME*1000), () => {
@@ -222,6 +219,8 @@ public class TraceMenu: GLib.Object, Menu {
                 });
             }
         } else {
+            if (cancel_marking_mode)
+                root.set_marking_mode(false);
             warp_pointer();
             root.update_position(center, ANIMATION_TIME);
             

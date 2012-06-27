@@ -30,7 +30,8 @@ public class LinearMenuItem {
     public const double SEL_B = 0.3;
     
     public const int ITEM_HEIGHT = 24;
-    public const int ADD_WIDTH = 50;
+    public const int ADD_WIDTH = 55;
+    public const int OVERLAP_WIDTH = 6;
     public const int MIN_WIDTH = 150;
 
     public string label;
@@ -45,6 +46,7 @@ public class LinearMenuItem {
     private uint hover_start_time;
     
     private int hovered_child = -1;
+    private int active_child = -1;
     private Vector last_mouse;
     
     private Gee.ArrayList<LinearMenuItem> children;
@@ -70,24 +72,35 @@ public class LinearMenuItem {
     }
     
     public bool submenu_is_hovered() {
-        if (hovered_child >= 0 && children[hovered_child].children.size > 0) {
-            foreach (var child in children)
-                if (child.submenu_is_hovered())
-                    return true;
-            return false;
-        } 
         
-        return false;
+        if (active_child < 0)
+            return false;
+        
+        if (children[active_child].hovered_child >= 0)
+            return true;
+            
+        return children[active_child].submenu_is_hovered();
     }
     
     public bool activate(Vector mouse) {
         
-        switch (this.state) {            
-            case State.SELECTABLE:
-            case State.SELECTED:
-            case State.HOVERED:
-            break;
+        if (hovered_child >= 0) {
+            if (children[hovered_child].children.size > 0) {
+                children[hovered_child].set_state(State.SELECTED);
+                return true;
+               
+            } else {
+                message("Selected: %s", children[hovered_child].get_path());
+                return false;
+            }
         }
+        
+        if (active_child >= 0)
+            return children[active_child].activate(mouse);
+        
+        
+        
+        message("Canceled.");
         return false;
     }
     
@@ -102,6 +115,12 @@ public class LinearMenuItem {
         }
     }
     
+    public string get_path() {
+        if (parent == null) return "";
+        if (parent.parent == null) return label;
+        return parent.get_path() + " | " + label;
+    }
+    
     public void draw(Cairo.Context ctx, InvisibleWindow window, Vector topleft, double parent_width, double frame_time) {
         
         var menu_size = new Vector(get_width(window), get_height(window));       
@@ -110,7 +129,7 @@ public class LinearMenuItem {
         var pos = topleft.copy();
         
         if (pos.x + menu_size.x > window.width()) {
-            pos.x = pos.x - parent_width - menu_size.x;
+            pos.x = pos.x - parent_width - menu_size.x + OVERLAP_WIDTH;
         }
         
         if (pos.y + menu_size.y > window.height()) {
@@ -118,12 +137,17 @@ public class LinearMenuItem {
         }
         
         // get hovered item
-        if (!submenu_is_hovered()) {
+        if (submenu_is_hovered()) {
+            hovered_child = -1;
+        } else {
             if (mouse.x > pos.x && mouse.x < pos.x + menu_size.x &&
                 mouse.y > pos.y && mouse.y < pos.y + menu_size.y) {
                 
-                if (mouse.x <= last_mouse.x || mouse.y < last_mouse.y)
+                if ((mouse.x - last_mouse.x < mouse.y - last_mouse.y) || last_mouse.y >= mouse.y)
                     hovered_child = (int)((mouse.y - pos.y)/ITEM_HEIGHT);
+                
+                if (hovered_child != active_child)
+                    active_child = -1;
                 
             } else {
                 bool a_child_is_active = false;
@@ -135,17 +159,20 @@ public class LinearMenuItem {
                 }
                 
                 if (!a_child_is_active)
-                    hovered_child = -1;
+                    active_child = -1;
+                    
+                hovered_child = -1;
             }
             
             for (int i=0; i<children.size; ++i) {
-                if (i == hovered_child) {
+                if (i == hovered_child || i == active_child) {
                     if (children[i].state != State.SELECTED) {
                         if (children[i].state != State.HOVERED) {
                             children[i].set_state(State.HOVERED);
                             children[i].hover_start_time = Time.get_now();
                         } else if (children[i].children.size > 0 && children[i].hover_start_time + 250 < Time.get_now()) {
                             children[i].set_state(State.SELECTED);
+                            active_child = i;
                         }
                     }
                 } else {
@@ -195,7 +222,7 @@ public class LinearMenuItem {
             
             // draw arrow
             if (child.children.size > 0) {
-                window.get_style_context().render_arrow(ctx, GLib.Math.PI*0.5, top_left.x-22+menu_size.x, top_left.y+6, ITEM_HEIGHT/2);
+                window.get_style_context().render_arrow(ctx, GLib.Math.PI*0.5, top_left.x-25+menu_size.x, top_left.y+6, ITEM_HEIGHT/2);
             }
 
             top_left.y += ITEM_HEIGHT;
@@ -205,7 +232,7 @@ public class LinearMenuItem {
         foreach (var child in children) {
             // draw children
             if (child.state == State.SELECTED && child.children.size > 0) {
-                child.draw(ctx, window, Vector.sum(top_left, new Vector(menu_size.x-2, 0)), menu_size.x, frame_time);
+                child.draw(ctx, window, Vector.sum(top_left, new Vector(menu_size.x-OVERLAP_WIDTH, 0)), menu_size.x, frame_time);
             }
             top_left.y += ITEM_HEIGHT;
         }

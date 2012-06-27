@@ -37,12 +37,9 @@ public class Deamon : GLib.Object {
     /// Available command line options.
     /////////////////////////////////////////////////////////////////////
     
-    private static string menu_type = "trace";
-    private static string menu_mode = "expert";
+    private static string menu_mode = "real_circular";
     
     private const GLib.OptionEntry[] options = {
-        { "type", 't', 0, GLib.OptionArg.STRING, out menu_type, 
-          "Open the menu with the given menu type. Valid options are \"trace\" and \"linear\"", "option" },
         { "mode", 'm', 0, GLib.OptionArg.STRING, out menu_mode, 
           "Determines the item mode." },
         { null }
@@ -68,7 +65,7 @@ public class Deamon : GLib.Object {
         
         Gdk.threads_enter();
         Icon.init();
-        MenuManager.init(menu_type, menu_mode);
+        MenuManager.init(menu_mode);
 
         // connect SigHandlers
         Posix.signal(Posix.SIGINT, sig_handler);
