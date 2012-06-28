@@ -34,7 +34,7 @@ public class TraceMenu: GLib.Object, Menu {
 
     public const int SLICE_HINT_RADIUS = 150;
     public const double SLICE_HINT_GAP = 0.0;
-    public const double ANIMATION_TIME = 0.3;
+    public const double ANIMATION_TIME = 0.4;
     public const double FADE_OUT_TIME = 0.5;
     
     public const int WARP_ZONE = 200;

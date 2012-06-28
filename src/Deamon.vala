@@ -41,7 +41,7 @@ public class Deamon : GLib.Object {
     
     private const GLib.OptionEntry[] options = {
         { "mode", 'm', 0, GLib.OptionArg.STRING, out menu_mode, 
-          "Determines the item mode." },
+          "Possible values: test, real_circular, real_linear, numbers, compass, directions, names_circular, names_linear" },
         { null }
     };
 
@@ -65,7 +65,9 @@ public class Deamon : GLib.Object {
         
         Gdk.threads_enter();
         Icon.init();
-        MenuManager.init(menu_mode);
+        
+        if (menu_mode == "test")    Test.init(); 
+        else                        MenuManager.init(menu_mode);
 
         // connect SigHandlers
         Posix.signal(Posix.SIGINT, sig_handler);

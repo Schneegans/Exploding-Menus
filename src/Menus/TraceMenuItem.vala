@@ -34,7 +34,7 @@ public class TraceMenuItem {
     
     public enum Direction { N, NE, E, SE, S, SW, W, NW }
     public enum LabelDirection { LEFT, RIGHT, TOP_LEFT, BOTTOM_RIGHT }
-    public enum State { INVISIBLE, PREVIEW, SELECTABLE, ACTIVE, TRAIL, TRAIL_PREVIEW, SELECTED, AT_MOUSE }
+    public enum State { INVISIBLE, PREVIEW, INSPECT, INSPECT_CHILD, SELECTABLE, ACTIVE, TRAIL, TRAIL_PREVIEW, SELECTED, AT_MOUSE }
     
     private weak TraceMenuItem parent = null;
     
@@ -57,17 +57,21 @@ public class TraceMenuItem {
     private int active_child = -1;
     private Vector center_offset;
     
+    private uint last_motion_time = 0;
+    private Vector last_mouse_location;
+    
     private Gee.ArrayList<TraceMenuItem> children;
     
     public TraceMenuItem(string label, string icon_name) {
         this.label = label;
         this.icon_name = icon_name;
         this.center_offset = new Vector(0,0);
+        this.last_mouse_location = new Vector(0,0);
         
         this.children = new Gee.ArrayList<TraceMenuItem>();
         
-        this.draw_center_x = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
-        this.draw_center_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0);
+        this.draw_center_x = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0, 1);
+        this.draw_center_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0, 1);
         this.draw_radius = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 0, 0, 0, 1);
         this.label_alpha = new AnimatedValue.linear(1, 1, 1);
     }
@@ -160,6 +164,7 @@ public class TraceMenuItem {
         switch (this.state) {            
             case State.AT_MOUSE:   
             case State.SELECTABLE:
+            case State.INSPECT:
                 
                 double distance = GLib.Math.sqrt(mouse.x*mouse.x + mouse.y*mouse.y);
                 if (distance < 150) distance = 150;
@@ -231,14 +236,22 @@ public class TraceMenuItem {
                 for (int i=0; i<children.size; ++i)
                     children[i].set_state(State.INVISIBLE);
                 break;
+                
             case State.SELECTABLE:
+            case State.INSPECT_CHILD:
             case State.AT_MOUSE:
                 for (int i=0; i<children.size; ++i)
                     children[i].set_state(State.PREVIEW);
                 break;
+                
             case State.ACTIVE:
                 for (int i=0; i<children.size; ++i)
                     children[i].set_state(State.SELECTABLE);
+                break;
+                
+            case State.INSPECT:
+                for (int i=0; i<children.size; ++i)
+                    children[i].set_state(State.INSPECT_CHILD);
                 break;
         }
     }
@@ -292,11 +305,71 @@ public class TraceMenuItem {
                 }
                 break;
         
-            case State.SELECTABLE: case State.SELECTED:
+            case State.INSPECT:
+            case State.SELECTABLE:
+            
+                var mouse = window.get_mouse_pos();
                 
                 // draw label
-                if (!(marking_mode && state == State.SELECTABLE))
+                if (!marking_mode) {
+//                    if (prelight) {
+//                        if (state == State.INSPECT) {
+//                            for (int i=0; i<children.size; ++i) {
+//                                var child_center = direction_to_coords(children[i].direction, TraceMenu.SELECTABLE_PIE_RADIUS);
+//                                    child_center = Vector.sum(child_center, Vector.direction(center, mouse));
+//                                children[i].update_position(child_center, 0.05);
+//                            }
+//                        } else if (mouse.x != last_mouse_location.x || mouse.y != last_mouse_location.y) {
+//                            last_mouse_location = mouse;
+//                            last_motion_time = Time.get_now();
+//                        } else if (Time.get_now() - last_motion_time > 250) {
+//                            if (state != State.INSPECT) {
+//                                this.set_state(State.INSPECT);
+//                                for (int i=0; i<children.size; ++i) {
+//                                    var child_center = direction_to_coords(children[i].direction, TraceMenu.SELECTABLE_PIE_RADIUS);
+//                                        child_center = Vector.sum(child_center, Vector.direction(center, mouse));
+//                                    children[i].update_position(child_center, TraceMenu.ANIMATION_TIME);
+//                                }
+//                            } 
+//                        }
+//                    } else {
+//                        if (state == State.INSPECT) {
+//                            set_state(State.SELECTABLE);
+//                            for (int i=0; i<children.size; ++i) {
+//                                var child_center = direction_to_coords(children[i].direction, TraceMenu.PREVIEW_PIE_RADIUS);
+//                                children[i].update_position(child_center, TraceMenu.ANIMATION_TIME);
+//                            }
+//                        }
+//                    }
+                
                     draw_label(ctx, window, center, direction, prelight);
+                }
+                
+                // draw circle
+                if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
+                else          ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                
+                ctx.arc(center.x, center.y, draw_radius.val, 0, GLib.Math.PI*2);
+                ctx.fill();
+                
+                // draw child circles
+                if (!marking_mode) {
+                    for (int i=0; i<children.size; ++i) {
+                        if (state == State.INSPECT) {
+                           // children[i].center_offset = Vector.direction(center, mouse);
+                            children[i].draw(ctx, window, center, prelight, frame_time);
+                        } else {
+                            children[i].draw(ctx, window, center, prelight, frame_time);
+                        }
+                    }
+                }
+                break;
+            
+            case State.INSPECT_CHILD:
+            case State.SELECTED:
+                
+                // draw label
+                draw_label(ctx, window, center, direction, prelight);
                 
                 // draw circle
                 if (prelight) ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
@@ -502,7 +575,7 @@ public class TraceMenuItem {
                     label_alpha.reset_target(1.0, time);
                 }
                 break;
-        
+            
             case State.SELECTABLE: 
                 if (children.size > 0) {
                     draw_radius.reset_target(marking_mode ? TraceMenu.PREVIEW_ITEM_RADIUS : TraceMenu.SELECTABLE_ITEM_RADIUS_SMALL, time);
@@ -518,7 +591,8 @@ public class TraceMenuItem {
                     label_alpha.reset_target(marking_mode ? 0.0 : 1.0, time);
                 }
                 break;
-                
+            
+            case State.INSPECT_CHILD:    
             case State.SELECTED:
                 if (children.size > 0) {
                     draw_radius.reset_target(marking_mode ? TraceMenu.PREVIEW_ITEM_RADIUS : TraceMenu.SELECTABLE_ITEM_RADIUS_SMALL, time);
