@@ -34,7 +34,7 @@ public class TraceMenu: GLib.Object, Menu {
 
     public const int SLICE_HINT_RADIUS = 150;
     public const double SLICE_HINT_GAP = 0.0;
-    public const double ANIMATION_TIME = 0.4;
+    public const double ANIMATION_TIME = 0.3;
     public const double FADE_OUT_TIME = 0.5;
     
     public const int WARP_ZONE = 200;
@@ -191,8 +191,9 @@ public class TraceMenu: GLib.Object, Menu {
     
     private void do_action(bool cancel_marking_mode) {
         var mouse = window.get_mouse_pos();
+        var activated_item = root.activate(mouse);
         
-        if (!root.activate(mouse)) {
+        if (activated_item != "_keep_open") {
             warp_pointer();
             var activated = root.got_selected();
             
@@ -200,7 +201,8 @@ public class TraceMenu: GLib.Object, Menu {
             root.close(activated);
             closing = true;
 
-            message("Time: %u", Time.get_now() - open_time);            
+            if (activated_item == "_cancel") on_cancel();
+            else                             on_select(activated_item, Time.get_now() - open_time);          
             
             if (activated) {
                 GLib.Timeout.add((uint)(FADE_OUT_TIME*1000), () => {

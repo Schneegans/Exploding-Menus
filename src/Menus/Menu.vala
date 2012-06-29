@@ -16,6 +16,9 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 public interface Menu : GLib.Object {
+
+    public signal void on_select(string item, uint milliseconds);
+    public signal void on_cancel();
     
     public abstract void set_structure(MenuItem structure);
     public abstract void show();

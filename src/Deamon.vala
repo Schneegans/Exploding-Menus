@@ -66,18 +66,35 @@ public class Deamon : GLib.Object {
         Gdk.threads_enter();
         Icon.init();
         
-        if (menu_mode == "test")    Test.init(); 
-        else                        MenuManager.init(menu_mode);
-
         // connect SigHandlers
         Posix.signal(Posix.SIGINT, sig_handler);
 	    Posix.signal(Posix.SIGTERM, sig_handler);
 	
 	    // finished loading... so run the prog!
 	    message("Started happily...");
-	    
-	    Gtk.main();
-	    
+        
+        if (menu_mode == "test") {
+        
+            var test = new Test();
+            test.init(); 
+            Gtk.main();
+            
+        } else {
+        
+            var menu = new MenuManager();
+            menu.init(menu_mode);
+            
+            menu.on_cancel.connect(() => {
+                message("Canceled.");
+            });
+            
+            menu.on_select.connect((item, time) => {
+                message("Selected: %s in %u Milliseconds.", item, time);
+            });
+            
+            Gtk.main();
+        }
+
 	    Gdk.threads_leave();
     }
     

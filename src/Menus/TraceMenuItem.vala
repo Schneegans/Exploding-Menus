@@ -70,9 +70,9 @@ public class TraceMenuItem {
         
         this.children = new Gee.ArrayList<TraceMenuItem>();
         
-        this.draw_center_x = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0, 1);
-        this.draw_center_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0, 1);
-        this.draw_radius = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 0, 0, 0, 1);
+        this.draw_center_x = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0, 0.8);
+        this.draw_center_y = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 1, 1, 0, 0.8);
+        this.draw_radius = new AnimatedValue.cubic(AnimatedValue.Direction.OUT, 0, 0, 0, 0.8);
         this.label_alpha = new AnimatedValue.linear(1, 1, 1);
     }
     
@@ -159,7 +159,7 @@ public class TraceMenuItem {
         return false;
     }
     
-    public bool activate(Vector mouse) {
+    public string activate(Vector mouse) {
         
         switch (this.state) {            
             case State.AT_MOUSE:   
@@ -176,16 +176,16 @@ public class TraceMenuItem {
                 
                 if (children.size > 0) {
                     set_state(State.ACTIVE);
-                    return true;
+                    return "_keep_open";
                 }
                 
                 set_state(State.SELECTED);
-                message("Selected: %s", get_path());
-                return false;
+
+                return get_path();
                 
             case State.ACTIVE:
                 if (hovered_child >= 0) {
-                    bool keep_open = true;
+                    string keep_open = "_keep_open";
                 
                     for (int i=0; i<children.size; ++i) {
                         if (i == hovered_child) {
@@ -202,7 +202,7 @@ public class TraceMenuItem {
                     for (int i=0; i<children.size; ++i) {
                         children[i].set_state(State.SELECTABLE);
                     }
-                    return true;
+                    return "_keep_open";
                 }
                 break;
                 
@@ -216,15 +216,15 @@ public class TraceMenuItem {
                         
                         move_parents(new Vector(-draw_center_x.end + mouse.x, -draw_center_y.end + mouse.y));
                         
-                        return true;
+                        return "_keep_open";
                     } 
                     
                     return children[active_child].activate(new Vector(mouse.x - draw_center_x.end, mouse.y - draw_center_y.end));
                 }
                 break;
         }
-        message("Canceled.");
-        return false;
+
+        return "_cancel";
     }
     
     public void set_state(State new_state) {
@@ -718,7 +718,7 @@ public class TraceMenuItem {
                 gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.8*alpha);
                 gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0*alpha);
             } else {
-                gradient.add_color_stop_rgba(0.0, FG_R, FG_G, FG_B, 0.4*alpha);
+                gradient.add_color_stop_rgba(0.0, FG_R, FG_G, FG_B, 0.3*alpha);
                 gradient.add_color_stop_rgba(1.0, FG_R, FG_G, FG_B, 0.0*alpha);
             }
             ctx.set_source(gradient);

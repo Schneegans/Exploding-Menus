@@ -82,26 +82,23 @@ public class LinearMenuItem {
         return children[active_child].submenu_is_hovered();
     }
     
-    public bool activate(Vector mouse) {
+    public string activate(Vector mouse) {
         
         if (hovered_child >= 0) {
             if (children[hovered_child].children.size > 0) {
                 children[hovered_child].set_state(State.SELECTED);
-                return true;
+                active_child = hovered_child;
+                return "_keep_open";
                
             } else {
-                message("Selected: %s", children[hovered_child].get_path());
-                return false;
+                return children[hovered_child].get_path();
             }
         }
         
         if (active_child >= 0)
             return children[active_child].activate(mouse);
-        
-        
-        
-        message("Canceled.");
-        return false;
+
+        return "_cancel";
     }
     
     public void set_state(State new_state) {

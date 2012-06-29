@@ -91,14 +91,16 @@ public class LinearMenu: GLib.Object, Menu {
     
     private void do_action() {
         var mouse = window.get_mouse_pos();
+        var activated_item = root.activate(mouse);
         
-        if (!root.activate(mouse)) {
+        if (activated_item != "_keep_open") {
             root.close();
             closing = true;
             
             alpha.reset_target(0, ANIMATION_TIME);
             
-            message("Time: %u", Time.get_now() - open_time);
+            if (activated_item == "_cancel") on_cancel();
+            else                             on_select(activated_item, Time.get_now() - open_time);
             
             GLib.Timeout.add((uint)((ANIMATION_TIME)*1000), () => {
                 window.hide();

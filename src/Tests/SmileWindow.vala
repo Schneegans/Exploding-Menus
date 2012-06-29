@@ -15,18 +15,18 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
 
-public class InstructionWindow : Gtk.Window {
+public class SmileWindow : Gtk.Window {
     
     /////////////////////////////////////////////////////////////////////
     /// C'tor, sets up the window.
     /////////////////////////////////////////////////////////////////////
     
-    private Gtk.Label instruction;
+    private Image smile;
     
-    private const int WINDOW_WIDTH = 600;
-    private const int WINDOW_HEIGHT = 200;
+    private const int WINDOW_WIDTH = 80;
+    private const int WINDOW_HEIGHT = 80;
 
-    public InstructionWindow() {
+    public SmileWindow() {
         this.set_title("Test");
         this.set_keep_above(true);
         this.set_decorated(false);
@@ -37,25 +37,15 @@ public class InstructionWindow : Gtk.Window {
         this.set_size_request(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.set_app_paintable(true);
         this.set_visual(this.screen.get_rgba_visual());
+        this.set_position(Gtk.WindowPosition.CENTER);
         
-        instruction = new Gtk.Label("");
-        instruction.wrap_mode = Pango.WrapMode.WORD;
-        instruction.wrap = true;
-        instruction.width_request = WINDOW_WIDTH;
-        instruction.justify = Gtk.Justification.FILL;
-        this.add(instruction);
-        instruction.show();
+        smile = new Image.from_file("avatar64.png");
   
         this.draw.connect(this.draw_window);
     }
     
     public void open() {
         this.show();
-        this.move((this.screen.get_width()-WINDOW_WIDTH)/2, 100);
-    }
-    
-    public void set_text(string text) {
-        this.instruction.set_markup("<span size='20000'>" + text + "</span>");
     }
 
     private bool draw_window(Cairo.Context ctx) { 
@@ -63,7 +53,8 @@ public class InstructionWindow : Gtk.Window {
         ctx.paint();
         ctx.set_operator (Cairo.Operator.OVER);
         
-        instruction.draw(ctx);
+        ctx.translate(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
+        smile.paint_on(ctx);
         
         return true;
     }

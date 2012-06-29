@@ -15,30 +15,54 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>. 
 */
 
-public class MenuManager {
+public class MenuManager : GLib.Object {
 
-    private static BindingManager bindings = null;
+    public signal void on_select(string item, uint milliseconds);
+    public signal void on_cancel();
+
+    private BindingManager bindings = null;
+    private Menu menu = null;
+    private string mode;
     
-    protected static Menu menu;
+    private ulong cancel_handler;
+    private ulong select_handler;
     
-    public static void init(string menu_mode) {
+    public MenuManager() {
+    
         bindings = new BindingManager();
         bindings.bind(new Trigger.from_string("button3"), "button2");
         
         bindings.on_press.connect((id) => {
-            menu.set_structure(setup_menu(menu_mode));
+            menu.set_structure(setup_menu(mode));
             menu.show();
         });
+    
         
-        if (menu_mode == "numbers" || menu_mode == "random_linear" || menu_mode == "real_linear") 
+    }
+    
+    public void init(string menu_mode) {
+        mode = menu_mode;
+        
+        if (menu != null) {
+            menu.disconnect(cancel_handler);
+            menu.disconnect(select_handler);
+        }
+        
+        if (mode == "numbers" || mode == "random_linear" || mode == "real_linear") 
             menu = new LinearMenu();
         else                      
             menu = new TraceMenu();
-            
-        menu.set_structure(setup_menu(menu_mode));
+        
+        cancel_handler = menu.on_cancel.connect(() => {
+            on_cancel();
+        });
+        
+        select_handler = menu.on_select.connect((item, time) => {
+            on_select(item, time);
+        });
     }
     
-    private static MenuItem setup_menu(string menu_mode) {
+    private MenuItem setup_menu(string menu_mode) {
         if (menu_mode == "compass") return setup_compass_menu();
         if (menu_mode == "directions") return setup_direction_menu();
         if (menu_mode == "numbers") return setup_number_menu();
@@ -47,7 +71,7 @@ public class MenuManager {
         return setup_gedit_menu();
     }
 
-    private static MenuItem setup_gedit_menu() {
+    private MenuItem setup_gedit_menu() {
     
         var root = new MenuItem("Hauptmenü", "");
         
@@ -153,15 +177,12 @@ public class MenuManager {
         return root;
     }
     
-    private static MenuItem setup_name_menu() {
+    private MenuItem setup_name_menu() {
     
         string[] forenames = { "Thomas", "Hans", "Jim", "Alexander", "Beate", "Jennifer", "Karla", "Theresa"};
         string[] names = { "Anders", "Zimmermann", "Schulze", "Bauer", "Schreiber", "Jauch", "Opolka"};
         int[] taken_forenames = {};
-        
-        
-        
-    
+
         var root = new MenuItem("Names", "");
         
         for (int i=0; i<8; ++i) {
@@ -217,7 +238,7 @@ public class MenuManager {
         return root;
     }
     
-    private static MenuItem setup_compass_menu() {
+    private MenuItem setup_compass_menu() {
     
         string[] directions = { "Norden", "Nordwesten", "Westen", "Südwesten", "Nordosten", "Osten", "Südosten", "Süden"};
         var root = new MenuItem("Directions", "");
@@ -236,7 +257,7 @@ public class MenuManager {
         return root;
     }
     
-    private static MenuItem setup_direction_menu() {
+    private MenuItem setup_direction_menu() {
     
         string[] directions = { "Oben", "Oben links", "Links", "Unten links", "Oben rechts", "Rechts", "Unten rechts", "Unten"};
         var root = new MenuItem("Directions", "");
@@ -255,7 +276,7 @@ public class MenuManager {
         return root;
     }
     
-    private static MenuItem setup_number_menu() {
+    private MenuItem setup_number_menu() {
     
         var root = new MenuItem("Numbers", "");
         
