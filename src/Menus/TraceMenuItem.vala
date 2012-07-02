@@ -642,9 +642,6 @@ public class TraceMenuItem {
             var layout = window.create_pango_layout(label);
             var label_size = new Vector(0, 0);
             layout.get_pixel_size(out label_size.x, out label_size.y);
-            
-            if (icon_name != "")
-                label_size.x += TraceMenu.LABEL_HEIGHT/2;
 
             // draw label background
             ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
@@ -653,34 +650,48 @@ public class TraceMenuItem {
             ctx.set_line_cap(Cairo.LineCap.ROUND);
             ctx.move_to(center.x, center.y);
             
-            var offset = direction_to_coords(dir, 25);
-                offset.x += center.x;
-                offset.y += center.y;
-            ctx.line_to(offset.x, offset.y);
+            var label_pos = new Vector(center.x, center.y-7);
             
-            var label_pos = new Vector(offset.x, offset.y-7);
-            
-//            if (icon_name != "")
-//                label_pos.x += TraceMenu.LABEL_HEIGHT/2;
-            
-            switch (get_label_direction(dir)) {
-                case LabelDirection.LEFT:
-                    ctx.line_to(offset.x-(label_size.x)*label_alpha.val , offset.y);
+            switch (dir) {
+                case Direction.W:
+                    label_size.x += TraceMenu.LABEL_HEIGHT*0.7;
+                    ctx.line_to(center.x-(label_size.x)*label_alpha.val , center.y);
                     label_pos.x -= label_size.x ;
                     break;
-                case LabelDirection.RIGHT:
-                    ctx.line_to(offset.x+(label_size.x)*label_alpha.val, offset.y);
+                case Direction.SW:
+                case Direction.NW:
+                    label_size.x += TraceMenu.LABEL_HEIGHT*0.7;
+                    label_size.x += TraceMenu.SELECTABLE_PIE_RADIUS*0.293;
+                    ctx.line_to(center.x-(label_size.x)*label_alpha.val , center.y);
+                    label_pos.x -= label_size.x ;
+                    
                     break;
-                case LabelDirection.TOP_LEFT:
-                    ctx.line_to(offset.x, offset.y - (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
-                    ctx.line_to(offset.x-(label_size.x)*label_alpha.val, offset.y - (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
-                    label_pos.x -= label_size.x;
-                    label_pos.y -= TraceMenu.LABEL_HEIGHT/2 + 8;
+                case Direction.E:
+                    label_size.x += TraceMenu.LABEL_HEIGHT*0.7;
+                    ctx.line_to(center.x+(label_size.x)*label_alpha.val, center.y);
+                    label_pos.x += TraceMenu.LABEL_HEIGHT*0.7;
                     break;
-                case LabelDirection.BOTTOM_RIGHT:
-                    ctx.line_to(offset.x, offset.y + (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
-                    ctx.line_to(offset.x+(label_size.x)*label_alpha.val, offset.y + (TraceMenu.LABEL_HEIGHT/2 + 5)*label_alpha.val);
-                    label_pos.y += TraceMenu.LABEL_HEIGHT/2 + 8;
+                case Direction.SE:
+                case Direction.NE:
+                    label_size.x += TraceMenu.LABEL_HEIGHT*0.7;
+                    label_size.x += TraceMenu.SELECTABLE_PIE_RADIUS*0.293;
+                    ctx.line_to(center.x+(label_size.x)*label_alpha.val, center.y);
+                    label_pos.x += TraceMenu.SELECTABLE_PIE_RADIUS*0.293;
+                    label_pos.x += TraceMenu.LABEL_HEIGHT*0.7;
+                    break;
+                case Direction.N:
+                    ctx.line_to(center.x, center.y - (TraceMenu.LABEL_HEIGHT/2 + 10)*label_alpha.val);
+                    ctx.line_to(center.x-(label_size.x/2)*label_alpha.val, center.y - (TraceMenu.LABEL_HEIGHT/2 + 10)*label_alpha.val);
+                    ctx.line_to(center.x+(label_size.x/2)*label_alpha.val, center.y - (TraceMenu.LABEL_HEIGHT/2 + 10)*label_alpha.val);
+                    label_pos.x -= label_size.x/2;
+                    label_pos.y -= TraceMenu.LABEL_HEIGHT/2 + 13;
+                    break;
+                case Direction.S:
+                    ctx.line_to(center.x, center.y + (TraceMenu.LABEL_HEIGHT/2 + 10)*label_alpha.val);
+                    ctx.line_to(center.x+(label_size.x/2)*label_alpha.val, center.y + (TraceMenu.LABEL_HEIGHT/2 + 10)*label_alpha.val);
+                    ctx.line_to(center.x-(label_size.x/2)*label_alpha.val, center.y + (TraceMenu.LABEL_HEIGHT/2 + 10)*label_alpha.val);
+                    label_pos.y += TraceMenu.LABEL_HEIGHT/2 + 13;
+                    label_pos.x -= label_size.x/2;
                     break;
             }
             
@@ -694,17 +705,6 @@ public class TraceMenuItem {
             Pango.cairo_update_layout(ctx, layout);
             Pango.cairo_show_layout(ctx, layout);
             ctx.stroke();
-            
-            
-            // draw icon
-//            if (icon_name != "") {
-//                int icon_size = TraceMenu.LABEL_HEIGHT/2;
-//                var icon = new Icon(icon_name, icon_size);
-//                ctx.push_group();
-//                window.get_style_context().render_icon(ctx, icon.to_pixbuf(), label_pos.x - TraceMenu.LABEL_HEIGHT/2 - 4, label_pos.y);
-//                ctx.pop_group_to_source();
-//                ctx.paint_with_alpha(GLib.Math.fmax(0, 2*label_alpha.val-1));
-//            }
         }
     }
 
