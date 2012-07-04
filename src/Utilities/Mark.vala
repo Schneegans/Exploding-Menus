@@ -79,7 +79,13 @@ public class Mark : GLib.Object {
             }
         }
         
-        if (Time.get_now() - last_motion_time > 400) {
+//        if (Time.get_now() - last_motion_time > 100) {
+//            on_stutter();    
+//            reset();
+//            return;
+//        }
+        
+        if (Time.get_now() - last_motion_time > 200) {
             on_paused();    
             reset();
             return;

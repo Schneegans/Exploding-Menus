@@ -647,7 +647,9 @@ public class TraceMenuItem {
                 label_size.x += TraceMenu.LABEL_HEIGHT/2;
 
             // draw label background
-            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
+//            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
+            var color = new Color.from_word(label);
+            ctx.set_source_rgba(color.r, color.g, color.b, label_alpha.val);
             ctx.set_line_width(TraceMenu.LABEL_HEIGHT*label_alpha.val);
             ctx.set_line_join(Cairo.LineJoin.ROUND);
             ctx.set_line_cap(Cairo.LineCap.ROUND);

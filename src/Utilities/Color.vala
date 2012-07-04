@@ -51,6 +51,14 @@ public class Color: GLib.Object {
     }
     
     /////////////////////////////////////////////////////////////////////
+    /// Creates a solid color with the given RGB values.
+    /////////////////////////////////////////////////////////////////////
+
+    public Color.from_char_rgb(int red, int green, int blue) {
+        Color.from_rgba(red/255.0f, green/255.0f, blue/255.0f, 1.0f);
+    }
+    
+    /////////////////////////////////////////////////////////////////////
     /// Creates a translucient color with the given RGBA values.
     /////////////////////////////////////////////////////////////////////
     
@@ -123,6 +131,60 @@ public class Color: GLib.Object {
         if (s > 0.15f) s = 0.65f;
 
         v = 1.0f;
+    }
+    
+    public Color.from_word(string word) {
+        var colors = new Gee.HashMap<char, Color?>();
+            colors.set('a', new Color.from_char_rgb(204, 0, 1));
+            colors.set('b', new Color.from_char_rgb(0, 0, 0));
+            colors.set('c', new Color.from_char_rgb(251, 177, 192));
+            colors.set('d', new Color.from_char_rgb(0, 198, 199));
+            colors.set('e', new Color.from_char_rgb(145, 194, 252));
+            colors.set('f', new Color.from_char_rgb(149, 82, 40));
+            colors.set('g', new Color.from_char_rgb(98, 1, 160));
+            colors.set('h', new Color.from_char_rgb(92, 47, 24));
+            colors.set('i', new Color.from_char_rgb(254, 210, 1));
+            colors.set('j', new Color.from_char_rgb(81, 69, 169));
+            colors.set('k', new Color.from_char_rgb(114, 1, 254));
+            colors.set('l', new Color.from_char_rgb(88, 204, 53));
+            colors.set('m', new Color.from_char_rgb(110, 24, 71));
+            colors.set('n', new Color.from_char_rgb(248, 105, 1));
+            colors.set('o', new Color.from_char_rgb(253, 251, 140));
+            colors.set('p', new Color.from_char_rgb(49, 113, 1));
+            colors.set('q', new Color.from_char_rgb(1, 22, 111));
+            colors.set('r', new Color.from_char_rgb(254, 2, 1));
+            colors.set('s', new Color.from_char_rgb(254, 1, 203));
+            colors.set('t', new Color.from_char_rgb(251, 143, 45));
+            colors.set('u', new Color.from_char_rgb(249, 191, 3));
+            colors.set('v', new Color.from_char_rgb(183, 237, 37));
+            colors.set('w', new Color.from_char_rgb(3, 31, 140));
+            colors.set('x', new Color.from_char_rgb(161, 161, 161));
+            colors.set('y', new Color.from_char_rgb(167, 1, 1));
+            colors.set('z', new Color.from_char_rgb(255, 153, 52));
+            
+        double total = 0.0;
+        double rtotal = 0.0;
+        double gtotal = 0.0;
+        double btotal = 0.0; 
+        
+        var lower_word = word.down();
+
+        for (int i=1; i<=word.length && i<=2; ++i) {
+            if (colors.has_key(lower_word[i-1])) {
+                var color = colors[lower_word[i-1]];
+
+                rtotal +=  color.r / i;
+                gtotal +=  color.g / i;
+                btotal +=  color.b / i;
+
+                total += 1.0/i;
+            }
+        }
+
+        Color.from_rgb((float)(rtotal/total), (float)(gtotal/total), (float)(btotal/total));
+
+        s = 0.3f;
+        v = 0.9f;
     }
     
     /////////////////////////////////////////////////////////////////////

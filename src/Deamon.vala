@@ -37,11 +37,14 @@ public class Deamon : GLib.Object {
     /// Available command line options.
     /////////////////////////////////////////////////////////////////////
     
-    private static string menu_mode = "real_circular";
+    private static string menu_type = "trace";
+    private static string menu_mode = "real";
     
     private const GLib.OptionEntry[] options = {
+        { "type", 't', 0, GLib.OptionArg.STRING, out menu_type, 
+          "Possible values: test, trace, coral, linear" },
         { "mode", 'm', 0, GLib.OptionArg.STRING, out menu_mode, 
-          "Possible values: test, real_circular, real_linear, numbers, compass, directions, names_circular, names_linear" },
+          "Possible values: real, random" },
         { null }
     };
 
@@ -73,7 +76,7 @@ public class Deamon : GLib.Object {
 	    // finished loading... so run the prog!
 	    message("Started happily...");
         
-        if (menu_mode == "test") {
+        if (menu_type == "test") {
         
             var test = new Test();
             test.init(); 
@@ -82,7 +85,7 @@ public class Deamon : GLib.Object {
         } else {
         
             var menu = new MenuManager();
-            menu.init(menu_mode);
+            menu.init(menu_type, menu_mode);
             
             menu.on_cancel.connect(() => {
                 message("Canceled.");

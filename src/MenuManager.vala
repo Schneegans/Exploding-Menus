@@ -22,6 +22,8 @@ public class MenuManager : GLib.Object {
 
     private BindingManager bindings = null;
     private Menu menu = null;
+    
+    private string type;
     private string mode;
     
     private ulong cancel_handler;
@@ -35,12 +37,11 @@ public class MenuManager : GLib.Object {
         bindings.on_press.connect((id) => {
             menu.set_structure(setup_menu(mode));
             menu.show();
-        });
-    
-        
+        }); 
     }
     
-    public void init(string menu_mode) {
+    public void init(string menu_type, string menu_mode) {
+        type = menu_type;
         mode = menu_mode;
         
         if (menu != null) {
@@ -48,10 +49,9 @@ public class MenuManager : GLib.Object {
             menu.disconnect(select_handler);
         }
         
-        if (mode == "numbers" || mode == "random_linear" || mode == "real_linear") 
-            menu = new LinearMenu();
-        else                      
-            menu = new TraceMenu();
+        if (type == "linear")     menu = new LinearMenu();
+        else if (type == "coral") menu = new CoralMenu();
+        else                      menu = new TraceMenu();
         
         cancel_handler = menu.on_cancel.connect(() => {
             on_cancel();
@@ -63,10 +63,8 @@ public class MenuManager : GLib.Object {
     }
     
     private MenuItem setup_menu(string menu_mode) {
-        if (menu_mode == "compass") return setup_compass_menu();
-        if (menu_mode == "directions") return setup_direction_menu();
-        if (menu_mode == "numbers") return setup_number_menu();
-        if (menu_mode == "random_linear" || menu_mode == "random_circular") return setup_name_menu();
+        if (menu_mode == "random")       
+            return setup_name_menu();
         
         return setup_gedit_menu();
     }
@@ -100,6 +98,27 @@ public class MenuManager : GLib.Object {
                 edit.add_child(new MenuItem("Kopieren", "edit-copy"));
                 edit.add_child(new MenuItem("Einfügen", "editpaste"));
                 edit.add_child(new MenuItem("Einstellungen", ""));
+                
+                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
+                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
+                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
+                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
+                edit.add_child(new MenuItem("Einfügen", "editpaste"));
+                edit.add_child(new MenuItem("Einstellungen", ""));
+                
+                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
+                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
+                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
+                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
+                edit.add_child(new MenuItem("Einfügen", "editpaste"));
+                edit.add_child(new MenuItem("Einstellungen", ""));
+                
+                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
+                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
+                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
+                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
+                edit.add_child(new MenuItem("Einfügen", "editpaste"));
+                edit.add_child(new MenuItem("Einstellungen", ""));
             root.add_child(edit);
             
             var view = new MenuItem("Ansicht", "");
@@ -116,6 +135,12 @@ public class MenuManager : GLib.Object {
                         tmp2.add_child(new MenuItem("Python", ""));
                         tmp2.add_child(new MenuItem("Ruby", ""));
                         tmp2.add_child(new MenuItem("Shell", ""));
+                        
+                        tmp2.add_child(new MenuItem("C++", ""));
+                        tmp2.add_child(new MenuItem("Vala", ""));
+                        tmp2.add_child(new MenuItem("Python", ""));
+                        tmp2.add_child(new MenuItem("Ruby", ""));
+                        tmp2.add_child(new MenuItem("Shell", ""));
                     tmp.add_child(tmp2);
                     
                     tmp2 = new MenuItem("Auszeichnung", "");
@@ -123,6 +148,12 @@ public class MenuManager : GLib.Object {
                         tmp2.add_child(new MenuItem("Latex", ""));
                         tmp2.add_child(new MenuItem("XSLT", ""));
                         tmp2.add_child(new MenuItem("XML", ""));
+                        
+                        tmp2.add_child(new MenuItem("C++", ""));
+                        tmp2.add_child(new MenuItem("Vala", ""));
+                        tmp2.add_child(new MenuItem("Python", ""));
+                        tmp2.add_child(new MenuItem("Ruby", ""));
+                        tmp2.add_child(new MenuItem("Shell", ""));
                     tmp.add_child(tmp2);
                 
                     tmp2 = new MenuItem("Wissenschaftlich", "");
@@ -130,6 +161,12 @@ public class MenuManager : GLib.Object {
                         tmp2.add_child(new MenuItem("GAP", ""));
                         tmp2.add_child(new MenuItem("Octave", ""));
                         tmp2.add_child(new MenuItem("R", ""));
+                        
+                        tmp2.add_child(new MenuItem("C++", ""));
+                        tmp2.add_child(new MenuItem("Vala", ""));
+                        tmp2.add_child(new MenuItem("Python", ""));
+                        tmp2.add_child(new MenuItem("Ruby", ""));
+                        tmp2.add_child(new MenuItem("Shell", ""));
                     tmp.add_child(tmp2);
                     
                 view.add_child(tmp);
@@ -179,8 +216,9 @@ public class MenuManager : GLib.Object {
     
     private MenuItem setup_name_menu() {
     
-        string[] forenames = { "Thomas", "Hans", "Jim", "Alexander", "Beate", "Jennifer", "Karla", "Theresa"};
-        string[] names = { "Anders", "Zimmermann", "Schulze", "Bauer", "Schreiber", "Jauch", "Opolka"};
+        string[] forenames = { "Karl", "Hans", "Jens", "Rainer", "Andreas", "John", "Sebastian", "Tom"};
+        string[] middlenames = { "Heinz", "Peter", "Martin", "Herbert", "Werner", "Frederick", "Eric"};
+        string[] names = { "Schulze", "Zimmermann", "Walther", "Bauer", "Schreiber", "Schuhmacher", "Müller"};
         int[] taken_forenames = {};
 
         var root = new MenuItem("Names", "");
@@ -207,85 +245,55 @@ public class MenuManager : GLib.Object {
             
             var tmp = new MenuItem(forename, "");
             
-            int[] taken_names = {};
+            int[] taken_middlenames = {};
             
             for (int j=0; j<7; ++j) {
                 // get random name
-                string name = "";
+                string middlename = "";
                 bool already_taken2 = true;
                 while (already_taken2) {
                     int index = GLib.Random.int_range(0, 7);
 
                     already_taken2 = false;
-                    foreach(var z in taken_names) {
+                    foreach(var z in taken_middlenames) {
                         if (z == index)
                             already_taken2 = true;
                     }
                     
                     if (!already_taken2) {
-                        name = names[index];
-                        taken_names += index;
+                        middlename = middlenames[index];
+                        taken_middlenames += index;
                     }
                 }
+                
+                var tmp_tmp = new MenuItem(middlename, "");
             
+                int[] taken_names = {};
             
-                tmp.add_child(new MenuItem(name, ""));
-            }
-            
-            root.add_child(tmp);
-        }
-            
-        return root;
-    }
-    
-    private MenuItem setup_compass_menu() {
-    
-        string[] directions = { "Norden", "Nordwesten", "Westen", "Südwesten", "Nordosten", "Osten", "Südosten", "Süden"};
-        var root = new MenuItem("Directions", "");
-        
-        for (int i=0; i<8; ++i) {
-            var tmp = new MenuItem(directions[i], "");
-            
-            for (int j=0; j<8; ++j) {
-                if (7-i != j)
-                    tmp.add_child(new MenuItem(directions[j], "")); 
-            }
-            
-            root.add_child(tmp);
-        }
+                for (int k=0; k<7; ++k) {
+                    // get random name
+                    string name = "";
+                    bool already_taken3 = true;
+                    while (already_taken3) {
+                        int index = GLib.Random.int_range(0, 7);
 
-        return root;
-    }
-    
-    private MenuItem setup_direction_menu() {
-    
-        string[] directions = { "Oben", "Oben links", "Links", "Unten links", "Oben rechts", "Rechts", "Unten rechts", "Unten"};
-        var root = new MenuItem("Directions", "");
-        
-        for (int i=0; i<8; ++i) {
-            var tmp = new MenuItem(directions[i], "");
+                        already_taken3 = false;
+                        foreach(var z in taken_names) {
+                            if (z == index)
+                                already_taken3 = true;
+                        }
+                        
+                        if (!already_taken3) {
+                            name = names[index];
+                            taken_names += index;
+                        }
+                    }
+                
+                
+                    tmp_tmp.add_child(new MenuItem(name, ""));
+                }
             
-            for (int j=0; j<8; ++j) {
-                if (7-i != j)
-                    tmp.add_child(new MenuItem(directions[j], "")); 
-            }
-            
-            root.add_child(tmp);
-        }
-
-        return root;
-    }
-    
-    private MenuItem setup_number_menu() {
-    
-        var root = new MenuItem("Numbers", "");
-        
-        for (int i=1; i<=8; ++i) {
-        
-            var tmp = new MenuItem("%i. Eintrag".printf(i), "");
-        
-            for (int j=1; j<=7; ++j) {
-                tmp.add_child(new MenuItem("%i. Eintrag".printf(j), ""));
+                tmp.add_child(tmp_tmp);
             }
             
             root.add_child(tmp);

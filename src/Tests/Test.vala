@@ -66,7 +66,7 @@ public class Test : GLib.Object {
                 instruction.set_text(heading("Erster Versuch") + "Klicke mit der <b>rechten Maustaste</b> auf den Smile, um ein Kontextmenü zu öffnen. Mach dich zunächst mit der Funktionsweise des Menüs vertraut, indem du <b>mehrmals beliebige Einträge</b> auswählst." + hint("Sobald du dich im Umgang mit dem Menü sicher fühlst, betätige die Leertaste."));
                 
                 menu = new MenuManager();
-                menu.init("real_linear");
+                menu.init("linear", "real");
 
                 break;
                 
