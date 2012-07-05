@@ -45,6 +45,7 @@ public class CoralMenuItem {
     private double direction = 0.0;
     private int depth = 0;
     private bool hovered = false;
+    private bool closing = false;
     
     private State state = State.INVISIBLE;
     
@@ -77,8 +78,8 @@ public class CoralMenuItem {
             
         } else {
 
-            double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
-            double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
+            double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
+            double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
             
             this.depth = parent.depth + 1;
             this.direction = get_item_direction(parent_direction, index, parent_child_count, total_angle, max_item_angle);
@@ -96,24 +97,46 @@ public class CoralMenuItem {
     }
     
     public void close(bool delayed) {
-        foreach (var child in children)
-            child.close(delayed);
-//        
-//        if (delayed) {
-//            GLib.Timeout.add((uint)(CoralMenu.FADE_OUT_TIME*1000), () => {
-//                this.label_alpha.reset_target(0.0, CoralMenu.ANIMATION_TIME);
-//                return false;
-//            });           
-//        } else {
-//            this.label_alpha.reset_target(0.0, CoralMenu.ANIMATION_TIME);
-//        }                 
+    
+        closing = true;
+    
+        if (delayed) {
+            for(int i=0; i<children.size; ++i) {
+            
+                children[i].close(delayed);
+            
+                if (children[i].state != State.EXPANDED && parent != null) {
+                    children[i].set_state(State.PREVIEW);
+                    children[i].update_offset(i, children.size);
+                } 
+            }
+            
+            GLib.Timeout.add((uint)(CoralMenu.FADE_OUT_TIME*1000), () => {
+                this.label_alpha.reset_target(0.0, CoralMenu.ANIMATION_TIME);
+                this.small_label_alpha.reset_target(0.0, CoralMenu.ANIMATION_TIME);
+                return false;
+            });   
+            
+        } else {
+            foreach (var child in children)
+                child.close(delayed);
+                
+            this.label_alpha.reset_target(0.0, CoralMenu.ANIMATION_TIME);
+            this.small_label_alpha.reset_target(0.0, CoralMenu.ANIMATION_TIME);
+        }               
     }
     
     public string activate(Vector mouse) {
         
-       switch (state) {
-           
+        foreach (var child in children) {
+            if (child.state == State.EXPANDED) 
+                return child.activate(mouse);
         }
+        
+        if (hovered && children.size > 0)
+            return "_keep_open";
+        else if (hovered)
+            return get_path(); 
 
         return "_cancel";
     }
@@ -133,12 +156,19 @@ public class CoralMenuItem {
                 break;
                 
             case State.EXPANDED:
-                foreach (var child in children)
-                    child.set_state(State.ACTIVE);
-                if (parent != null)
-                    foreach (var sibling in parent.children)
-                        if (sibling != this)
-                            sibling.set_state(State.INACTIVE);
+                if (children.size > 0) {
+                    foreach (var child in children)
+                        child.set_state(State.ACTIVE);
+                    if (parent != null)
+                        foreach (var sibling in parent.children)
+                            if (sibling != this)
+                                sibling.set_state(State.INACTIVE);
+                } else {
+                    if (parent != null)
+                        foreach (var sibling in parent.children)
+                            if (sibling != this)
+                                sibling.set_state(State.ACTIVE);
+                }
                 break;
                 
             case State.ACTIVE:
@@ -162,45 +192,49 @@ public class CoralMenuItem {
         
         Vector center = new Vector((int)offset_x.end + parent_center.x, (int)offset_y.end + parent_center.y);
         
-        if (parent != null && (state == State.ACTIVE || state == State.INACTIVE || state == State.EXPANDED)) {
-            double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
-            double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
-            double item_angle = get_angle_per_item(parent.children.size, total_angle, max_item_angle);
-            double max_angle = direction + item_angle*0.5*0.8;
-            double min_angle = direction - item_angle*0.5*0.8;
-            double max_distance = Vector.distance(center, parent_center) + CoralMenu.ITEM_RADIUS;
-            double bottom_radius = GLib.Math.tan(get_angle_per_item(parent.children.size, total_angle, max_item_angle)*0.5) * CoralMenu.INNER_ITEM_RADIUS;
-            double min_distance = CoralMenu.INNER_ITEM_RADIUS - bottom_radius;
-            
-            this.hovered = mouse_is_inside_cone(window, parent_center, max_angle, min_angle, max_distance, min_distance);
-        }
-        
-        if (this.hovered && state != State.EXPANDED) {
-            set_state(State.EXPANDED);
-            
-            if (parent != null) {
-                for (int i=0; i<parent.children.size; ++i)
-                    parent.children[i].update_offset(i, parent.children.size);
-            } else {
-                update_offset(0, 0);
-            }
-        } else if(!this.hovered && state == State.EXPANDED) {
-            
-            double parent_distance = Vector.direction(parent_center, center).length();
-            if (mouse_is_inside_circle(window, parent_center, parent_distance)) {
-            
+        if (!closing) {
+            if (parent != null && (state == State.ACTIVE || state == State.INACTIVE || state == State.EXPANDED)) {
+                double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
+                double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
+                double item_angle = get_angle_per_item(parent.children.size, total_angle, max_item_angle);
+                double max_angle = direction + item_angle*0.5*0.9;
+                double min_angle = direction - item_angle*0.5*0.9;
+                double max_distance = Vector.distance(center, parent_center) + CoralMenu.ITEM_RADIUS;
                 
+                if (state == State.ACTIVE || state == State.EXPANDED)
+                    max_distance += 80;
+                
+                double bottom_radius = GLib.Math.tan(get_angle_per_item(parent.children.size, total_angle, max_item_angle)*0.5) * CoralMenu.INNER_ITEM_RADIUS;
+                double min_distance = CoralMenu.INNER_ITEM_RADIUS - bottom_radius;
+
+                this.hovered = mouse_is_inside_cone(window, parent_center, max_angle, min_angle, max_distance, min_distance);
+            }
             
+            if (this.hovered && state != State.EXPANDED) {
+                set_state(State.EXPANDED);
+                
                 if (parent != null) {
-                    for (int i=0; i<parent.children.size; ++i) {
-                        parent.children[i].set_state(State.ACTIVE);
+                    for (int i=0; i<parent.children.size; ++i)
                         parent.children[i].update_offset(i, parent.children.size);
-                    }
                 } else {
-                    set_state(State.ACTIVE);
                     update_offset(0, 0);
                 }
+            } else if(!this.hovered && state == State.EXPANDED) {
                 
+                double parent_distance = Vector.direction(parent_center, center).length();
+                if (children.size == 0 || mouse_is_inside_circle(window, parent_center, parent_distance)) {
+
+                    if (parent != null) {
+                        for (int i=0; i<parent.children.size; ++i) {
+                            parent.children[i].set_state(State.ACTIVE);
+                            parent.children[i].update_offset(i, parent.children.size);
+                        }
+                    } else {
+                        set_state(State.ACTIVE);
+                        update_offset(0, 0);
+                    }
+                    
+                }
             }
         }
         
@@ -209,12 +243,38 @@ public class CoralMenuItem {
         }
     }
     
-    public void draw_bg(Cairo.Context ctx, InvisibleWindow window, Vector parent_center) {
+    public void draw_labels_bg(Cairo.Context ctx, InvisibleWindow window, Vector parent_center) {
+        Vector center = new Vector((int)offset_x.val + parent_center.x, (int)offset_y.val + parent_center.y);
+        
+        if (parent != null && state != State.INVISIBLE) {
+            draw_label_bg(ctx, window, center);
+        }
+        
+        foreach (var child in children) {
+            if (!child.hovered)
+                child.draw_labels_bg(ctx, window, center);
+        }
+        
+        foreach (var child in children) {
+            if (child.hovered)
+                child.draw_labels_bg(ctx, window, center);
+        }
+    }
+    
+    public void draw_labels(Cairo.Context ctx, InvisibleWindow window, Vector parent_center) {
         Vector center = new Vector((int)offset_x.val + parent_center.x, (int)offset_y.val + parent_center.y);
         
         if (parent != null && state != State.INVISIBLE) {
             draw_label(ctx, window, center);
         }
+        
+        foreach (var child in children) {
+            child.draw_labels(ctx, window, center);
+        }
+    }
+    
+    public void draw_bg(Cairo.Context ctx, InvisibleWindow window, Vector parent_center) {
+        Vector center = new Vector((int)offset_x.val + parent_center.x, (int)offset_y.val + parent_center.y);
         
         foreach (var child in children) {
             child.draw_bg(ctx, window, center);
@@ -246,6 +306,8 @@ public class CoralMenuItem {
                 ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
             else
                 ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                
+            
             
 
             if (state == State.PREVIEW) {
@@ -255,8 +317,11 @@ public class CoralMenuItem {
                 
             } else {
             
-                double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
-                double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
+                if (label == "Karl" || label == "Heinz" || label == "Bauer")
+                    ctx.set_source_rgb(1, 1, 0);
+            
+                double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
+                double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
 
             
                 var bottom_center = Vector.sum(direction_to_coords(this.direction, CoralMenu.INNER_ITEM_RADIUS), parent_center);
@@ -288,17 +353,14 @@ public class CoralMenuItem {
         } else {
         
             double new_label_alpha = 0;
-            double new_small_label_alpha = 0;
-            double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
-            double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
+            double new_small_label_alpha = 1;
+            double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
+            double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
             double new_radius = get_item_radius(parent_child_count, total_angle, max_item_angle);
             
-            if (state == State.ACTIVE) {
+            if (state == State.ACTIVE || (hovered && (state != State.EXPANDED || children.size == 0))) {
                 new_label_alpha = 1.0;
-            }
-            
-            if (state == State.INACTIVE) {
-                new_small_label_alpha = 1.0;
+                new_small_label_alpha = 0.5;
             }
                 
             double new_distance = get_item_distance(parent_child_count, total_angle, max_item_angle);
@@ -320,7 +382,7 @@ public class CoralMenuItem {
         }
     }
     
-    private void draw_label(Cairo.Context ctx, InvisibleWindow window, Vector center) {
+    private void draw_label_bg(Cairo.Context ctx, InvisibleWindow window, Vector center) {
         
         if (label_alpha.val > 0.05) {
         
@@ -328,8 +390,13 @@ public class CoralMenuItem {
             var label_size = new Vector(0, 0);
             layout.get_pixel_size(out label_size.x, out label_size.y);
             
-            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val*label_alpha.val*0.9);
-            ctx.set_line_width(CoralMenu.LABEL_HEIGHT);
+            if (hovered)    ctx.set_source_rgba(SEL_R, SEL_G, SEL_B, label_alpha.val*label_alpha.val*0.9);
+            else            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val*label_alpha.val*0.9);
+            
+            if (label == "Karl" || label == "Heinz" || label == "Bauer")
+                ctx.set_source_rgba(1, 1, 0, label_alpha.val*label_alpha.val*0.9);
+            
+            ctx.set_line_width(CoralMenu.LABEL_HEIGHT+10);
             ctx.set_line_join(Cairo.LineJoin.ROUND);
             ctx.set_line_cap(Cairo.LineCap.ROUND);
             ctx.move_to(center.x, center.y);
@@ -345,6 +412,18 @@ public class CoralMenuItem {
             }
             
             ctx.stroke();
+        }
+    }
+    
+    private void draw_label(Cairo.Context ctx, InvisibleWindow window, Vector center) {
+        
+        if (label_alpha.val > 0.05) {
+        
+            var layout = window.create_pango_layout(label);
+            var label_size = new Vector(0, 0);
+            layout.get_pixel_size(out label_size.x, out label_size.y);
+            
+             var corner = Vector.sum(direction_to_coords(this.direction, 40), center);
             
             if (direction > GLib.Math.PI*0.5 && direction < GLib.Math.PI*1.5) {
                 ctx.move_to(corner.x - label_size.x, corner.y - 6);
@@ -363,9 +442,7 @@ public class CoralMenuItem {
         
         if (small_label_alpha.val > 0.05) {
         
-            string text = label;
-            
-            if (label.length > 1) text = label[0:2] + "...";
+            string text = label.slice(0, (long)GLib.Math.fmin(3, label.length));
             
             var layout = window.create_pango_layout(text);
             var label_size = new Vector(0, 0);
@@ -462,7 +539,7 @@ public class CoralMenuItem {
     private bool mouse_is_inside_cone(InvisibleWindow window, Vector center, double max_angle, double min_angle, double max_distance, double min_distance) {
         var mouse = get_mouse_angle(window, center);
         
-        if (!angle_is_between(mouse, min_angle, max_angle))
+        if (!angle_is_between(mouse, fmod(min_angle, GLib.Math.PI*2), fmod(max_angle, GLib.Math.PI*2)))
             return false;
             
         if (Vector.distance(center, window.get_mouse_pos()) < min_distance)
@@ -479,7 +556,7 @@ public class CoralMenuItem {
         var diff = Vector.direction(center, mouse);
         double angle = 0;
 
-        if (diff.length_sqr() > TraceMenu.ACTIVE_ITEM_RADIUS*TraceMenu.ACTIVE_ITEM_RADIUS) {
+        if (diff.length_sqr() > 1) {
             
             if (diff.x == 0) {
                 angle = diff.y < 0 ? 1.5*GLib.Math.PI : 0.5*GLib.Math.PI;
@@ -500,6 +577,17 @@ public class CoralMenuItem {
         }
         
         return angle;
+    }
+    
+    private double fmod(double in_value, double mod) {
+        double result = in_value;
+        while (result >= mod)
+            result -= mod;
+            
+        while (result < 0.0)
+            result += mod;
+        
+        return result;
     }
     
 }

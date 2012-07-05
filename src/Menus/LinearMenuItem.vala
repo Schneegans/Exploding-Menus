@@ -192,10 +192,18 @@ public class LinearMenuItem {
         foreach (var child in children) {
         
             // draw selected bg
+            
+            if (child.label == "Karl" || child.label == "Heinz" || child.label == "Bauer") {
+                ctx.set_source_rgb(1, 1, 0);
+                draw_round_rectangle(ctx, top_left, Vector.sum(top_left, new Vector(menu_size.x, ITEM_HEIGHT)), 5);
+            }
+            
             if (child.state == State.HOVERED || child.state == State.SELECTED) {
                 ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                 draw_round_rectangle(ctx, top_left, Vector.sum(top_left, new Vector(menu_size.x, ITEM_HEIGHT)), 5);
             }
+            
+            
             
             // draw icon
             if (child.icon_name != "") {
