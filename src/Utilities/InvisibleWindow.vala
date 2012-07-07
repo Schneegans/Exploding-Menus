@@ -35,6 +35,8 @@ public class InvisibleWindow : Gtk.Window {
     
     private GLib.Timer timer;
     
+    private Vector mouse;
+    
     /////////////////////////////////////////////////////////////////////
     /// C'tor, sets up the window.
     /////////////////////////////////////////////////////////////////////
@@ -51,6 +53,8 @@ public class InvisibleWindow : Gtk.Window {
         this.set_accept_focus(false);
         this.set_app_paintable(true);
         this.maximize();
+        
+        this.mouse = new Vector(0,0);
         
         this.set_visual(this.screen.get_rgba_visual());
         
@@ -116,13 +120,12 @@ public class InvisibleWindow : Gtk.Window {
         }); 
     }
     
-    public Vector get_mouse_pos() {
-        var result = new Vector(0, 0);
-    
-        // get the mouse position
-        this.get_pointer(out result.x, out result.y);
+    public Vector get_mouse_pos(bool realtime) {
+        if (realtime) {
+            this.get_pointer(out mouse.x, out mouse.y);
+        }
         
-        return result;
+        return mouse.copy();
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -151,6 +154,10 @@ public class InvisibleWindow : Gtk.Window {
     /////////////////////////////////////////////////////////////////////
 
     private bool draw_window(Cairo.Context ctx) { 
+    
+        // get the mouse position
+        this.get_pointer(out mouse.x, out mouse.y);
+    
         ctx.set_operator (Cairo.Operator.CLEAR);
         ctx.paint();
         ctx.set_operator (Cairo.Operator.OVER);
@@ -160,6 +167,8 @@ public class InvisibleWindow : Gtk.Window {
         this.timer.reset();
         
         this.on_draw(ctx, frame_time);
+        
+        
         
         return true;
     }

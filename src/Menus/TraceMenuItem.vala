@@ -283,7 +283,7 @@ public class TraceMenuItem {
                 
             case State.AT_MOUSE:
             
-                update_position(Vector.direction(parent_center, window.get_mouse_pos()), 0);
+                update_position(Vector.direction(parent_center, window.get_mouse_pos(false)), 0);
                 label_alpha.reset_target(1.0, 0);
                 
                 
@@ -308,7 +308,7 @@ public class TraceMenuItem {
             case State.INSPECT:
             case State.SELECTABLE:
             
-                var mouse = window.get_mouse_pos();
+                var mouse = window.get_mouse_pos(false);
                 
                 // draw label
                 if (!marking_mode) {
@@ -427,7 +427,7 @@ public class TraceMenuItem {
                     ctx.move_to(center.x, center.y);
                     
                     ctx.set_line_width(draw_radius.val);
-                    ctx.line_to(window.get_mouse_pos().x, window.get_mouse_pos().y);
+                    ctx.line_to(window.get_mouse_pos(false).x, window.get_mouse_pos(false).y);
                     ctx.stroke();
                 }
                 
@@ -648,8 +648,14 @@ public class TraceMenuItem {
 
             // draw label background
 //            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
-            var color = new Color.from_word(label);
-            ctx.set_source_rgba(color.r, color.g, color.b, label_alpha.val);
+//            var color = new Color.from_word(label);
+//            ctx.set_source_rgba(color.r, color.g, color.b, label_alpha.val);
+
+//            if (label == "Karl" || label == "Heinz" || label == "Bauer")
+//                ctx.set_source_rgba(1, 1, 0, label_alpha.val);
+//            else
+                ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val);
+
             ctx.set_line_width(TraceMenu.LABEL_HEIGHT*label_alpha.val);
             ctx.set_line_join(Cairo.LineJoin.ROUND);
             ctx.set_line_cap(Cairo.LineCap.ROUND);
@@ -969,11 +975,11 @@ public class TraceMenuItem {
     }
     
     private bool a_slice_is_active(InvisibleWindow window, Vector center) {
-        return Vector.direction(window.get_mouse_pos(), center).length_sqr() > TraceMenu.ACTIVE_ITEM_RADIUS*TraceMenu.ACTIVE_ITEM_RADIUS; 
+        return Vector.direction(window.get_mouse_pos(false), center).length_sqr() > TraceMenu.ACTIVE_ITEM_RADIUS*TraceMenu.ACTIVE_ITEM_RADIUS; 
     }
     
     private double get_mouse_angle(InvisibleWindow window, Vector center) {
-        var mouse = window.get_mouse_pos();
+        var mouse = window.get_mouse_pos(false);
         var diff = Vector.direction(center, mouse);
         double angle = 0;
 

@@ -64,7 +64,10 @@ public class MenuManager : GLib.Object {
     
     private MenuItem setup_menu(string menu_mode) {
         if (menu_mode == "random")       
-            return setup_name_menu();
+            return setup_name_menu(true);
+            
+        if (menu_mode == "static")       
+            return setup_name_menu(false);
         
         return setup_gedit_menu();
     }
@@ -214,7 +217,7 @@ public class MenuManager : GLib.Object {
         return root;
     }
     
-    private MenuItem setup_name_menu() {
+    private MenuItem setup_name_menu(bool random) {
     
         string[] forenames = { "Karl", "Hans", "Jens", "Rainer", "Andreas", "John", "Sebastian", "Tom"};
         string[] middlenames = { "Heinz", "Peter", "Martin", "Herbert", "Werner", "Frederick", "Eric"};
@@ -229,7 +232,7 @@ public class MenuManager : GLib.Object {
             string forename = "";
             bool already_taken = true;
             while (already_taken) {
-                int index = GLib.Random.int_range(0, 8);
+                int index = random ? GLib.Random.int_range(0, 8) : i;
                 
                 already_taken = false;
                 foreach(var z in taken_forenames) {
@@ -252,7 +255,7 @@ public class MenuManager : GLib.Object {
                 string middlename = "";
                 bool already_taken2 = true;
                 while (already_taken2) {
-                    int index = GLib.Random.int_range(0, 7);
+                    int index = random ? GLib.Random.int_range(0, 7) : j;
 
                     already_taken2 = false;
                     foreach(var z in taken_middlenames) {
@@ -275,7 +278,7 @@ public class MenuManager : GLib.Object {
                     string name = "";
                     bool already_taken3 = true;
                     while (already_taken3) {
-                        int index = GLib.Random.int_range(0, 7);
+                        int index = random ? GLib.Random.int_range(0, 7) : k;
 
                         already_taken3 = false;
                         foreach(var z in taken_names) {

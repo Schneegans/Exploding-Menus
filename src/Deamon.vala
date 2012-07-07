@@ -39,12 +39,15 @@ public class Deamon : GLib.Object {
     
     private static string menu_type = "trace";
     private static string menu_mode = "real";
+    private static bool colorize = false;
     
     private const GLib.OptionEntry[] options = {
         { "type", 't', 0, GLib.OptionArg.STRING, out menu_type, 
           "Possible values: test, trace, coral, linear" },
         { "mode", 'm', 0, GLib.OptionArg.STRING, out menu_mode, 
-          "Possible values: real, random" },
+          "Possible values: real, random, static" },
+        { "colorize", 'c', 0, GLib.OptionArg.NONE, out colorize, 
+          "If set, one particular item will be highlighted." },
         { null }
     };
 

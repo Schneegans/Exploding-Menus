@@ -75,7 +75,7 @@ public class TraceMenu: GLib.Object, Menu {
             if (!closing) {
                 if (!released && root.in_marking_mode() && root.submenu_is_hovered()) {
                     do_action(true);
-                    pause_location = window.get_mouse_pos();
+                    pause_location = window.get_mouse_pos(true);
                 } 
             }
         });
@@ -86,14 +86,14 @@ public class TraceMenu: GLib.Object, Menu {
         
         window.on_motion.connect((x, y, state) => {
             if (!released && !root.in_marking_mode() && (state & Gdk.ModifierType.BUTTON3_MASK) != 0) {
-                if (Vector.direction(window.get_mouse_pos(), pause_location).length() > SELECTABLE_PIE_RADIUS) {
+                if (Vector.direction(window.get_mouse_pos(true), pause_location).length() > SELECTABLE_PIE_RADIUS) {
                     root.set_marking_mode(true);
                     root.update_position(center, ANIMATION_TIME);
                 }
             }
             
             if (root.in_marking_mode() && !closing) {
-                mark.update(window.get_mouse_pos());
+                mark.update(window.get_mouse_pos(true));
             }
         });
         
@@ -116,7 +116,7 @@ public class TraceMenu: GLib.Object, Menu {
             ctx.paint_with_alpha(alpha.val);
             
             if (root.in_marking_mode() && !closing) {
-                mark.update(window.get_mouse_pos());
+                mark.update(window.get_mouse_pos(true));
             }
         });
         
@@ -178,8 +178,8 @@ public class TraceMenu: GLib.Object, Menu {
         alpha.reset_target(1, ANIMATION_TIME);
         
         window.open();
-        center = window.get_mouse_pos();
-        pause_location = window.get_mouse_pos();
+        center = window.get_mouse_pos(true);
+        pause_location = window.get_mouse_pos(true);
         
         warp_pointer();
         
@@ -190,7 +190,7 @@ public class TraceMenu: GLib.Object, Menu {
     }
     
     private void do_action(bool cancel_marking_mode) {
-        var mouse = window.get_mouse_pos();
+        var mouse = window.get_mouse_pos(true);
         var activated_item = root.activate(mouse);
         
         if (activated_item != "_keep_open") {
@@ -230,7 +230,7 @@ public class TraceMenu: GLib.Object, Menu {
     }
     
     private void warp_pointer() {
-        var mouse = window.get_mouse_pos();
+        var mouse = window.get_mouse_pos(true);
         var display = Gdk.Display.get_default();
         var manager = display.get_device_manager();
         var screen = Gdk.Screen.get_default();

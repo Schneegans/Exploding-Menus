@@ -84,13 +84,13 @@ public class LinearMenu: GLib.Object, Menu {
         alpha.reset_target(1, ANIMATION_TIME);
         
         window.open();
-        center = window.get_mouse_pos();
+        center = window.get_mouse_pos(true);
         
         open_time = Time.get_now();
     }
     
     private void do_action() {
-        var mouse = window.get_mouse_pos();
+        var mouse = window.get_mouse_pos(true);
         var activated_item = root.activate(mouse);
         
         if (activated_item != "_keep_open") {

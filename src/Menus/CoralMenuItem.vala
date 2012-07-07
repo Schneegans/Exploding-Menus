@@ -47,6 +47,9 @@ public class CoralMenuItem {
     private bool hovered = false;
     private bool closing = false;
     
+    private Vector last_mouse_location = null;
+    private double mouse_direction = -1;
+    
     private State state = State.INVISIBLE;
     
     
@@ -184,6 +187,9 @@ public class CoralMenuItem {
     }
     
     public void update(InvisibleWindow window, Vector parent_center, double frame_time) {
+    
+        this.update_mouse_direction(window);
+    
         this.offset_x.update(frame_time);   
         this.offset_y.update(frame_time);
         this.draw_radius.update(frame_time);
@@ -210,30 +216,63 @@ public class CoralMenuItem {
                 this.hovered = mouse_is_inside_cone(window, parent_center, max_angle, min_angle, max_distance, min_distance);
             }
             
-            if (this.hovered && state != State.EXPANDED) {
-                set_state(State.EXPANDED);
+            if (parent != null && this.hovered && state != State.EXPANDED) {
+            
+                int expanded_sibling = -1;
                 
-                if (parent != null) {
-                    for (int i=0; i<parent.children.size; ++i)
-                        parent.children[i].update_offset(i, parent.children.size);
-                } else {
-                    update_offset(0, 0);
+                for (int i=0; i < parent.children.size; ++i) {
+                    if (parent.children[i].state == State.EXPANDED) {
+                        expanded_sibling = i;
+                        break;
+                    }
                 }
-            } else if(!this.hovered && state == State.EXPANDED) {
                 
-                double parent_distance = Vector.direction(parent_center, center).length();
-                if (children.size == 0 || mouse_is_inside_circle(window, parent_center, parent_distance)) {
-
+                double first_child_angle = 0;
+                double last_child_angle = 0;
+                
+                if (expanded_sibling >= 0 && parent.children[expanded_sibling].children.size > 0) {
+                    first_child_angle = parent.children[expanded_sibling].children[0].direction;
+                    last_child_angle =  parent.children[expanded_sibling].children[parent.children[expanded_sibling].children.size-1].direction;
+                }
+                
+                // nicht(ein sibling is expanded und mouse bewegt sich in richtung dessen childs)
+                if (!(expanded_sibling >= 0 && angle_is_between(mouse_direction, first_child_angle, last_child_angle))) {
+                    set_state(State.EXPANDED);
+                    
                     if (parent != null) {
-                        for (int i=0; i<parent.children.size; ++i) {
-                            parent.children[i].set_state(State.ACTIVE);
+                        for (int i=0; i<parent.children.size; ++i)
                             parent.children[i].update_offset(i, parent.children.size);
-                        }
                     } else {
-                        set_state(State.ACTIVE);
                         update_offset(0, 0);
                     }
-                    
+                } else {
+                    this.hovered = false;
+                }
+            } else if(!this.hovered && state == State.EXPANDED) {
+            
+                double first_child_angle = 0;
+                double last_child_angle = 0;
+                
+                if (children.size > 0) {
+                    first_child_angle = children[0].direction;
+                    last_child_angle = children[children.size-1].direction;
+                }
+                
+                // mouse bewegt sich nicht in richtung eines childs
+                if (!(angle_is_between(mouse_direction, first_child_angle, last_child_angle)) || children.size == 0) {
+                    double parent_distance = Vector.direction(parent_center, center).length();
+                    if (children.size == 0 || mouse_is_inside_circle(window, parent_center, parent_distance)) {
+
+                        if (parent != null) {
+                            for (int i=0; i<parent.children.size; ++i) {
+                                parent.children[i].set_state(State.ACTIVE);
+                                parent.children[i].update_offset(i, parent.children.size);
+                            }
+                        } else {
+                            set_state(State.ACTIVE);
+                            update_offset(0, 0);
+                        }
+                    }
                 }
             }
         }
@@ -317,8 +356,8 @@ public class CoralMenuItem {
                 
             } else {
             
-                if (label == "Karl" || label == "Heinz" || label == "Bauer")
-                    ctx.set_source_rgb(1, 1, 0);
+//                if (label == "Karl" || label == "Heinz" || label == "Bauer")
+//                    ctx.set_source_rgb(1, 1, 0);
             
                 double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
                 double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
@@ -393,8 +432,8 @@ public class CoralMenuItem {
             if (hovered)    ctx.set_source_rgba(SEL_R, SEL_G, SEL_B, label_alpha.val*label_alpha.val*0.9);
             else            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val*label_alpha.val*0.9);
             
-            if (label == "Karl" || label == "Heinz" || label == "Bauer")
-                ctx.set_source_rgba(1, 1, 0, label_alpha.val*label_alpha.val*0.9);
+//            if (label == "Karl" || label == "Heinz" || label == "Bauer")
+//                ctx.set_source_rgba(1, 1, 0, label_alpha.val*label_alpha.val*0.9);
             
             ctx.set_line_width(CoralMenu.LABEL_HEIGHT+10);
             ctx.set_line_join(Cairo.LineJoin.ROUND);
@@ -530,7 +569,7 @@ public class CoralMenuItem {
     }
 
     private bool mouse_is_inside_circle(InvisibleWindow window, Vector center, double radius) {
-        var mouse = window.get_mouse_pos();
+        var mouse = window.get_mouse_pos(false);
         var diff = Vector.direction(center, mouse);
 
         return diff.length_sqr() < radius*radius;
@@ -542,17 +581,17 @@ public class CoralMenuItem {
         if (!angle_is_between(mouse, fmod(min_angle, GLib.Math.PI*2), fmod(max_angle, GLib.Math.PI*2)))
             return false;
             
-        if (Vector.distance(center, window.get_mouse_pos()) < min_distance)
+        if (Vector.distance(center, window.get_mouse_pos(false)) < min_distance)
             return false;
             
-        if (Vector.distance(center, window.get_mouse_pos()) > max_distance)
+        if (Vector.distance(center, window.get_mouse_pos(false)) > max_distance)
             return false;
             
         return true;
     }
     
     private double get_mouse_angle(InvisibleWindow window, Vector center) {
-        var mouse = window.get_mouse_pos();
+        var mouse = window.get_mouse_pos(false);
         var diff = Vector.direction(center, mouse);
         double angle = 0;
 
@@ -590,4 +629,17 @@ public class CoralMenuItem {
         return result;
     }
     
+    private void update_mouse_direction(InvisibleWindow window) {
+        if (last_mouse_location == null)
+            last_mouse_location = window.get_mouse_pos(false);
+        
+        Vector mouse_pos = window.get_mouse_pos(false);
+        
+        if (mouse_pos.x == last_mouse_location.x && mouse_pos.y == last_mouse_location.y) {
+            mouse_direction = -1;
+        } else {
+            mouse_direction = get_mouse_angle(window, last_mouse_location);
+            last_mouse_location = mouse_pos;
+        }
+    }
 }

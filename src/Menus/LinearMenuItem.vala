@@ -121,7 +121,7 @@ public class LinearMenuItem {
     public void draw(Cairo.Context ctx, InvisibleWindow window, Vector topleft, double parent_width, double frame_time) {
         
         var menu_size = new Vector(get_width(window), get_height(window));       
-        var mouse = window.get_mouse_pos();
+        var mouse = window.get_mouse_pos(false);
         
         var pos = topleft.copy();
         
@@ -192,11 +192,11 @@ public class LinearMenuItem {
         foreach (var child in children) {
         
             // draw selected bg
-            
-            if (child.label == "Karl" || child.label == "Heinz" || child.label == "Bauer") {
-                ctx.set_source_rgb(1, 1, 0);
-                draw_round_rectangle(ctx, top_left, Vector.sum(top_left, new Vector(menu_size.x, ITEM_HEIGHT)), 5);
-            }
+//            
+//            if (child.label == "Karl" || child.label == "Heinz" || child.label == "Bauer") {
+//                ctx.set_source_rgb(1, 1, 0);
+//                draw_round_rectangle(ctx, top_left, Vector.sum(top_left, new Vector(menu_size.x, ITEM_HEIGHT)), 5);
+//            }
             
             if (child.state == State.HOVERED || child.state == State.SELECTED) {
                 ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
