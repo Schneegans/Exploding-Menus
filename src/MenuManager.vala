@@ -66,6 +66,10 @@ public class MenuManager : GLib.Object {
         });
     }
     
+    public string get_valid_entry() {
+        return menu.get_valid_entry();
+    }
+    
     private MenuItem setup_menu(string menu_mode) {
         if (menu_mode == "random")       
             return setup_name_menu(true, width, depth);
