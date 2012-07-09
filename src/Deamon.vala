@@ -40,6 +40,8 @@ public class Deamon : GLib.Object {
     private static string menu_type = "trace";
     private static string menu_mode = "real";
     private static bool colorize = false;
+    private static int depth = 2;
+    private static int width = 7;
     
     private const GLib.OptionEntry[] options = {
         { "type", 't', 0, GLib.OptionArg.STRING, out menu_type, 
@@ -48,6 +50,10 @@ public class Deamon : GLib.Object {
           "Possible values: real, random, static" },
         { "colorize", 'c', 0, GLib.OptionArg.NONE, out colorize, 
           "If set, one particular item will be highlighted." },
+        { "width", 'w', 0, GLib.OptionArg.INT, out width, 
+          "The width of the non-real menu." },
+        { "depth", 'd', 0, GLib.OptionArg.INT, out depth, 
+          "The depth of the non-real menu." },
         { null }
     };
 
@@ -88,7 +94,7 @@ public class Deamon : GLib.Object {
         } else {
         
             var menu = new MenuManager();
-            menu.init(menu_type, menu_mode);
+            menu.init(menu_type, menu_mode, width, depth);
             
             menu.on_cancel.connect(() => {
                 message("Canceled.");

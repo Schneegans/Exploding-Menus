@@ -25,7 +25,7 @@ public class CoralMenu: GLib.Object, Menu {
     public const double CHILDREN_ANGLE = GLib.Math.PI*2.0/2.2;
     
     public const double MAX_ITEM_ANGLE = CHILDREN_ANGLE/6;
-    public const double MAX_ITEM_DISTANCE = 300;
+    public const double MAX_ITEM_DISTANCE = 200;
     
     public const double ANIMATION_TIME = 0.3;
     public const double FADE_OUT_TIME = 0.5;

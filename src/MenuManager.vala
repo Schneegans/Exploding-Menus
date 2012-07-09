@@ -25,6 +25,8 @@ public class MenuManager : GLib.Object {
     
     private string type;
     private string mode;
+    private int depth;
+    private int width;
     
     private ulong cancel_handler;
     private ulong select_handler;
@@ -40,9 +42,11 @@ public class MenuManager : GLib.Object {
         }); 
     }
     
-    public void init(string menu_type, string menu_mode) {
-        type = menu_type;
-        mode = menu_mode;
+    public void init(string menu_type, string menu_mode, int width = 7, int depth = 2) {
+        this.type = menu_type;
+        this.mode = menu_mode;
+        this.width = width;
+        this.depth = depth;
         
         if (menu != null) {
             menu.disconnect(cancel_handler);
@@ -64,10 +68,10 @@ public class MenuManager : GLib.Object {
     
     private MenuItem setup_menu(string menu_mode) {
         if (menu_mode == "random")       
-            return setup_name_menu(true);
+            return setup_name_menu(true, width, depth);
             
         if (menu_mode == "static")       
-            return setup_name_menu(false);
+            return setup_name_menu(false, width, depth);
         
         return setup_gedit_menu();
     }
@@ -95,6 +99,27 @@ public class MenuManager : GLib.Object {
             root.add_child(file);
             
             var edit = new MenuItem("Bearbeiten", "gtk-edit");
+                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
+                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
+                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
+                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
+                edit.add_child(new MenuItem("Einfügen", "editpaste"));
+                edit.add_child(new MenuItem("Einstellungen", ""));
+                
+                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
+                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
+                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
+                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
+                edit.add_child(new MenuItem("Einfügen", "editpaste"));
+                edit.add_child(new MenuItem("Einstellungen", ""));
+                
+                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
+                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
+                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
+                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
+                edit.add_child(new MenuItem("Einfügen", "editpaste"));
+                edit.add_child(new MenuItem("Einstellungen", ""));
+                
                 edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
                 edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
                 edit.add_child(new MenuItem("Ausschneiden", "editcut"));
@@ -217,90 +242,51 @@ public class MenuManager : GLib.Object {
         return root;
     }
     
-    private MenuItem setup_name_menu(bool random) {
-    
-        string[] forenames = { "Karl", "Hans", "Jens", "Rainer", "Andreas", "John", "Sebastian", "Tom"};
-        string[] middlenames = { "Heinz", "Peter", "Martin", "Herbert", "Werner", "Frederick", "Eric"};
-        string[] names = { "Schulze", "Zimmermann", "Walther", "Bauer", "Schreiber", "Schuhmacher", "Müller"};
-        int[] taken_forenames = {};
-
-        var root = new MenuItem("Names", "");
+    private void setup_name_menu_recursively(MenuItem parent, bool random, int width, int depth, string[] labels) {
         
-        for (int i=0; i<8; ++i) {
+        int[] taken_labels = {};
+        
+        for (int i=0; i<width; ++i) {
             
             // get random forename
-            string forename = "";
+            string label = "";
             bool already_taken = true;
             while (already_taken) {
-                int index = random ? GLib.Random.int_range(0, 8) : i;
+                int index = random ? GLib.Random.int_range(0, labels.length-1) : i;
+                
+                if (depth%2 == 0)
+                    index = labels.length-1-index;
                 
                 already_taken = false;
-                foreach(var z in taken_forenames) {
-                    if (z == index)
+                foreach(var z in taken_labels) {
+                    if (z == index) {
                         already_taken = true;
+                        break;
+                    }
                 }
                 
                 if (!already_taken) {
-                    forename = forenames[index];
-                    taken_forenames += index;
+                    label = labels[index];
+                    taken_labels += index;
                 }
             }
             
-            var tmp = new MenuItem(forename, "");
+            var child = new MenuItem(label, "");
             
-            int[] taken_middlenames = {};
-            
-            for (int j=0; j<7; ++j) {
-                // get random name
-                string middlename = "";
-                bool already_taken2 = true;
-                while (already_taken2) {
-                    int index = random ? GLib.Random.int_range(0, 7) : j;
-
-                    already_taken2 = false;
-                    foreach(var z in taken_middlenames) {
-                        if (z == index)
-                            already_taken2 = true;
-                    }
-                    
-                    if (!already_taken2) {
-                        middlename = middlenames[index];
-                        taken_middlenames += index;
-                    }
-                }
-                
-                var tmp_tmp = new MenuItem(middlename, "");
-            
-                int[] taken_names = {};
-            
-                for (int k=0; k<7; ++k) {
-                    // get random name
-                    string name = "";
-                    bool already_taken3 = true;
-                    while (already_taken3) {
-                        int index = random ? GLib.Random.int_range(0, 7) : k;
-
-                        already_taken3 = false;
-                        foreach(var z in taken_names) {
-                            if (z == index)
-                                already_taken3 = true;
-                        }
-                        
-                        if (!already_taken3) {
-                            name = names[index];
-                            taken_names += index;
-                        }
-                    }
-                
-                
-                    tmp_tmp.add_child(new MenuItem(name, ""));
-                }
-            
-                tmp.add_child(tmp_tmp);
+            if (depth > 1) {
+                string[] names = { "Schulze", "Zimmermann", "Walther", "Bauer", "Schreiber", "Schuhmacher", "Müller", "Schönherr", "Schröder", "Gutsmann", "Schmidt", "Hoffmann", "Jenkins", "Wachmann", "Heinemann", "Wachser", "Bolle", "Lehmann", "Meier", "Franke", "Schulze", "Brandt", "Schneider", "Krämer", "Neumann"};
+                setup_name_menu_recursively(child, random, width, depth-1, names);
             }
             
-            root.add_child(tmp);
+            parent.add_child(child);
         }
+    }
+    
+    private MenuItem setup_name_menu(bool random, int width, int depth) {
+        string[] forenames = { "Karl", "Hans", "Jens", "Rainer", "Andreas", "John", "Sebastian", "Tom", "Veronika", "Karla", "Wenke", "Jennifer", "Jana", "Kerstin", "Theresa", "Maria", "Anke", "Karsten", "Thomas", "Chris", "Johannes", "Francis", "Maximilian", "Max", "René", "Nele", "Mareike"};
+
+        var root = new MenuItem("Names", "");
+        setup_name_menu_recursively(root, random, width, depth, forenames);
             
         return root;
     }

@@ -39,7 +39,6 @@ public class TraceMenu: GLib.Object, Menu {
     
     public const int WARP_ZONE = 200;
 
-    
     private InvisibleWindow window;
     private TraceMenuItem root;
     private Mark mark;
@@ -153,17 +152,41 @@ public class TraceMenu: GLib.Object, Menu {
     }
     
     public void set_structure(MenuItem top) {
-        root = create_items(top);
+        root = create_items(top, true);
         root.set_state(TraceMenuItem.State.ACTIVE);
         root.realize();
     }
     
-    private TraceMenuItem create_items(MenuItem source) {
+    private TraceMenuItem create_items(MenuItem source, bool root) {
         
-        var destination = new TraceMenuItem(source.name, source.icon);
+        var destination = new TraceMenuItem(source.name, source.icon, false);
         
-        foreach (var child in source.children) {
-            destination.add_child(create_items(child));
+        if (source.children.size <= 7 || (root && source.children.size <= 8)) {
+            foreach (var child in source.children) {
+                destination.add_child(create_items(child, false));
+            }
+        } else {
+            int submenus = (int)GLib.Math.ceil(GLib.Math.sqrt(source.children.size));
+            int items_per_menu = (int)GLib.Math.ceil((double)source.children.size/submenus);
+            
+            for (int i=0; i<submenus; ++i) {
+            
+                string menu_name = "";
+                for (int j=0; j<items_per_menu && i*items_per_menu+j < source.children.size; ++j) {
+                    if (j==0) menu_name = source.children[i*items_per_menu+j].name;
+                    else      menu_name = menu_name + "\n" + source.children[i*items_per_menu+j].name;
+                }
+            
+                var meta = new TraceMenuItem(menu_name, "", true);
+                
+            
+                for (int j=0; j<items_per_menu && i*items_per_menu+j < source.children.size; ++j) {
+                    meta.add_child(create_items(source.children[i*items_per_menu+j], false));
+                }
+                
+                destination.add_child(meta);
+            
+            }
         }
         
         return destination;

@@ -481,7 +481,10 @@ public class CoralMenuItem {
         
         if (small_label_alpha.val > 0.05) {
         
-            string text = label.slice(0, (long)GLib.Math.fmin(3, label.length));
+            string text = "";
+            
+            for(int i=0; i<GLib.Math.fmin(3, label.length); ++i)
+                text += label.get_char(label.index_of_nth_char(i)).to_string();
             
             var layout = window.create_pango_layout(text);
             var label_size = new Vector(0, 0);
@@ -546,14 +549,6 @@ public class CoralMenuItem {
         double max_item_radius = GLib.Math.sin(item_angle*0.5)*CoralMenu.MAX_ITEM_DISTANCE;
         
         return CoralMenu.ITEM_RADIUS > max_item_radius? max_item_radius : CoralMenu.ITEM_RADIUS;
-    }
-    
-    private double get_preview_radius(int parent_child_count, double total_angle, double max_item_angle) {
-        double item_angle = get_angle_per_item(parent_child_count, total_angle, max_item_angle);
-               
-        double radius = GLib.Math.sin(item_angle*0.5)*CoralMenu.ITEM_RADIUS;
-        
-        return radius;
     }
     
     private Vector direction_to_coords(double direction, double distance) {
