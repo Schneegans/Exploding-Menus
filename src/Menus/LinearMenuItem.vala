@@ -115,7 +115,7 @@ public class LinearMenuItem {
     public string get_path() {
         if (parent == null) return "";
         if (parent.parent == null) return label;
-        return parent.get_path() + " | " + label;
+        return parent.get_path() + "|" + label;
     }
     
     public void draw(Cairo.Context ctx, InvisibleWindow window, Vector topleft, double parent_width, double frame_time) {

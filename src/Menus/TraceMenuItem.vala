@@ -103,8 +103,14 @@ public class TraceMenuItem {
     
     public string get_path() {
         if (parent == null) return "";
+        
+        if (is_meta) {
+            if (parent.parent == null) return "";
+            return parent.get_path();
+        }
         if (parent.parent == null) return label;
-        return parent.get_path() + " | " + label;
+        return parent.get_path() + "|" + label;
+    
     }
     
     public void close(bool delayed) {

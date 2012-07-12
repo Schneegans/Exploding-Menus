@@ -31,4 +31,21 @@ public class MenuItem {
     public void add_child(MenuItem item) {
         children.add(item);
     }
+    
+    public string get_valid_entry(bool root = true) {
+        if (root) {
+            if (children.size > 0) {
+                int index = GLib.Random.int_range(0, children.size-1);
+                return children[index].get_valid_entry(false);
+            }
+            return "";
+        }
+       
+        if (children.size > 0) {
+            int index = GLib.Random.int_range(0, children.size-1);
+            return name + "|" + children[index].get_valid_entry(false);
+        }
+        return name;
+        
+    }
 }

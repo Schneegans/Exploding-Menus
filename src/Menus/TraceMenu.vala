@@ -153,7 +153,6 @@ public class TraceMenu: GLib.Object, Menu {
     
     public void set_structure(MenuItem top) {
         root = create_items(top, true);
-        root.set_state(TraceMenuItem.State.ACTIVE);
         root.realize();
     }
     
@@ -205,6 +204,8 @@ public class TraceMenu: GLib.Object, Menu {
         pause_location = window.get_mouse_pos(true);
         
         warp_pointer();
+        
+        root.set_state(TraceMenuItem.State.ACTIVE);
         
         root.update_position(center, 0.0);
         mark.update(center);

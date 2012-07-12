@@ -78,6 +78,18 @@ public class Logger {
     }
     
     /////////////////////////////////////////////////////////////////////
+    /// Appends a line to the log file
+    /////////////////////////////////////////////////////////////////////
+    
+    public static void write(string line) {
+        var log = GLib.FileStream.open("training.log", "a");
+            
+        if (log != null) {
+            log.puts(line + "\n");
+        }
+    }
+    
+    /////////////////////////////////////////////////////////////////////
     /// Displays a message.
     /////////////////////////////////////////////////////////////////////
     
@@ -138,7 +150,7 @@ public class Logger {
 	/// Returns the current time in hh:mm:ss:mmmmmm
 	/////////////////////////////////////////////////////////////////////
 	
-	private static string get_time() {
+	public static string get_time() {
         var now = new DateTime.now_local();
 	    return "%.4d:%.2d:%.2d:%.2d:%.2d:%.2d:%.6d".printf(now.get_year(), now.get_month(), now.get_day_of_month(), now.get_hour(), now.get_minute(), now.get_second(), now.get_microsecond());
 	}

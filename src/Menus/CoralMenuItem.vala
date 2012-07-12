@@ -96,7 +96,7 @@ public class CoralMenuItem {
     public string get_path() {
         if (parent == null) return "";
         if (parent.parent == null) return label;
-        return parent.get_path() + " | " + label;
+        return parent.get_path() + "|" + label;
     }
     
     public void close(bool delayed) {

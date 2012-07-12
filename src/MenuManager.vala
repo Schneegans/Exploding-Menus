@@ -22,6 +22,7 @@ public class MenuManager : GLib.Object {
 
     private BindingManager bindings = null;
     private Menu menu = null;
+    private MenuItem model = null;
     
     private string type;
     private string mode;
@@ -37,7 +38,7 @@ public class MenuManager : GLib.Object {
         bindings.bind(new Trigger.from_string("button3"), "button2");
         
         bindings.on_press.connect((id) => {
-            menu.set_structure(setup_menu(mode));
+            menu.set_structure(model);
             menu.show();
         }); 
     }
@@ -64,10 +65,12 @@ public class MenuManager : GLib.Object {
         select_handler = menu.on_select.connect((item, time) => {
             on_select(item, time);
         });
+        
+        model = setup_menu(mode);
     }
     
     public string get_valid_entry() {
-        return menu.get_valid_entry();
+        return model.get_valid_entry();
     }
     
     private MenuItem setup_menu(string menu_mode) {

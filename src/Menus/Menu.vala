@@ -22,6 +22,4 @@ public interface Menu : GLib.Object {
     
     public abstract void set_structure(MenuItem structure);
     public abstract void show();
-    
-    public abstract string get_valid_entry();
 }

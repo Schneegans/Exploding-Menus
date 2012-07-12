@@ -45,7 +45,7 @@ public class Deamon : GLib.Object {
     
     private const GLib.OptionEntry[] options = {
         { "type", 't', 0, GLib.OptionArg.STRING, out menu_type, 
-          "Possible values: test, trace, coral, linear" },
+          "Possible values: test, training, trace, coral, linear" },
         { "mode", 'm', 0, GLib.OptionArg.STRING, out menu_mode, 
           "Possible values: real, random, static" },
         { "colorize", 'c', 0, GLib.OptionArg.NONE, out colorize, 
@@ -88,6 +88,15 @@ public class Deamon : GLib.Object {
         if (menu_type == "test") {
         
             var test = new Test();
+            test.init(); 
+            Gtk.main();
+            
+        } else if (menu_type == "training") {
+        
+            var test = new Training();
+            test.on_finish.connect(() => {
+                Gtk.main_quit();
+            });
             test.init(); 
             Gtk.main();
             

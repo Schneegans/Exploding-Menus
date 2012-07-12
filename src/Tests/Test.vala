@@ -189,12 +189,17 @@ public class Test : GLib.Object {
                 disconnect_handlers();
                 
                 select_handler = menu.on_select.connect((item, time) => {
-                    if (item == target) debug("%u");
-                    else                debug("fail");
+                    if (item == target) {
+                        debug("%u", time);
+                        smile.notify(true);
+                    } else {
+                        debug("fail");
+                        smile.notify(false);
+                    }
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    debug("fail");
+                    debug("cancel");
                 });
                 
                 break;
