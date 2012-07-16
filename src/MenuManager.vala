@@ -39,9 +39,11 @@ public class MenuManager : GLib.Object {
         bindings.bind(new Trigger.from_string("button3"), "button2");
         
         bindings.on_press.connect((id) => {
-            on_open();
-            menu.set_structure(model);
-            menu.show();
+            if (!menu.is_open()) {
+                on_open();
+                menu.set_structure(model);
+                menu.show();
+            }
         }); 
     }
     

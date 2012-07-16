@@ -75,7 +75,6 @@ public class Deamon : GLib.Object {
             warning(error.message);
         }
         
-        Gdk.threads_enter();
         Icon.init();
         
         // connect SigHandlers
@@ -85,13 +84,7 @@ public class Deamon : GLib.Object {
 	    // finished loading... so run the prog!
 	    message("Started happily...");
         
-        if (menu_type == "test") {
-        
-            var test = new Test();
-            test.init(); 
-            Gtk.main();
-            
-        } else if (menu_type == "g1_final") {
+        if (menu_type == "g1_final") {
         
             var test = new G1_Final();
             test.on_finish.connect(() => {
@@ -142,8 +135,6 @@ public class Deamon : GLib.Object {
             
             Gtk.main();
         }
-
-	    Gdk.threads_leave();
     }
     
     /////////////////////////////////////////////////////////////////////

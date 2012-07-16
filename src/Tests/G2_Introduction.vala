@@ -76,13 +76,13 @@ public class G2_Introduction : GLib.Object {
                 next_page_introduction();
                 break;
             case 1:
-                training_trace();
+                introduction_trace();
                 break;
             case 2:
-                training_coral();
+                introduction_coral();
                 break;
             case 3:
-                training_linear();
+                introduction_linear();
                 break;
             case 4:
                 next_page_finish();
@@ -96,16 +96,30 @@ public class G2_Introduction : GLib.Object {
         switch (page) {
             case 0: 
                 instruction.set_text(heading("Willkommen") + 
-                                     "zum ultimativen <b>Piemenü-Training</b>! \n" +
-                                     "Bitte wähle die gewünschten Einträge konzentriert aus - "+
-                                     "falls du eine Auswahl abbrichst, wird das als Fehlversuch gewertet! "+
-                                     "Mach es dir bequem, diesmal beginnen mit dem..."+
+                                     "zum ultimativen <b>Piemenü-Test</b>! \n" +
+                                     "Mach es dir gemütlich; diese Textmeldungen werden"+
+                                     " dich Stück für Stück durch den gesamten Test führen."+ 
                                      hint("Weiter mit Leertaste..."));
+                break;
+            
+            case 1: 
+                instruction.set_text(heading("Einführung") + 
+                                     "Im folgenden wirst du mit verschiedenen, "+
+                                     "unkonventionellen Menüarten bekannt gemacht.\n\n" +
+                                     "Später wird es deine Aufgabe sein, den Umgang mit diesen "+
+                                     "Menüs zu üben und zu bewerten."+
+                                     hint("Weiter mit Leertaste..."));
+                break;    
+                
+            case 2: 
+                instruction.set_text(heading("Einführung") +
+                                     "Dabei wirst du alles geben müssen. Aber das Beste ist: Danach gibt's Cookies!\n\n" +
+                                     "Beginnen wir mit dem ersten Menü..." +  
+                                     hint("Leertaste um mit dem ersten Menü zu beginnen..."));
+                
                 int index = GLib.Random.int_range(0, trainings.size);
                 set_stage(trainings.get(index));
                 trainings.remove_at(index); 
-                
-                Logger.write("##START_OF_TRAINING## " + Logger.get_time());
                 
                 break;
         }
@@ -115,11 +129,17 @@ public class G2_Introduction : GLib.Object {
     
     private void next_page_finish() {
         switch (page) {
-            case 0: 
+            case 1: 
                 instruction.set_text(heading("Ach nee..") + 
                                      "Du bist ja schon durch jedes Menü durch! "+
-                                     "Dann hab herzlichen Dank und bis zum bächsten mal!" + 
-                                     hint("Beenden mit Leertaste!"));
+                                     "Dann hab schon einmal Dank für deine Teilnahme bis hierher!" + 
+                                     hint("Weiter mit Leertaste..."));
+                break;
+            case 2: 
+                instruction.set_text(heading("Ausblick") + 
+                                     "In der folgenden Testeinheit lernst du die Menüeinträge kennen, die du " +
+                                     "in den nächsten Tagen üben wirst." +
+                                     hint("Beenden mit Leertaste."));
                 break;
             default:
                 on_finish();
@@ -130,98 +150,48 @@ public class G2_Introduction : GLib.Object {
     }
    
     
-    private void training_trace() {
-        int repetitions = 0;
-        var targets = new Gee.ArrayList<string?>();
-        string target = "";
-        
-        Logger.write("#TRACE_TRAINING# ");
-
-        next request_next = () => {
-            if (repetitions == REPETITIONS && targets.size == 0) {
-                instruction.set_text(heading("Trace-Menu-Training") + 
-                                     "Sehr gut! Du wirst immer besser! "+
-                                     "Wir machen weiter mit dem..."+
+    private void introduction_trace() {
+        switch (page) {
+            case 1: 
+                instruction.set_text(heading("Das Trace-Menu") + 
+                                     "Das Menü, mit dem du dich nun beschäftigen wirst," +
+                                     " ist der Prototyp eines Piemenüs mit \"Marking-Mode\".\n\n" +
+                                     "Es ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
+                                     "wählst wird das nichts bewirken, du kannst dich also austoben!"+
                                      hint("Weiter mit Leertaste..."));
+                break;
+            case 2: 
+                instruction.set_text(heading("Das Trace-Menu") + 
+                                     "Um dich mit dem Menü vertraut zu machen, "+
+                                     "klicke mit der <b>rechten Maustaste</b> "+
+                                     "auf den Smile. Es wird sich ein Kontextmenü zu öffnen. \n\n"+
+                                     "Wähle <b>mehrmals beliebige "+
+                                     "Einträge</b> aus bis du die Funktionsweise des" +
+                                     " Menüs verstanden hast."+ 
+                                     hint("Sobald du dich im Umgang mit dem Menü"+
+                                          " sicher fühlst, betätige die Leertaste."));
                 
-                if (trainings.size > 0) {
-                    int index = GLib.Random.int_range(0, trainings.size);
-                    set_stage(trainings.get(index));
-                    trainings.remove_at(index); 
-                } else {
-                    set_stage(4);
-                }               
+                if (menu == null) menu = new MenuManager();
+                menu.init("trace", "real");
+
+                break;
                 
-                disconnect_handlers();
-                
-                ready = true;
-            } else {
-            
-                if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
-                    ++repetitions;
-                } 
-                
-                target = targets.get(GLib.Random.int_range(0, targets.size));          
-                instruction.set_text(heading("Trace-Menu-Training") +     
-                                     "Wähle den Eintrag <b>"+ target +"</b>"+
-                                     hint("Sobald du das Menü öffnest, verschwindet "+
-                                     "dieser Hinweis! Präge ihn dir also gut ein."));
+            case 3: 
+                instruction.set_text(heading("Das Trace-Menu") + 
+                                     "Dieser Menütyp hat einen Expertenmodus. Um ihn zu benutzen, "+
+                                     "halte die rechte Maustaste gedrückt und <b>zeichne den Pfad</b> "+
+                                     "zu dem gewünschten Eintrag.\n\n"+ 
+                                     "<b>Mach dich mit dem Modus vertraut</b> indem du diverse Einträge "+
+                                     "auswählst, wie zum Beispiel \"Datei - Speichern als - Sound-Datei\"!"+
+                                     hint("Sobald du dich im Umgang mit dem Experten-Modus"+
+                                          " sicher fühlst, betätige die Leertaste."));
+
+                break;
+            case 4: 
+                instruction.set_text(heading("Das Trace-Menu") + 
+                                     "So viel zu diesem Menü. Machen wir weiter mit dem nächsten Menütyp."+
+                                     hint("Leertaste um mit dem nächsten Typ zu beginnen!"));
                                      
-                targets.remove(target);
-            }
-        };
-        
-        request_next();
-        
-        if (menu == null) menu = new MenuManager();
-        menu.init("trace", "real");
-        
-        disconnect_handlers();
-        
-        select_handler = menu.on_select.connect((item, time) => {
-            if (item == target) {
-                Logger.write("%s: %u".printf(target, time));
-                smile.notify(true);
-            } else {
-                Logger.write("%s: -1".printf(target));
-                smile.notify(false);
-            }
-
-            request_next();
-        });
-        
-        cancel_handler = menu.on_cancel.connect(() => {
-            Logger.write("%s: -1".printf(target));
-            smile.notify(false);
-            
-            request_next();
-        });
-        
-        open_handler = menu.on_open.connect(() => {
-            instruction.set_text("");
-        });
-    }
-    
-    
-    
-    
-    private void training_coral() {
-        int repetitions = 0;
-        var targets = new Gee.ArrayList<string?>();
-        string target = "";
-        
-        Logger.write("#CORAL_TRAINING# ");
-
-        next request_next = () => {
-            if (repetitions == REPETITIONS && targets.size == 0) {
-                instruction.set_text(heading("Coral-Menu-Training") + 
-                                     "Sehr gut! Du wirst immer besser! "+
-                                     "Wir machen weiter mit dem..."+
-                                     hint("Weiter mit Leertaste..."));
-                
                 if (trainings.size > 0) {
                     int index = GLib.Random.int_range(0, trainings.size);
                     set_stage(trainings.get(index));
@@ -229,154 +199,103 @@ public class G2_Introduction : GLib.Object {
                 } else {
                     set_stage(4);
                 }  
-                
-                disconnect_handlers();
-                
-                ready = true;
-            } else {
-            
-                if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
-                    ++repetitions;
-                } 
-                
-                target = targets.get(GLib.Random.int_range(0, targets.size));          
-                instruction.set_text(heading("Coral-Menu-Training") +     
-                                     "Wähle den Eintrag <b>"+ target +"</b>"+
-                                     hint("Sobald du das Menü öffnest, verschwindet "+
-                                     "dieser Hinweis! Präge ihn dir also gut ein."));
-                                     
-                targets.remove(target);
-            }
-        };
-        
-        request_next();
-        
-        if (menu == null) menu = new MenuManager();
-        menu.init("coral", "real");
-        
-        disconnect_handlers();
-        
-        select_handler = menu.on_select.connect((item, time) => {
-            if (item == target) {
-                Logger.write("%s: %u".printf(target, time));
-                smile.notify(true);
-            } else {
-                Logger.write("%s: -1".printf(target));
-                smile.notify(false);
-            }
 
-            request_next();
-        });
+                break;
+        }
         
-        cancel_handler = menu.on_cancel.connect(() => {
-            Logger.write("%s: -1".printf(target));
-            smile.notify(false);
-            
-            request_next();
-        });
-        
-        open_handler = menu.on_open.connect(() => {
-            instruction.set_text("");
-        });
+        ready = true;
     }
     
-    
-    
-    
-    private void training_linear() {
-        int repetitions = 0;
-        var targets = new Gee.ArrayList<string?>();
-        string target = "";
-        
-        Logger.write("#LINEAR_TRAINING# ");
-
-        next request_next = () => {
-            if (repetitions == REPETITIONS && targets.size == 0) {
-                instruction.set_text(heading("Linear-Menu-Training") + 
-                                     "Sehr gut! Du wirst immer besser! "+
-                                     "Wir machen weiter mit dem..."+
+    private void introduction_coral() {
+        switch (page) {
+            case 1: 
+                instruction.set_text(heading("Das Coral-Menu") + 
+                                     "Das Menü, mit dem du dich nun beschäftigen wirst," +
+                                     " ist der Prototyp eines Piemenüs mit innovativer Itemanordnung.\n\n" +
+                                     "Es ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
+                                     "wählst wird das nichts bewirken, du kannst dich also austoben!"+
                                      hint("Weiter mit Leertaste..."));
+                break;
+            case 2: 
+                instruction.set_text(heading("Das Coral-Menu") + 
+                                     "Um dich mit dem Menü vertraut zu machen, "+
+                                     "klicke mit der <b>rechten Maustaste</b> "+
+                                     "auf den Smile. Es wird sich ein Kontextmenü zu öffnen. \n\n"+
+                                     "Wähle <b>mehrmals beliebige "+
+                                     "Einträge</b> aus bis du die Funktionsweise des" +
+                                     " Menüs verstanden hast."+ 
+                                     hint("Sobald du dich im Umgang mit dem Menü"+
+                                          " sicher fühlst, betätige die Leertaste."));
                 
+                if (menu == null) menu = new MenuManager();
+                menu.init("coral", "real");
+
+                break;
+            case 3: 
+                instruction.set_text(heading("Das Coral-Menu") + 
+                                     "So viel zu diesem Menü. Machen wir weiter mit dem nächsten Menütyp."+
+                                     hint("Leertaste um mit dem nächsten Typ zu beginnen!"));
+                                     
                 if (trainings.size > 0) {
                     int index = GLib.Random.int_range(0, trainings.size);
                     set_stage(trainings.get(index));
                     trainings.remove_at(index); 
                 } else {
                     set_stage(4);
-                }               
+                }  
+
+                break;
+        }
+        
+        ready = true;
+    }
+    
+    private void introduction_linear() {
+        switch (page) {
+            case 1: 
+                instruction.set_text(heading("Das Lineare Menü") + 
+                                     "Das Menü, mit dem du dich nun beschäftigen wirst," +
+                                     " ist eine Nachbildung eines normalen Menüs. Es"+
+                                     " dient als Vergleichsbasis zu den anderen Menütypen.\n\n" +
+                                     "Es ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
+                                     "wählst wird das nichts bewirken, du kannst dich also austoben!"+
+                                     hint("Weiter mit Leertaste..."));
+                break;
+            case 2: 
+                instruction.set_text(heading("Das Lineare Menü") + 
+                                     "Um dich mit dem Menü vertraut zu machen, "+
+                                     "klicke mit der <b>rechten Maustaste</b> "+
+                                     "auf den Smile. Es wird sich ein Kontextmenü zu öffnen. \n\n"+
+                                     "Wähle <b>mehrmals beliebige "+
+                                     "Einträge</b> aus bis du die Funktionsweise des" +
+                                     " Menüs verstanden hast."+ 
+                                     hint("Sobald du dich im Umgang mit dem Menü"+
+                                          " sicher fühlst, betätige die Leertaste."));
                 
-                disconnect_handlers();
+                if (menu == null) menu = new MenuManager();
+                menu.init("linear", "real");
+
+                break;
                 
-                ready = true;
-            } else {
-            
-                if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
-                    ++repetitions;
-                } 
-                
-                target = targets.get(GLib.Random.int_range(0, targets.size));          
-                instruction.set_text(heading("Linear-Menu-Training") +     
-                                     "Wähle den Eintrag <b>"+ target +"</b>"+
-                                     hint("Sobald du das Menü öffnest, verschwindet "+
-                                     "dieser Hinweis! Präge ihn dir also gut ein."));
+            case 3: 
+                instruction.set_text(heading("Das Lineare Menü") + 
+                                     "So viel zu diesem Menü. Machen wir weiter mit dem nächsten Menütyp."+
+                                     hint("Leertaste um mit dem nächsten Typ zu beginnen!"));
                                      
-                targets.remove(target);
-            }
-        };
-        
-        request_next();
-        
-        if (menu == null) menu = new MenuManager();
-        menu.init("linear", "real");
-        
-        disconnect_handlers();
-        
-       select_handler = menu.on_select.connect((item, time) => {
-            if (item == target) {
-                Logger.write("%s: %u".printf(target, time));
-                smile.notify(true);
-            } else {
-                Logger.write("%s: -1".printf(target));
-                smile.notify(false);
-            }
+                if (trainings.size > 0) {
+                    int index = GLib.Random.int_range(0, trainings.size);
+                    set_stage(trainings.get(index));
+                    trainings.remove_at(index); 
+                } else {
+                    set_stage(4);
+                }  
 
-            request_next();
-        });
+                break;
+        }
         
-        cancel_handler = menu.on_cancel.connect(() => {
-            Logger.write("%s: -1".printf(target));
-            smile.notify(false);
-            
-            request_next();
-        });
-        
-        open_handler = menu.on_open.connect(() => {
-            instruction.set_text("");
-        });
+        ready = true;
     }
-    
 
-    
-    private void disconnect_handlers() {
-        if (cancel_handler > 0)
-            menu.disconnect(cancel_handler);
-            
-        if (select_handler > 0)
-            menu.disconnect(select_handler);
-            
-        if (open_handler > 0)
-            menu.disconnect(open_handler);
-        
-        cancel_handler = 0;
-        select_handler = 0;
-        open_handler = 0;
-    }
     
     private string heading(string text) {
         return "<span size='25000'><b>" + text + "</b></span>\n\n";

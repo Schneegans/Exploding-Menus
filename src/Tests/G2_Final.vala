@@ -96,16 +96,15 @@ public class G2_Final : GLib.Object {
         switch (page) {
             case 0: 
                 instruction.set_text(heading("Willkommen") + 
-                                     "zum ultimativen <b>Piemenü-Training</b>! \n" +
-                                     "Bitte wähle die gewünschten Einträge konzentriert aus - "+
-                                     "falls du eine Auswahl abbrichst, wird das als Fehlversuch gewertet! "+
-                                     "Mach es dir bequem, diesmal beginnen mit dem..."+
-                                     hint("Weiter mit Leertaste..."));
+                                     "zum abschließenden Test! Diesmal wirst du wieder"+
+                                     " Items wählen müssen. Allerdings sind es diesmal andere!\n\n"+
+                                     " Anschließend gibt es noch einen Fragebogen. <b>Und Cookies</b>!"+
+                                     hint("Zum Beginnen Leertaste... wie immer..."));
                 int index = GLib.Random.int_range(0, trainings.size);
                 set_stage(trainings.get(index));
                 trainings.remove_at(index); 
                 
-                Logger.write("##START_OF_TRAINING## " + Logger.get_time());
+                Logger.write("##START_OF_INTERFERENCE_TEST## " + Logger.get_time());
                 
                 break;
         }
@@ -118,7 +117,7 @@ public class G2_Final : GLib.Object {
             case 0: 
                 instruction.set_text(heading("Ach nee..") + 
                                      "Du bist ja schon durch jedes Menü durch! "+
-                                     "Dann hab herzlichen Dank und bis zum bächsten mal!" + 
+                                     "Dann hab herzlichen Dank! Und viel Spaß beim Ausfüllen des Fragebogens!" + 
                                      hint("Beenden mit Leertaste!"));
                 break;
             default:
@@ -135,7 +134,7 @@ public class G2_Final : GLib.Object {
         var targets = new Gee.ArrayList<string?>();
         string target = "";
         
-        Logger.write("#TRACE_TRAINING# ");
+        Logger.write("#TRACE_INTERFERENCE_TEST# ");
 
         next request_next = () => {
             if (repetitions == REPETITIONS && targets.size == 0) {
@@ -213,7 +212,7 @@ public class G2_Final : GLib.Object {
         var targets = new Gee.ArrayList<string?>();
         string target = "";
         
-        Logger.write("#CORAL_TRAINING# ");
+        Logger.write("#CORAL_INTERFERENCE_TEST# ");
 
         next request_next = () => {
             if (repetitions == REPETITIONS && targets.size == 0) {
@@ -291,7 +290,7 @@ public class G2_Final : GLib.Object {
         var targets = new Gee.ArrayList<string?>();
         string target = "";
         
-        Logger.write("#LINEAR_TRAINING# ");
+        Logger.write("#LINEAR_INTERFERENCE_TEST# ");
 
         next request_next = () => {
             if (repetitions == REPETITIONS && targets.size == 0) {

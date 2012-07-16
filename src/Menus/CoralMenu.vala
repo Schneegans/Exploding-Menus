@@ -49,7 +49,7 @@ public class CoralMenu: GLib.Object, Menu {
         
         window.on_draw.connect((ctx, frame_time) => {
             
-            if (alpha.val < 0.05) {
+            if (alpha.val < 0.15) {
                 alpha.update(frame_time);
                 return;
             }
@@ -83,6 +83,10 @@ public class CoralMenu: GLib.Object, Menu {
                 released = true;
             }
         });
+    }
+    
+    public bool is_open() {
+        return window.visible;
     }
     
     public void set_structure(MenuItem top) {
