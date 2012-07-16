@@ -198,6 +198,9 @@ public class CoralMenuItem {
         
         Vector center = new Vector((int)offset_x.end + parent_center.x, (int)offset_y.end + parent_center.y);
         
+        if (parent == null)
+            clamp_to_screen(parent_center);
+        
         if (!closing) {
             if (parent != null && (state == State.ACTIVE || state == State.INACTIVE || state == State.EXPANDED)) {
                 double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
@@ -214,8 +217,6 @@ public class CoralMenuItem {
                 double min_distance = CoralMenu.INNER_ITEM_RADIUS - bottom_radius;
 
                 this.hovered = mouse_is_inside_cone(window, parent_center, max_angle, min_angle, max_distance, min_distance);
-                
-             //   clamp_to_screen(center);
             }
             
             if (parent != null && this.hovered && state != State.EXPANDED) {
@@ -646,28 +647,44 @@ public class CoralMenuItem {
         }
     }
     
-    private void clamp_to_screen(Vector pos) {
-        var warp = new Vector(0,0);
+    private void clamp_to_screen(Vector parent_center) {
+        
         var screen = Gdk.Screen.get_default();
         
-        if (pos.x < CoralMenu.WARP_ZONE)                warp.x = CoralMenu.WARP_ZONE - pos.x;
-        if (pos.x > screen.width()-CoralMenu.WARP_ZONE) warp.x = - CoralMenu.WARP_ZONE - pos.x + screen.width();
+        var min = new Vector(screen.width(),screen.height());
+        var max = new Vector(0,0);
         
-        if (pos.y < CoralMenu.WARP_ZONE)                 warp.y = CoralMenu.WARP_ZONE - pos.y;
-        if (pos.y > screen.height()-CoralMenu.WARP_ZONE) warp.y = - CoralMenu.WARP_ZONE - pos.y + screen.height();
+        get_bounding_box(ref max, ref min, parent_center);
         
-        move_all(warp);
+        var warp = new Vector(0,0);
+        
+        if (min.x < CoralMenu.WARP_ZONE)                warp.x = CoralMenu.WARP_ZONE - min.x;
+        if (max.x > screen.width()-CoralMenu.WARP_ZONE) warp.x = - CoralMenu.WARP_ZONE - max.x + screen.width();
+        
+        if (min.y < CoralMenu.WARP_ZONE)                 warp.y = CoralMenu.WARP_ZONE - min.y;
+        if (max.y > screen.height()-CoralMenu.WARP_ZONE) warp.y = - CoralMenu.WARP_ZONE - max.y + screen.height();
+        
+        offset_x.reset_target(offset_x.end + warp.x, CoralMenu.ANIMATION_TIME);
+        offset_y.reset_target(offset_y.end + warp.y, CoralMenu.ANIMATION_TIME);
+    
+        last_mouse_location = null;
+        mouse_direction = -1;
     }
     
-    private void move_all(Vector offset) {
-        if (parent != null) {
-            parent.move_all(offset);
-        } else {
-            
-            debug("%f %f", offset.x, offset.y);
+    private void get_bounding_box(ref Vector max, ref Vector min, Vector parent_center) {
+        Vector center = new Vector((int)offset_x.val + parent_center.x, (int)offset_y.val + parent_center.y);
         
-            offset_x.reset_target(offset_x.end + offset.x, CoralMenu.ANIMATION_TIME);
-            offset_y.reset_target(offset_y.end + offset.y, CoralMenu.ANIMATION_TIME);
-        }
+        if (center.x < min.x) min.x = center.x;
+        if (center.y < min.y) min.y = center.y;
+        if (center.x > max.x) max.x = center.x;
+        if (center.y > max.y) max.y = center.y;
+        
+        foreach (var child in children)
+            child.get_bounding_box(ref max, ref min, center);
     }
 }
+
+
+
+
+
