@@ -29,6 +29,8 @@ public class CoralMenu: GLib.Object, Menu {
     
     public const double ANIMATION_TIME = 0.3;
     public const double FADE_OUT_TIME = 0.5;
+    
+    public const int WARP_ZONE = 200;
 
     private InvisibleWindow window;
     private CoralMenuItem root;

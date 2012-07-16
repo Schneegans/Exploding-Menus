@@ -19,6 +19,7 @@ public class MenuManager : GLib.Object {
 
     public signal void on_select(string item, uint milliseconds);
     public signal void on_cancel();
+    public signal void on_open();
 
     private BindingManager bindings = null;
     private Menu menu = null;
@@ -38,6 +39,7 @@ public class MenuManager : GLib.Object {
         bindings.bind(new Trigger.from_string("button3"), "button2");
         
         bindings.on_press.connect((id) => {
+            on_open();
             menu.set_structure(model);
             menu.show();
         }); 
@@ -113,47 +115,6 @@ public class MenuManager : GLib.Object {
                 edit.add_child(new MenuItem("Einfügen", "editpaste"));
                 edit.add_child(new MenuItem("Einstellungen", ""));
                 
-                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
-                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
-                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
-                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
-                edit.add_child(new MenuItem("Einfügen", "editpaste"));
-                edit.add_child(new MenuItem("Einstellungen", ""));
-                
-                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
-                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
-                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
-                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
-                edit.add_child(new MenuItem("Einfügen", "editpaste"));
-                edit.add_child(new MenuItem("Einstellungen", ""));
-                
-                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
-                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
-                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
-                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
-                edit.add_child(new MenuItem("Einfügen", "editpaste"));
-                edit.add_child(new MenuItem("Einstellungen", ""));
-                
-                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
-                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
-                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
-                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
-                edit.add_child(new MenuItem("Einfügen", "editpaste"));
-                edit.add_child(new MenuItem("Einstellungen", ""));
-                
-                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
-                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
-                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
-                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
-                edit.add_child(new MenuItem("Einfügen", "editpaste"));
-                edit.add_child(new MenuItem("Einstellungen", ""));
-                
-                edit.add_child(new MenuItem("Rückgängig", "edit-undo"));
-                edit.add_child(new MenuItem("Wiederholen", "edit-redo"));
-                edit.add_child(new MenuItem("Ausschneiden", "editcut"));
-                edit.add_child(new MenuItem("Kopieren", "edit-copy"));
-                edit.add_child(new MenuItem("Einfügen", "editpaste"));
-                edit.add_child(new MenuItem("Einstellungen", ""));
             root.add_child(edit);
             
             var view = new MenuItem("Ansicht", "");
@@ -170,12 +131,7 @@ public class MenuManager : GLib.Object {
                         tmp2.add_child(new MenuItem("Python", ""));
                         tmp2.add_child(new MenuItem("Ruby", ""));
                         tmp2.add_child(new MenuItem("Shell", ""));
-                        
-                        tmp2.add_child(new MenuItem("C++", ""));
-                        tmp2.add_child(new MenuItem("Vala", ""));
-                        tmp2.add_child(new MenuItem("Python", ""));
-                        tmp2.add_child(new MenuItem("Ruby", ""));
-                        tmp2.add_child(new MenuItem("Shell", ""));
+
                     tmp.add_child(tmp2);
                     
                     tmp2 = new MenuItem("Auszeichnung", "");
@@ -184,11 +140,6 @@ public class MenuManager : GLib.Object {
                         tmp2.add_child(new MenuItem("XSLT", ""));
                         tmp2.add_child(new MenuItem("XML", ""));
                         
-                        tmp2.add_child(new MenuItem("C++", ""));
-                        tmp2.add_child(new MenuItem("Vala", ""));
-                        tmp2.add_child(new MenuItem("Python", ""));
-                        tmp2.add_child(new MenuItem("Ruby", ""));
-                        tmp2.add_child(new MenuItem("Shell", ""));
                     tmp.add_child(tmp2);
                 
                     tmp2 = new MenuItem("Wissenschaftlich", "");
@@ -196,12 +147,7 @@ public class MenuManager : GLib.Object {
                         tmp2.add_child(new MenuItem("GAP", ""));
                         tmp2.add_child(new MenuItem("Octave", ""));
                         tmp2.add_child(new MenuItem("R", ""));
-                        
-                        tmp2.add_child(new MenuItem("C++", ""));
-                        tmp2.add_child(new MenuItem("Vala", ""));
-                        tmp2.add_child(new MenuItem("Python", ""));
-                        tmp2.add_child(new MenuItem("Ruby", ""));
-                        tmp2.add_child(new MenuItem("Shell", ""));
+
                     tmp.add_child(tmp2);
                     
                 view.add_child(tmp);

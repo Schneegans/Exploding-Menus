@@ -31,7 +31,6 @@ pkg_check_modules(GIO REQUIRED gio-unix-2.0)
 pkg_check_modules(CAIRO REQUIRED cairo)
 pkg_check_modules(GEE REQUIRED gee-1.0)
 pkg_check_modules(X11 REQUIRED x11)
-pkg_check_modules(XML REQUIRED libxml-2.0)
 pkg_check_modules(XTST REQUIRED xtst)
 
 find_library(M_LIB m)
@@ -54,7 +53,6 @@ set(LIBS
 	${GTK3_LIBRARIES}
 	${CAIRO_LIBRARIES}
 	${GEE_LIBRARIES}
-	${XML_LIBRARIES}
 	${XTST_LIBRARIES}
 	${X11_LIBRARIES}
 	${M_LIB}
@@ -68,7 +66,6 @@ set(LIB_PATHS
 	${GTK3_LIBRARY_DIRS}
 	${CAIRO_LIBRARY_DIRS}
 	${GEE_LIBRARY_DIRS}
-	${XML_LIBRARY_DIRS}
 	${XTST_LIBRARY_DIRS}
 	${X11_LIBRARY_DIRS}
 )
@@ -79,7 +76,6 @@ set(INCLUDE_PATHS
 	${GTK3_INCLUDE_DIRS}
 	${CAIRO_INCLUDE_DIRS}
 	${GEE_INCLUDE_DIRS}
-	${XML_INCLUDE_DIRS}
 	${XTST_INCLUDE_DIRS}	
 	${X11_INCLUDE_DIRS}
 )
@@ -97,7 +93,6 @@ set(VALA_PKGS
   x11
   gio-unix-2.0
   posix
-  libxml-2.0
   xtst
 )
 
@@ -118,7 +113,6 @@ message( "Libs:" )
 message( "  GTK3_LIBRARIES = ${GTK3_LIBRARIES}" )
 message( "  CAIRO_LIBRARIES = ${CAIRO_LIBRARIES}" )
 message( "  GEE_LIBRARIES = ${GEE_LIBRARIES}" )
-message( "  XML_LIBRARIES = ${XML_LIBRARIES}" )
 message( "  XTST_LIBRARIES = ${XTST_LIBRARIES}" )
 message( "  X11_LIBRARIES = ${X11_LIBRARIES}" )
 message( "" )

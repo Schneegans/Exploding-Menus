@@ -214,6 +214,8 @@ public class CoralMenuItem {
                 double min_distance = CoralMenu.INNER_ITEM_RADIUS - bottom_radius;
 
                 this.hovered = mouse_is_inside_cone(window, parent_center, max_angle, min_angle, max_distance, min_distance);
+                
+             //   clamp_to_screen(center);
             }
             
             if (parent != null && this.hovered && state != State.EXPANDED) {
@@ -239,12 +241,17 @@ public class CoralMenuItem {
                 if (!(expanded_sibling >= 0 && angle_is_between(mouse_direction, first_child_angle, last_child_angle))) {
                     set_state(State.EXPANDED);
                     
+                    
+                    
                     if (parent != null) {
                         for (int i=0; i<parent.children.size; ++i)
                             parent.children[i].update_offset(i, parent.children.size);
                     } else {
                         update_offset(0, 0);
                     }
+                    
+                    
+                    
                 } else {
                     this.hovered = false;
                 }
@@ -269,6 +276,7 @@ public class CoralMenuItem {
                                 parent.children[i].update_offset(i, parent.children.size);
                             }
                         } else {
+
                             set_state(State.ACTIVE);
                             update_offset(0, 0);
                         }
@@ -383,8 +391,8 @@ public class CoralMenuItem {
         
         if (parent == null) {
             
-            this.offset_x.reset_target(0, CoralMenu.ANIMATION_TIME);
-            this.offset_y.reset_target(0, CoralMenu.ANIMATION_TIME);
+            //this.offset_x.reset_target(0, CoralMenu.ANIMATION_TIME);
+            //this.offset_y.reset_target(0, CoralMenu.ANIMATION_TIME);
             this.draw_radius.reset_target(30, CoralMenu.ANIMATION_TIME);
             this.label_alpha.reset_target(0, CoralMenu.ANIMATION_TIME);
             this.small_label_alpha.reset_target(0, CoralMenu.ANIMATION_TIME);
@@ -635,6 +643,31 @@ public class CoralMenuItem {
         } else {
             mouse_direction = get_mouse_angle(window, last_mouse_location);
             last_mouse_location = mouse_pos;
+        }
+    }
+    
+    private void clamp_to_screen(Vector pos) {
+        var warp = new Vector(0,0);
+        var screen = Gdk.Screen.get_default();
+        
+        if (pos.x < CoralMenu.WARP_ZONE)                warp.x = CoralMenu.WARP_ZONE - pos.x;
+        if (pos.x > screen.width()-CoralMenu.WARP_ZONE) warp.x = - CoralMenu.WARP_ZONE - pos.x + screen.width();
+        
+        if (pos.y < CoralMenu.WARP_ZONE)                 warp.y = CoralMenu.WARP_ZONE - pos.y;
+        if (pos.y > screen.height()-CoralMenu.WARP_ZONE) warp.y = - CoralMenu.WARP_ZONE - pos.y + screen.height();
+        
+        move_all(warp);
+    }
+    
+    private void move_all(Vector offset) {
+        if (parent != null) {
+            parent.move_all(offset);
+        } else {
+            
+            debug("%f %f", offset.x, offset.y);
+        
+            offset_x.reset_target(offset_x.end + offset.x, CoralMenu.ANIMATION_TIME);
+            offset_y.reset_target(offset_y.end + offset.y, CoralMenu.ANIMATION_TIME);
         }
     }
 }

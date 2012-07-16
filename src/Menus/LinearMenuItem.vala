@@ -227,7 +227,7 @@ public class LinearMenuItem {
             
             // draw arrow
             if (child.children.size > 0) {
-               // window.get_style_context().render_arrow(ctx, GLib.Math.PI*0.5, top_left.x-25+menu_size.x, top_left.y+6, ITEM_HEIGHT/2);
+                window.get_style_context().render_arrow(ctx, GLib.Math.PI*0.5, top_left.x-25+menu_size.x, top_left.y+6, ITEM_HEIGHT/2);
             }
 
             top_left.y += ITEM_HEIGHT;
