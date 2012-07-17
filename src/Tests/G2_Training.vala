@@ -158,9 +158,9 @@ public class G2_Training : GLib.Object {
             } else {
             
                 if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Avocados|Verwenden als|Nachtisch");
+                    targets.add("Zitronen|Pressen");
+                    targets.add("Pizza bestellen");
                     ++repetitions;
                 } 
                 
@@ -177,7 +177,7 @@ public class G2_Training : GLib.Object {
         request_next();
         
         if (menu == null) menu = new MenuManager();
-        menu.init("trace", "real");
+        menu.init("trace", "trace");
         
         disconnect_handlers();
         
@@ -236,9 +236,9 @@ public class G2_Training : GLib.Object {
             } else {
             
                 if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Wellensittich|Futter geben|Weizen");
+                    targets.add("Hund|Waschen");
+                    targets.add("Ameisenfarm versorgen");
                     ++repetitions;
                 } 
                 
@@ -255,7 +255,7 @@ public class G2_Training : GLib.Object {
         request_next();
         
         if (menu == null) menu = new MenuManager();
-        menu.init("coral", "real");
+        menu.init("coral", "coral");
         
         disconnect_handlers();
         
@@ -314,9 +314,9 @@ public class G2_Training : GLib.Object {
             } else {
             
                 if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Lastkraftwagen|Verkaufen bei|Flohmarkt");
+                    targets.add("Personenkraftwagen|Verschrotten");
+                    targets.add("Zur Fahrschule gehen");
                     ++repetitions;
                 } 
                 
@@ -333,7 +333,7 @@ public class G2_Training : GLib.Object {
         request_next();
         
         if (menu == null) menu = new MenuManager();
-        menu.init("linear", "real");
+        menu.init("linear", "linear");
         
         disconnect_handlers();
         

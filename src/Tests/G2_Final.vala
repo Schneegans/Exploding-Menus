@@ -157,9 +157,9 @@ public class G2_Final : GLib.Object {
             } else {
             
                 if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Avocados|Verwenden als|Antipasti");
+                    targets.add("Zitronen|Raspeln");
+                    targets.add("Einkaufen gehen");
                     ++repetitions;
                 } 
                 
@@ -176,7 +176,7 @@ public class G2_Final : GLib.Object {
         request_next();
         
         if (menu == null) menu = new MenuManager();
-        menu.init("trace", "real");
+        menu.init("trace", "trace");
         
         disconnect_handlers();
         
@@ -235,9 +235,9 @@ public class G2_Final : GLib.Object {
             } else {
             
                 if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Wellensittich|Futter geben|Mais");
+                    targets.add("Hund|Von Zecken befreien");
+                    targets.add("Mehlwürmer kaufen");
                     ++repetitions;
                 } 
                 
@@ -254,7 +254,7 @@ public class G2_Final : GLib.Object {
         request_next();
         
         if (menu == null) menu = new MenuManager();
-        menu.init("coral", "real");
+        menu.init("coral", "coral");
         
         disconnect_handlers();
         
@@ -313,9 +313,9 @@ public class G2_Final : GLib.Object {
             } else {
             
                 if (targets.size == 0) {
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Lastkraftwagen|Verkaufen bei|Ebay");
+                    targets.add("Personenkraftwagen|Versteuern");
+                    targets.add("Moped fahren");
                     ++repetitions;
                 } 
                 
@@ -332,7 +332,7 @@ public class G2_Final : GLib.Object {
         request_next();
         
         if (menu == null) menu = new MenuManager();
-        menu.init("linear", "real");
+        menu.init("linear", "linear");
         
         disconnect_handlers();
         

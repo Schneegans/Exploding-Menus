@@ -79,13 +79,215 @@ public class MenuManager : GLib.Object {
     
     private MenuItem setup_menu(string menu_mode) {
         if (menu_mode == "random")       
-            return setup_name_menu(true, width, depth);
+            return setup_random_menu(true, width, depth);
             
         if (menu_mode == "static")       
-            return setup_name_menu(false, width, depth);
+            return setup_random_menu(false, width, depth);
+            
+        if (menu_mode == "coral")       
+            return setup_coral_menu();
+            
+        if (menu_mode == "trace")       
+            return setup_trace_menu();
+            
+        if (menu_mode == "linear")       
+            return setup_linear_menu();
         
         return setup_gedit_menu();
     }
+    
+    private MenuItem setup_linear_menu() {
+    
+        var root = new MenuItem("Hauptmenü", "");
+        
+            root.add_child(new MenuItem("Fahrrad fahren", ""));
+            root.add_child(new MenuItem("Zu Fuss gehen", ""));
+            root.add_child(new MenuItem("Joggen gehen", ""));
+        
+            var child = new MenuItem("Lastkraftwagen", "");
+                child.add_child(new MenuItem("Waschen", ""));
+                child.add_child(new MenuItem("In Teile zerlegen", ""));
+                child.add_child(new MenuItem("Entkernen", ""));
+                
+                var tmp = new MenuItem("Verkaufen bei", "");
+                    tmp.add_child(new MenuItem("Ebay", ""));
+                    tmp.add_child(new MenuItem("Gebrauchtwagenhändler", ""));
+                    tmp.add_child(new MenuItem("Nachbarn", ""));
+                    tmp.add_child(new MenuItem("Flohmarkt", ""));
+                child.add_child(tmp);
+                    
+                child.add_child(new MenuItem("Beladen", ""));
+                child.add_child(new MenuItem("Entladen", ""));
+            root.add_child(child);
+            
+            child = new MenuItem("Personenkraftwagen", "");
+                child.add_child(new MenuItem("Gestalten", ""));
+                child.add_child(new MenuItem("Ersteigern", ""));
+                child.add_child(new MenuItem("Verschrotten", ""));
+                child.add_child(new MenuItem("Versteuern", ""));
+                child.add_child(new MenuItem("Tunen", ""));
+                child.add_child(new MenuItem("Bekleben", ""));
+                
+                tmp = new MenuItem("Lackieren", "");
+                    tmp.add_child(new MenuItem("Rot", ""));
+                    tmp.add_child(new MenuItem("Blau", ""));
+                    tmp.add_child(new MenuItem("Gelb", ""));
+                    tmp.add_child(new MenuItem("Grün", ""));
+                child.add_child(tmp);
+                
+                child.add_child(new MenuItem("In Polen kaufen", ""));
+                child.add_child(new MenuItem("Schwarz verkaufen", ""));
+                child.add_child(new MenuItem("Sammeln", ""));
+                child.add_child(new MenuItem("Im Museum austellen", ""));
+                child.add_child(new MenuItem("Besitzen", ""));
+                child.add_child(new MenuItem("Mit Radios ausstatten", ""));
+                child.add_child(new MenuItem("Testen", ""));
+                child.add_child(new MenuItem("Umbauen", ""));
+                child.add_child(new MenuItem("Die Räder wechseln", ""));
+                child.add_child(new MenuItem("Duftbaum wechseln", ""));
+            root.add_child(child);
+            
+            child = new MenuItem("Schiff", "");
+                child.add_child(new MenuItem("Versenken", ""));
+                child.add_child(new MenuItem("Verfolgen", ""));
+                child.add_child(new MenuItem("In den Hafen manövrieren", "")); 
+                child.add_child(new MenuItem("Beladen", ""));
+            root.add_child(child);
+
+            root.add_child(new MenuItem("Zur Fahrschule gehen", ""));
+            root.add_child(new MenuItem("Moped fahren", ""));
+            
+        return root;
+    }
+    
+    private MenuItem setup_coral_menu() {
+    
+        var root = new MenuItem("Hauptmenü", "");
+        
+            root.add_child(new MenuItem("Meerschweinchenkäfig säubern", ""));
+            root.add_child(new MenuItem("Ameisenfarm versorgen", ""));
+            root.add_child(new MenuItem("Mehlwürmer kaufen", ""));
+        
+            var child = new MenuItem("Wellensittich", "");
+                child.add_child(new MenuItem("Sprechen beibringen", ""));
+                child.add_child(new MenuItem("Einen Spiegel geben", ""));
+                child.add_child(new MenuItem("Fliegen lassen", ""));
+                
+                var tmp = new MenuItem("Futter geben", "");
+                    tmp.add_child(new MenuItem("Hirse", ""));
+                    tmp.add_child(new MenuItem("Mais", ""));
+                    tmp.add_child(new MenuItem("Weizen", ""));
+                    tmp.add_child(new MenuItem("Gerste", ""));
+                child.add_child(tmp);
+                    
+                child.add_child(new MenuItem("Kaufen", ""));
+                child.add_child(new MenuItem("Beerdigen", ""));
+            root.add_child(child);
+            
+            child = new MenuItem("Hund", "");
+                child.add_child(new MenuItem("Gassi gehen", ""));
+                child.add_child(new MenuItem("Tricks beibringen", ""));
+                child.add_child(new MenuItem("Zur Hundeschule bringen", ""));
+                child.add_child(new MenuItem("Maulkorb anlegen", ""));
+                child.add_child(new MenuItem("Waschen", ""));
+                child.add_child(new MenuItem("Von Zecken befreien", ""));
+                
+                tmp = new MenuItem("Kreuzen mit", "");
+                    tmp.add_child(new MenuItem("Colli", ""));
+                    tmp.add_child(new MenuItem("Schäferhund", ""));
+                    tmp.add_child(new MenuItem("Beagle", ""));
+                    tmp.add_child(new MenuItem("Dogge", ""));
+                child.add_child(tmp);
+                
+                child.add_child(new MenuItem("Füttern", ""));
+                child.add_child(new MenuItem("Bespaßen", ""));
+                child.add_child(new MenuItem("Spielzeug kaufen", ""));
+                child.add_child(new MenuItem("Kastrieren", ""));
+                child.add_child(new MenuItem("Einsperren", ""));
+                child.add_child(new MenuItem("Freilassen", ""));
+                child.add_child(new MenuItem("Wasser geben", ""));
+                child.add_child(new MenuItem("Das Fell schneiden", ""));
+                child.add_child(new MenuItem("Verkaufen", ""));
+                child.add_child(new MenuItem("Einschläfern", ""));
+            root.add_child(child);
+            
+            child = new MenuItem("Schildkröte", "");
+                child.add_child(new MenuItem("Auslauf geben", ""));
+                child.add_child(new MenuItem("Mit Salat füttern", ""));
+                child.add_child(new MenuItem("Kühlen", "")); 
+                child.add_child(new MenuItem("Beobachten", ""));
+            root.add_child(child);
+
+            root.add_child(new MenuItem("Weiteres Tier kaufen", ""));
+            root.add_child(new MenuItem("Ausruhen", ""));
+            
+        return root;
+    }
+    
+    private MenuItem setup_trace_menu() {
+    
+        var root = new MenuItem("Hauptmenü", "");
+        
+            root.add_child(new MenuItem("Einkaufen gehen", ""));
+            root.add_child(new MenuItem("Pizza bestellen", ""));
+            root.add_child(new MenuItem("Salatschüssel abwaschen", ""));
+        
+            var child = new MenuItem("Avocados", "");
+                child.add_child(new MenuItem("Schälen", ""));
+                child.add_child(new MenuItem("In Teile zerschneiden", ""));
+                child.add_child(new MenuItem("Entkernen", ""));
+                
+                var tmp = new MenuItem("Verwenden als", "");
+                    tmp.add_child(new MenuItem("Antipasti", ""));
+                    tmp.add_child(new MenuItem("Nachtisch", ""));
+                    tmp.add_child(new MenuItem("Hauptgericht", ""));
+                    tmp.add_child(new MenuItem("Nachspeise", ""));
+                child.add_child(tmp);
+                    
+                child.add_child(new MenuItem("Mit Zitronensaft beträufeln", ""));
+                child.add_child(new MenuItem("Entsorgen", ""));
+            root.add_child(child);
+            
+            child = new MenuItem("Zitronen", "");
+                child.add_child(new MenuItem("Pflücken", ""));
+                child.add_child(new MenuItem("Pressen", ""));
+                child.add_child(new MenuItem("In Teile zerschneiden", ""));
+                child.add_child(new MenuItem("Entsorgen", ""));
+                child.add_child(new MenuItem("Schälen", ""));
+                child.add_child(new MenuItem("Raspeln", ""));
+                
+                tmp = new MenuItem("Kaufen bei", "");
+                    tmp.add_child(new MenuItem("Lidl", ""));
+                    tmp.add_child(new MenuItem("Aldi", ""));
+                    tmp.add_child(new MenuItem("Rewe", ""));
+                    tmp.add_child(new MenuItem("Edeka", ""));
+                child.add_child(tmp);
+                
+                child.add_child(new MenuItem("In einen Korb legen", ""));
+                child.add_child(new MenuItem("Als Medizin verwenden", ""));
+                child.add_child(new MenuItem("Vierteln", ""));
+                child.add_child(new MenuItem("In den Kompost werfen", ""));
+                child.add_child(new MenuItem("Entsorgen", ""));
+                child.add_child(new MenuItem("Anmalen", ""));
+                child.add_child(new MenuItem("Anbauen", ""));
+                child.add_child(new MenuItem("Im Schrank lagern", ""));
+                child.add_child(new MenuItem("Auf die Bühne werfen", ""));
+                child.add_child(new MenuItem("Zerquetschen", ""));
+            root.add_child(child);
+            
+            child = new MenuItem("Kichererbsen", "");
+                child.add_child(new MenuItem("Zerdrücken", ""));
+                child.add_child(new MenuItem("Quellen lassen", ""));
+                child.add_child(new MenuItem("Als Hauptzutat verwenden", "")); 
+                child.add_child(new MenuItem("Vernichten", ""));
+            root.add_child(child);
+
+            root.add_child(new MenuItem("Messer schärfen", ""));
+            root.add_child(new MenuItem("Um Hilfe bitten", ""));
+            
+        return root;
+    }
+
 
     private MenuItem setup_gedit_menu() {
     
@@ -94,6 +296,7 @@ public class MenuManager : GLib.Object {
             var file = new MenuItem("Datei", "");
                 file.add_child(new MenuItem("Neu...", "file_new"));
                 file.add_child(new MenuItem("Öffnen...", "fileopen"));
+                file.add_child(new MenuItem("Öffnen mit...", "fileopen"));
                 file.add_child(new MenuItem("Speichern", "filesave"));
                 
                 var tmp = new MenuItem("Speichern als", "filesaveas");
@@ -106,6 +309,9 @@ public class MenuManager : GLib.Object {
                 file.add_child(new MenuItem("Zurücksetzen", ""));
                 file.add_child(new MenuItem("Drucken...", "fileprint"));
                 file.add_child(new MenuItem("Druckvorschau", "preview-file"));
+                file.add_child(new MenuItem("Druckereinstellungen...", "fileprint"));
+                file.add_child(new MenuItem("Schließen", ""));
+                file.add_child(new MenuItem("Beenden", ""));
             
             root.add_child(file);
             
@@ -115,7 +321,10 @@ public class MenuManager : GLib.Object {
                 edit.add_child(new MenuItem("Ausschneiden", "editcut"));
                 edit.add_child(new MenuItem("Kopieren", "edit-copy"));
                 edit.add_child(new MenuItem("Einfügen", "editpaste"));
-                edit.add_child(new MenuItem("Einstellungen", ""));
+                edit.add_child(new MenuItem("Löschen", ""));
+                edit.add_child(new MenuItem("Quelltext kommentieren", ""));
+                edit.add_child(new MenuItem("Quelltext unkommentieren", ""));
+                edit.add_child(new MenuItem("Datum und Uhrzeit einfügen...", ""));
                 
             root.add_child(edit);
             
@@ -237,7 +446,7 @@ public class MenuManager : GLib.Object {
         }
     }
     
-    private MenuItem setup_name_menu(bool random, int width, int depth) {
+    private MenuItem setup_random_menu(bool random, int width, int depth) {
         string[] forenames = { "Karl", "Hans", "Jens", "Rainer", "Andreas", "John", "Sebastian", "Tom", "Veronika", "Karla", "Wenke", "Jennifer", "Jana", "Kerstin", "Theresa", "Maria", "Anke", "Karsten", "Thomas", "Chris", "Johannes", "Francis", "Maximilian", "Max", "René", "Nele", "Mareike"};
 
         var root = new MenuItem("Names", "");
@@ -245,4 +454,5 @@ public class MenuManager : GLib.Object {
             
         return root;
     }
+    
 }

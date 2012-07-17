@@ -108,7 +108,16 @@ public class TraceMenuItem {
             if (parent.parent == null) return "";
             return parent.get_path();
         }
-        if (parent.parent == null) return label;
+        
+        if (parent.parent == null) 
+            return label;
+        
+        if (parent.is_meta && parent.parent.parent != null)
+            return parent.parent.get_path() + "|" + label;
+            
+        if (parent.is_meta) 
+            return label;
+        
         return parent.get_path() + "|" + label;
     
     }
@@ -965,7 +974,7 @@ public class TraceMenuItem {
                 e.add((parent_direction - 2)%8);
                 break;
             case 3: 
-                e.add((parent_direction + 2)%8);
+                e.add((parent_direction + 3)%8);
                 e.add((parent_direction - 2)%8);
                 e.add((parent_direction + 1)%8);
                 break;

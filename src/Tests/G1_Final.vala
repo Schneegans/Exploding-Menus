@@ -106,7 +106,7 @@ public class G1_Final : GLib.Object {
             case 1: 
                 instruction.set_text(heading("Einführung") + 
                                      "Im Folgenden wirst du mit verschiedenen, "+
-                                     "unkonventionellen Menüarten bekannt gemacht.\n\n" +
+                                     "unkon-ventionellen Menüarten bekannt gemacht.\n\n" +
                                      "Dabei wird es deine Aufgabe sein, Einträge in diesen "+
                                      "Menüs zu suchen und auszuwählen."+
                                      hint("Weiter mit Leertaste..."));
@@ -184,7 +184,7 @@ public class G1_Final : GLib.Object {
                                      "halte die rechte Maustaste gedrückt und <b>zeichne den Pfad</b> "+
                                      "zu dem gewünschten Eintrag.\n\n"+ 
                                      "<b>Mach dich mit dem Modus vertraut</b> indem du diverse Einträge "+
-                                     "auswählst, wie zum Beispiel \"Datei - Speichern als - Sound-Datei\"!"+
+                                     "auswählst, wie zum Beispiel \"Ansicht|Vollbild\"!"+
                                      hint("Sobald du dich im Umgang mit dem Experten-Modus"+
                                           " sicher fühlst, betätige die Leertaste."));
                 ready = true;
@@ -213,6 +213,8 @@ public class G1_Final : GLib.Object {
             case 5:
                 
                 int repetitions = 0;
+                int depth = 0;
+                int width = 0;
                 string target = "";
                 
                 Logger.write("#TRACE_SEARCH_TEST# ");
@@ -231,6 +233,11 @@ public class G1_Final : GLib.Object {
                     
                         ++repetitions;
                         
+                        width = GLib.Random.int_range(5, 15);
+                        depth = GLib.Random.int_range(1, 4);
+                        
+                        menu.init("trace", "random", width, depth);
+                        
                         target = menu.get_valid_entry();
                         instruction.set_text(heading("Das Trace-Menu") +     
                                              "Wähle den Eintrag <b>"+ target +"</b>"+
@@ -242,16 +249,16 @@ public class G1_Final : GLib.Object {
                 request_next();
                 
                 if (menu == null) menu = new MenuManager();
-                menu.init("trace", "real");
                 
                 disconnect_handlers();
                 
                 select_handler = menu.on_select.connect((item, time) => {
+                    debug("%s %s", item, target);
                     if (item == target) {
-                        Logger.write("%s: %u".printf(target, time));
+                        Logger.write("%s: %u %u %u".printf(target, time, width, depth));
                         smile.notify(true);
                     } else {
-                        Logger.write("%s: -1".printf(target));
+                        Logger.write("%s: -1 %u %u".printf(target, width, depth));
                         smile.notify(false);
                     }
 
@@ -259,7 +266,7 @@ public class G1_Final : GLib.Object {
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    Logger.write("%s: -1".printf(target));
+                    Logger.write("%s: -1 %u %u".printf(target, width, depth));
                     smile.notify(false);
                     
                     request_next();
@@ -298,9 +305,9 @@ public class G1_Final : GLib.Object {
                 
                 int repetitions = 1;
                 var targets = new Gee.ArrayList<string?>();
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Avocados|Verwenden als|Nachtisch");
+                    targets.add("Zitronen|Pressen");
+                    targets.add("Pizza bestellen");
                     
                 string target = "";
                 
@@ -351,7 +358,7 @@ public class G1_Final : GLib.Object {
                 request_next();
                 
                 if (menu == null) menu = new MenuManager();
-                menu.init("trace", "real");
+                menu.init("trace", "trace");
                 
                 disconnect_handlers();
                 
@@ -436,6 +443,8 @@ public class G1_Final : GLib.Object {
             case 4:
                 
                 int repetitions = 0;
+                int depth = 0;
+                int width = 0;
                 string target = "";
                 
                 Logger.write("#CORAL_SEARCH_TEST# ");
@@ -454,6 +463,11 @@ public class G1_Final : GLib.Object {
                     
                         ++repetitions;
                         
+                        width = GLib.Random.int_range(5, 15);
+                        depth = GLib.Random.int_range(1, 4);
+                        
+                        menu.init("coral", "random", width, depth);
+                        
                         target = menu.get_valid_entry();
                         instruction.set_text(heading("Das Coral-Menu") +     
                                              "Wähle den Eintrag <b>"+ target +"</b>"+
@@ -465,16 +479,15 @@ public class G1_Final : GLib.Object {
                 request_next();
                 
                 if (menu == null) menu = new MenuManager();
-                menu.init("coral", "real");
                 
                 disconnect_handlers();
                 
                 select_handler = menu.on_select.connect((item, time) => {
                     if (item == target) {
-                        Logger.write("%s: %u".printf(target, time));
+                        Logger.write("%s: %u %u %u".printf(target, time, width, depth));
                         smile.notify(true);
                     } else {
-                        Logger.write("%s: -1".printf(target));
+                        Logger.write("%s: -1 %u %u".printf(target, width, depth));
                         smile.notify(false);
                     }
 
@@ -482,7 +495,7 @@ public class G1_Final : GLib.Object {
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    Logger.write("%s: -1".printf(target));
+                    Logger.write("%s: -1 %u %u".printf(target, width, depth));
                     smile.notify(false);
                     
                     request_next();
@@ -521,9 +534,9 @@ public class G1_Final : GLib.Object {
                 
                 int repetitions = 1;
                 var targets = new Gee.ArrayList<string?>();
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Wellensittich|Futter geben|Weizen");
+                    targets.add("Hund|Waschen");
+                    targets.add("Ameisenfarm versorgen");
                     
                 string target = "";
                 
@@ -576,7 +589,7 @@ public class G1_Final : GLib.Object {
                 request_next();
                 
                 if (menu == null) menu = new MenuManager();
-                menu.init("coral", "real");
+                menu.init("coral", "coral");
                 
                 disconnect_handlers();
                 
@@ -663,6 +676,8 @@ public class G1_Final : GLib.Object {
             case 4:
                 
                 int repetitions = 0;
+                int depth = 0;
+                int width = 0;
                 string target = "";
                 
                 Logger.write("#LINEAR_SEARCH_TEST# ");
@@ -681,6 +696,11 @@ public class G1_Final : GLib.Object {
                     
                         ++repetitions;
                         
+                        width = GLib.Random.int_range(5, 15);
+                        depth = GLib.Random.int_range(1, 4);
+                        
+                        menu.init("linear", "random", width, depth);
+                        
                         target = menu.get_valid_entry();
                             instruction.set_text(heading("Das Lineare Menü") + 
                                              "Wähle den Eintrag <b>"+ target +"</b>"+
@@ -692,16 +712,15 @@ public class G1_Final : GLib.Object {
                 request_next();
                 
                 if (menu == null) menu = new MenuManager();
-                menu.init("linear", "real");
                 
                 disconnect_handlers();
                 
                 select_handler = menu.on_select.connect((item, time) => {
                     if (item == target) {
-                        Logger.write("%s: %u".printf(target, time));
+                        Logger.write("%s: %u %u %u".printf(target, time, width, depth));
                         smile.notify(true);
                     } else {
-                        Logger.write("%s: -1".printf(target));
+                        Logger.write("%s: -1 %u %u".printf(target, width, depth));
                         smile.notify(false);
                     }
 
@@ -709,7 +728,7 @@ public class G1_Final : GLib.Object {
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    Logger.write("%s: -1".printf(target));
+                    Logger.write("%s: -1 %u %u".printf(target, width, depth));
                     smile.notify(false);
                     
                     request_next();
@@ -748,9 +767,9 @@ public class G1_Final : GLib.Object {
                 
                 int repetitions = 1;
                 var targets = new Gee.ArrayList<string?>();
-                    targets.add("Datei|Speichern als|Sound-Datei");
-                    targets.add("Datei|Drucken...");
-                    targets.add("Bearbeiten|Kopieren");
+                    targets.add("Lastkraftwagen|Verkaufen bei|Flohmarkt");
+                    targets.add("Personenkraftwagen|Verschrotten");
+                    targets.add("Zur Fahrschule gehen");
                     
                 string target = "";
                 
@@ -801,7 +820,7 @@ public class G1_Final : GLib.Object {
                 request_next();
                 
                 if (menu == null) menu = new MenuManager();
-                menu.init("linear", "real");
+                menu.init("linear", "linear");
                 
                 disconnect_handlers();
                 

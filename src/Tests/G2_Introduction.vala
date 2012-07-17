@@ -105,7 +105,7 @@ public class G2_Introduction : GLib.Object {
             case 1: 
                 instruction.set_text(heading("Einführung") + 
                                      "Im folgenden wirst du mit verschiedenen, "+
-                                     "unkonventionellen Menüarten bekannt gemacht.\n\n" +
+                                     "unkon-ventionellen Menüarten bekannt gemacht.\n\n" +
                                      "Später wird es deine Aufgabe sein, den Umgang mit diesen "+
                                      "Menüs zu üben und zu bewerten."+
                                      hint("Weiter mit Leertaste..."));
@@ -182,7 +182,7 @@ public class G2_Introduction : GLib.Object {
                                      "halte die rechte Maustaste gedrückt und <b>zeichne den Pfad</b> "+
                                      "zu dem gewünschten Eintrag.\n\n"+ 
                                      "<b>Mach dich mit dem Modus vertraut</b> indem du diverse Einträge "+
-                                     "auswählst, wie zum Beispiel \"Datei - Speichern als - Sound-Datei\"!"+
+                                     "auswählst, wie zum Beispiel \"Ansicht|Vollbild\"!"+
                                      hint("Sobald du dich im Umgang mit dem Experten-Modus"+
                                           " sicher fühlst, betätige die Leertaste."));
 
