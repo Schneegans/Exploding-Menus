@@ -30,7 +30,6 @@ public class InstructionWindow : Gtk.Window {
         this.set_title("Test");
         this.set_keep_above(true);
         this.set_decorated(false);
-        this.set_resizable(false);
         this.set_focus_on_map(false);
         this.set_accept_focus(false);
         this.set_accept_focus(false);
@@ -55,7 +54,7 @@ public class InstructionWindow : Gtk.Window {
     }
     
     public void set_text(string text) {
-        this.instruction.set_markup("<span size='20000'>" + text + "</span>");
+        this.instruction.set_markup("<span size='20000' color='black'>" + text + "</span>");
     }
 
     private bool draw_window(Cairo.Context ctx) { 

@@ -30,12 +30,10 @@ public class SmileWindow : Gtk.Window {
     public SmileWindow() {
         this.set_title("Test");
         this.set_decorated(false);
-        this.set_resizable(false);
         this.set_focus_on_map(false);
         this.set_app_paintable(true);
         this.set_position(Gtk.WindowPosition.CENTER);
         this.set_accept_focus(false);
-        this.set_app_paintable(true);
         this.maximize();
         
         bg = new Image.from_file("bg.jpg");
@@ -74,6 +72,9 @@ public class SmileWindow : Gtk.Window {
 
     private bool draw_window(Cairo.Context ctx) { 
         ctx.translate(get_window().get_width()/2, get_window().get_height()/2);
+        
+        ctx.scale((double)get_window().get_width()/bg.width(), (double)get_window().get_height()/bg.height());
+        
         bg.paint_on(ctx);
         normal.paint_on(ctx);
         state.paint_on(ctx, alpha.val);

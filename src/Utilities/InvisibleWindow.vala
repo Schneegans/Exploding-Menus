@@ -46,13 +46,15 @@ public class InvisibleWindow : Gtk.Window {
         this.set_skip_taskbar_hint(true);
         this.set_skip_pager_hint(true);
         this.set_keep_above(true);
-        this.set_type_hint(Gdk.WindowTypeHint.POPUP_MENU);
         this.set_decorated(false);
-        this.set_resizable(false);
+        this.set_position(Gtk.WindowPosition.CENTER);
+        this.set_type_hint(Gdk.WindowTypeHint.SPLASHSCREEN);
         this.icon_name = "gnome-pie";
         this.set_accept_focus(false);
-        this.set_app_paintable(true);
-        this.maximize();
+        
+        var screen = Gdk.Screen.get_default();
+        this.set_size_request(screen.get_width(), screen.get_height());
+        
         
         this.mouse = new Vector(0,0);
         
@@ -112,6 +114,7 @@ public class InvisibleWindow : Gtk.Window {
         
         // the main draw loop
         GLib.Timeout.add((uint)(1000.0/60.0), () => {  
+            
             if (!this.visible)
                 return false;
                               
