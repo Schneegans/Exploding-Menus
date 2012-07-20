@@ -75,14 +75,14 @@ public class G2_Final : GLib.Object {
             case 0:
                 next_page_introduction();
                 break;
-            case 1:
-                training_trace();
+             case 1:
+                training("trace", "Trace-Menu");
                 break;
             case 2:
-                training_coral();
+                training("coral", "Coral-Menu");
                 break;
             case 3:
-                training_linear();
+                training("linear", "Linear-Menu");
                 break;
             case 4:
                 next_page_finish();
@@ -127,18 +127,17 @@ public class G2_Final : GLib.Object {
         
         ready = true;
     }
-   
-    
-    private void training_trace() {
+
+    private void training(string type, string name) {
         int repetitions = 0;
         var targets = new Gee.ArrayList<string?>();
         string target = "";
         
-        Logger.write("#TRACE_INTERFERENCE_TEST# ");
+        Logger.write("#%s_INTERFERENCE_TEST# ".printf(type.up()));
 
         next request_next = () => {
             if (repetitions == REPETITIONS && targets.size == 0) {
-                instruction.set_text(heading("Trace-Menu-Training") + 
+                instruction.set_text(heading("%s-Training".printf(name)) + 
                                      "Sehr gut! Du wirst immer besser! "+
                                      "Wir machen weiter mit dem..."+
                                      hint("Weiter mit Leertaste..."));
@@ -157,14 +156,25 @@ public class G2_Final : GLib.Object {
             } else {
             
                 if (targets.size == 0) {
-                    targets.add("Avocados|Verwenden als|Antipasti");
-                    targets.add("Zitronen|Raspeln");
-                    targets.add("Einkaufen gehen");
+                    if (type == "trace") {
+                        targets.add("Avocados|Verwenden als|Antipasti");
+                        targets.add("Zitronen|Raspeln");
+                        targets.add("Einkaufen gehen");
+                    } else if (type == "coral") {
+                        targets.add("Wellensittich|Futter geben|Mais");
+                        targets.add("Hund|Von Zecken befreien");
+                        targets.add("Mehlwürmer kaufen");
+                    } else if (type == "linear") {
+                        targets.add("Lastkraftwagen|Verkaufen bei|Ebay");
+                        targets.add("Personenkraftwagen|Versteuern");
+                        targets.add("Moped fahren");
+                    }
+                    
                     ++repetitions;
                 } 
                 
                 target = targets.get(GLib.Random.int_range(0, targets.size));          
-                instruction.set_text(heading("Trace-Menu-Training") +     
+                instruction.set_text(heading("%s-Training".printf(name)) + 
                                      "Wähle den Eintrag <b>"+ target +"</b>"+
                                      hint("Sobald du das Menü öffnest, verschwindet "+
                                      "dieser Hinweis! Präge ihn dir also gut ein."));
@@ -176,7 +186,7 @@ public class G2_Final : GLib.Object {
         request_next();
         
         if (menu == null) menu = new MenuManager();
-        menu.init("trace", "trace");
+        menu.init(type, type);
         
         disconnect_handlers();
         
@@ -203,164 +213,6 @@ public class G2_Final : GLib.Object {
             instruction.set_text("");
         });
     }
-    
-    
-    
-    
-    private void training_coral() {
-        int repetitions = 0;
-        var targets = new Gee.ArrayList<string?>();
-        string target = "";
-        
-        Logger.write("#CORAL_INTERFERENCE_TEST# ");
-
-        next request_next = () => {
-            if (repetitions == REPETITIONS && targets.size == 0) {
-                instruction.set_text(heading("Coral-Menu-Training") + 
-                                     "Sehr gut! Du wirst immer besser! "+
-                                     "Wir machen weiter mit dem..."+
-                                     hint("Weiter mit Leertaste..."));
-                
-                if (trainings.size > 0) {
-                    int index = GLib.Random.int_range(0, trainings.size);
-                    set_stage(trainings.get(index));
-                    trainings.remove_at(index); 
-                } else {
-                    set_stage(4);
-                }  
-                
-                disconnect_handlers();
-                
-                ready = true;
-            } else {
-            
-                if (targets.size == 0) {
-                    targets.add("Wellensittich|Futter geben|Mais");
-                    targets.add("Hund|Von Zecken befreien");
-                    targets.add("Mehlwürmer kaufen");
-                    ++repetitions;
-                } 
-                
-                target = targets.get(GLib.Random.int_range(0, targets.size));          
-                instruction.set_text(heading("Coral-Menu-Training") +     
-                                     "Wähle den Eintrag <b>"+ target +"</b>"+
-                                     hint("Sobald du das Menü öffnest, verschwindet "+
-                                     "dieser Hinweis! Präge ihn dir also gut ein."));
-                                     
-                targets.remove(target);
-            }
-        };
-        
-        request_next();
-        
-        if (menu == null) menu = new MenuManager();
-        menu.init("coral", "coral");
-        
-        disconnect_handlers();
-        
-        select_handler = menu.on_select.connect((item, time) => {
-            if (item == target) {
-                Logger.write("%s: %u".printf(target, time));
-                smile.notify(true);
-            } else {
-                Logger.write("%s: -1".printf(target));
-                smile.notify(false);
-            }
-
-            request_next();
-        });
-        
-        cancel_handler = menu.on_cancel.connect(() => {
-            Logger.write("%s: -1".printf(target));
-            smile.notify(false);
-            
-            request_next();
-        });
-        
-        open_handler = menu.on_open.connect(() => {
-            instruction.set_text("");
-        });
-    }
-    
-    
-    
-    
-    private void training_linear() {
-        int repetitions = 0;
-        var targets = new Gee.ArrayList<string?>();
-        string target = "";
-        
-        Logger.write("#LINEAR_INTERFERENCE_TEST# ");
-
-        next request_next = () => {
-            if (repetitions == REPETITIONS && targets.size == 0) {
-                instruction.set_text(heading("Linear-Menu-Training") + 
-                                     "Sehr gut! Du wirst immer besser! "+
-                                     "Wir machen weiter mit dem..."+
-                                     hint("Weiter mit Leertaste..."));
-                
-                if (trainings.size > 0) {
-                    int index = GLib.Random.int_range(0, trainings.size);
-                    set_stage(trainings.get(index));
-                    trainings.remove_at(index); 
-                } else {
-                    set_stage(4);
-                }               
-                
-                disconnect_handlers();
-                
-                ready = true;
-            } else {
-            
-                if (targets.size == 0) {
-                    targets.add("Lastkraftwagen|Verkaufen bei|Ebay");
-                    targets.add("Personenkraftwagen|Versteuern");
-                    targets.add("Moped fahren");
-                    ++repetitions;
-                } 
-                
-                target = targets.get(GLib.Random.int_range(0, targets.size));          
-                instruction.set_text(heading("Linear-Menu-Training") +     
-                                     "Wähle den Eintrag <b>"+ target +"</b>"+
-                                     hint("Sobald du das Menü öffnest, verschwindet "+
-                                     "dieser Hinweis! Präge ihn dir also gut ein."));
-                                     
-                targets.remove(target);
-            }
-        };
-        
-        request_next();
-        
-        if (menu == null) menu = new MenuManager();
-        menu.init("linear", "linear");
-        
-        disconnect_handlers();
-        
-       select_handler = menu.on_select.connect((item, time) => {
-            if (item == target) {
-                Logger.write("%s: %u".printf(target, time));
-                smile.notify(true);
-            } else {
-                Logger.write("%s: -1".printf(target));
-                smile.notify(false);
-            }
-
-            request_next();
-        });
-        
-        cancel_handler = menu.on_cancel.connect(() => {
-            Logger.write("%s: -1".printf(target));
-            smile.notify(false);
-            
-            request_next();
-        });
-        
-        open_handler = menu.on_open.connect(() => {
-            instruction.set_text("");
-        });
-    }
-    
-
     
     private void disconnect_handlers() {
         if (cancel_handler > 0)

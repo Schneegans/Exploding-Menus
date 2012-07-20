@@ -83,7 +83,7 @@ public class G1_Final : GLib.Object {
                 training("coral", "Coral-Menu");
                 break;
             case 3:
-                training("linear", "Lineare Menü");
+                training("linear", "Linear-Menu");
                 break;
             case 4:
                 next_page_finish();
