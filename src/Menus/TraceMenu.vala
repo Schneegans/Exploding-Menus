@@ -46,7 +46,7 @@ public class TraceMenu: GLib.Object, Menu {
     
     private uint open_time;
     
-    private Vector center;
+    private Vector center = null;
     private Vector pause_location;
     private bool released;
     private bool closing;
@@ -108,6 +108,13 @@ public class TraceMenu: GLib.Object, Menu {
             ctx.push_group();
             ctx.set_source_rgba(0,0,0, 0.3);
             ctx.paint();
+            
+            if (center == null) {
+                center = window.get_mouse_pos(false);
+                warp_pointer();
+                root.update_position(center, 0.0);
+                mark.update(center);
+            }
             
             root.draw(ctx, window, new Vector(0,0), false, frame_time);
             
@@ -197,6 +204,7 @@ public class TraceMenu: GLib.Object, Menu {
     
     public void show() {
         mark.reset();
+        center = null;
         
         released = false;
         closing = false;
@@ -204,16 +212,10 @@ public class TraceMenu: GLib.Object, Menu {
         alpha.reset_target(1, ANIMATION_TIME);
         
         window.open();
-        center = window.get_mouse_pos(true);
         pause_location = window.get_mouse_pos(true);
         
-        warp_pointer();
-        
         root.set_state(TraceMenuItem.State.ACTIVE);
-        
-        root.update_position(center, 0.0);
-        mark.update(center);
-        
+
         open_time = Time.get_now();
     }
     

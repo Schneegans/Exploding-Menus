@@ -46,6 +46,7 @@ public class CoralMenuItem {
     private int depth = 0;
     private bool hovered = false;
     private bool closing = false;
+    private uint hover_start_time = 0;
     
     private Vector last_mouse_location = null;
     private double mouse_direction = -1;
@@ -81,8 +82,8 @@ public class CoralMenuItem {
             
         } else {
 
-            double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
-            double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
+            double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
+            double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
             
             this.depth = parent.depth + 1;
             this.direction = get_item_direction(parent_direction, index, parent_child_count, total_angle, max_item_angle);
@@ -132,15 +133,17 @@ public class CoralMenuItem {
     public string activate(Vector mouse) {
         
         foreach (var child in children) {
-            if (child.state == State.EXPANDED) 
+            if (child.hovered || child.state == State.EXPANDED) 
                 return child.activate(mouse);
         }
         
         if (hovered && children.size > 0)
             return "_keep_open";
-        else if (hovered)
+        else if (hovered) { 
+            set_state(State.EXPANDED);
             return get_path(); 
-
+        }
+        
         return "_cancel";
     }
     
@@ -203,8 +206,8 @@ public class CoralMenuItem {
         
         if (!closing) {
             if (parent != null && (state == State.ACTIVE || state == State.INACTIVE || state == State.EXPANDED)) {
-                double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
-                double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
+                double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
+                double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
                 double item_angle = get_angle_per_item(parent.children.size, total_angle, max_item_angle);
                 double max_angle = direction + item_angle*0.5*0.9;
                 double min_angle = direction - item_angle*0.5*0.9;
@@ -240,19 +243,21 @@ public class CoralMenuItem {
                 
                 // nicht(ein sibling is expanded und mouse bewegt sich in richtung dessen childs)
                 if (!(expanded_sibling >= 0 && angle_is_between(mouse_direction, first_child_angle, last_child_angle))) {
-                    set_state(State.EXPANDED);
                     
-                    
-                    
-                    if (parent != null) {
-                        for (int i=0; i<parent.children.size; ++i)
-                            parent.children[i].update_offset(i, parent.children.size);
-                    } else {
-                        update_offset(0, 0);
+                    if (children.size > 0) {
+                        if (hover_start_time == 0) {
+                            hover_start_time = Time.get_now();
+                        } else if (hover_start_time + 250 < Time.get_now()) {
+                            set_state(State.EXPANDED);
+
+                            if (parent != null) {
+                                for (int i=0; i<parent.children.size; ++i)
+                                    parent.children[i].update_offset(i, parent.children.size);
+                            } else {
+                                update_offset(0, 0);
+                            }
+                        } 
                     }
-                    
-                    
-                    
                 } else {
                     this.hovered = false;
                 }
@@ -285,6 +290,9 @@ public class CoralMenuItem {
                 }
             }
         }
+        
+        if (!this.hovered)
+            hover_start_time = 0;
         
         foreach (var child in children) {
             child.update(window, center, frame_time);
@@ -365,11 +373,8 @@ public class CoralMenuItem {
                 
             } else {
             
-//                if (label == "Karl" || label == "Heinz" || label == "Bauer")
-//                    ctx.set_source_rgb(1, 1, 0);
-            
-                double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
-                double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
+                double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
+                double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
 
             
                 var bottom_center = Vector.sum(direction_to_coords(this.direction, CoralMenu.INNER_ITEM_RADIUS), parent_center);
@@ -391,9 +396,6 @@ public class CoralMenuItem {
     public void update_offset(int index, int parent_child_count) {
         
         if (parent == null) {
-            
-            //this.offset_x.reset_target(0, CoralMenu.ANIMATION_TIME);
-            //this.offset_y.reset_target(0, CoralMenu.ANIMATION_TIME);
             this.draw_radius.reset_target(30, CoralMenu.ANIMATION_TIME);
             this.label_alpha.reset_target(0, CoralMenu.ANIMATION_TIME);
             this.small_label_alpha.reset_target(0, CoralMenu.ANIMATION_TIME);
@@ -402,8 +404,8 @@ public class CoralMenuItem {
         
             double new_label_alpha = 0;
             double new_small_label_alpha = 1;
-            double total_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.CHILDREN_ANGLE;
-            double max_item_angle = /*parent.parent == null ? 2*GLib.Math.PI :*/ CoralMenu.MAX_ITEM_ANGLE;
+            double total_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.CHILDREN_ANGLE;
+            double max_item_angle = parent.parent == null ? 2*GLib.Math.PI : CoralMenu.MAX_ITEM_ANGLE;
             double new_radius = get_item_radius(parent_child_count, total_angle, max_item_angle);
             
             if (state == State.ACTIVE || (hovered && (state != State.EXPANDED || children.size == 0))) {
@@ -440,9 +442,6 @@ public class CoralMenuItem {
             
             if (hovered)    ctx.set_source_rgba(SEL_R, SEL_G, SEL_B, label_alpha.val*label_alpha.val*0.9);
             else            ctx.set_source_rgba(BG_R, BG_G, BG_B, label_alpha.val*label_alpha.val*0.9);
-            
-//            if (label == "Karl" || label == "Heinz" || label == "Bauer")
-//                ctx.set_source_rgba(1, 1, 0, label_alpha.val*label_alpha.val*0.9);
             
             ctx.set_line_width(CoralMenu.LABEL_HEIGHT+10);
             ctx.set_line_join(Cairo.LineJoin.ROUND);

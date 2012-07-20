@@ -26,12 +26,11 @@ public class LinearMenu: GLib.Object, Menu {
     
     private uint open_time;
     
-    private Vector center;
+    private Vector center = null;
     private bool closing;
     
     public LinearMenu() {
         window = new InvisibleWindow();
-        center = new Vector(0, 0);
         alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
         
         window.on_draw.connect((ctx, frame_time) => {
@@ -45,6 +44,8 @@ public class LinearMenu: GLib.Object, Menu {
             
             ctx.push_group();
             
+            if (center == null)
+                center = window.get_mouse_pos(false);
             root.draw(ctx, window, center, 0, frame_time);
             
             ctx.pop_group_to_source();
@@ -84,12 +85,12 @@ public class LinearMenu: GLib.Object, Menu {
     
     public void show() {
         closing = false;
+        center = null;
         
         alpha.reset_target(1, ANIMATION_TIME);
         
         window.open();
-        center = window.get_mouse_pos(true);
-        
+               
         open_time = Time.get_now();
     }
     

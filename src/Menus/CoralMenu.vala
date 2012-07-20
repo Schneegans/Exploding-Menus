@@ -22,7 +22,7 @@ public class CoralMenu: GLib.Object, Menu {
     public const int INNER_ITEM_RADIUS = 50;
     public const int CENTER_RADIUS = 30;
     public const int EXPANDED_ITEM_OFFSET = 20;
-    public const double CHILDREN_ANGLE = GLib.Math.PI*2.0/2.2;
+    public const double CHILDREN_ANGLE = GLib.Math.PI*2.0/2.1;
     
     public const double MAX_ITEM_ANGLE = CHILDREN_ANGLE/6;
     public const double MAX_ITEM_DISTANCE = 200;
@@ -30,7 +30,7 @@ public class CoralMenu: GLib.Object, Menu {
     public const double ANIMATION_TIME = 0.3;
     public const double FADE_OUT_TIME = 0.5;
     
-    public const int WARP_ZONE = 50;
+    public const int WARP_ZONE = 100;
 
     private InvisibleWindow window;
     private CoralMenuItem root;
@@ -38,13 +38,12 @@ public class CoralMenu: GLib.Object, Menu {
     
     private uint open_time;
     
-    private Vector center;
+    private Vector center = null;
     private bool released;
     private bool closing;
     
     public CoralMenu() {
         window = new InvisibleWindow();
-        center = new Vector(0, 0);
         alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
         
         window.on_draw.connect((ctx, frame_time) => {
@@ -56,11 +55,16 @@ public class CoralMenu: GLib.Object, Menu {
             
             alpha.update(frame_time);
             
+            if (center == null)
+                center = window.get_mouse_pos(false);
+            
             root.update(window, center, frame_time);
             
             ctx.push_group();
             ctx.set_source_rgba(0,0,0, 0.3);
             ctx.paint();
+            
+            
             
             root.draw_labels_bg(ctx, window, center);
             root.draw_labels(ctx, window, center);
@@ -109,11 +113,11 @@ public class CoralMenu: GLib.Object, Menu {
     public void show() {
         released = false;
         closing = false;
+        center = null;
         
         alpha.reset_target(1, ANIMATION_TIME);
         
         window.open();
-        center = window.get_mouse_pos(true);
         
         root.update_offset(0, 0);
         
