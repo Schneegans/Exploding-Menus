@@ -76,13 +76,13 @@ public class G2_Introduction : GLib.Object {
                 next_page_introduction();
                 break;
             case 1:
-                introduction_trace();
+                introduction("trace", "Trace-Menu");
                 break;
             case 2:
-                introduction_coral();
+                introduction("coral", "Coral-Menu");
                 break;
             case 3:
-                introduction_linear();
+                introduction("linear", "Linear-Menu");
                 break;
             case 4:
                 next_page_finish();
@@ -104,8 +104,8 @@ public class G2_Introduction : GLib.Object {
             
             case 1: 
                 instruction.set_text(heading("Einführung") + 
-                                     "Im folgenden wirst du mit verschiedenen, "+
-                                     "unkon-ventionellen Menüarten bekannt gemacht.\n\n" +
+                                     "Im Folgenden wirst du mit verschiedenen "+
+                                     "Menüarten bekannt gemacht.\n\n" +
                                      "Später wird es deine Aufgabe sein, den Umgang mit diesen "+
                                      "Menüs zu üben und zu bewerten."+
                                      hint("Weiter mit Leertaste..."));
@@ -148,23 +148,21 @@ public class G2_Introduction : GLib.Object {
         
         ready = true;
     }
-   
-    
-    private void introduction_trace() {
+
+    private void introduction(string type, string name) {
         switch (page) {
             case 1: 
-                instruction.set_text(heading("Das Trace-Menu") + 
-                                     "Das Menü, mit dem du dich nun beschäftigen wirst," +
-                                     " ist der Prototyp eines Piemenüs mit \"Marking-Mode\".\n\n" +
-                                     "Es ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
+                instruction.set_text(heading("Das %s".printf(name)) + 
+                                     "Das Menü, mit dem du dich nun beschäftigen wirst, " +
+                                     "ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
                                      "wählst wird das nichts bewirken, du kannst dich also austoben!"+
                                      hint("Weiter mit Leertaste..."));
                 break;
             case 2: 
-                instruction.set_text(heading("Das Trace-Menu") + 
+                instruction.set_text(heading("Das %s".printf(name)) + 
                                      "Um dich mit dem Menü vertraut zu machen, "+
                                      "klicke mit der <b>rechten Maustaste</b> "+
-                                     "auf den Smile. Es wird sich ein Kontextmenü zu öffnen. \n\n"+
+                                     "auf den Smile. Es wird sich ein Menü zu öffnen. \n\n"+
                                      "Wähle <b>mehrmals beliebige "+
                                      "Einträge</b> aus bis du die Funktionsweise des" +
                                      " Menüs verstanden hast."+ 
@@ -172,12 +170,15 @@ public class G2_Introduction : GLib.Object {
                                           " sicher fühlst, betätige die Leertaste."));
                 
                 if (menu == null) menu = new MenuManager();
-                menu.init("trace", "real");
+                menu.init(type, "real");
+                
+                if (type != "trace")
+                    page++;
 
                 break;
                 
             case 3: 
-                instruction.set_text(heading("Das Trace-Menu") + 
+                instruction.set_text(heading("Das %s".printf(name)) + 
                                      "Dieser Menütyp hat einen Expertenmodus. Um ihn zu benutzen, "+
                                      "halte die rechte Maustaste gedrückt und <b>zeichne den Pfad</b> "+
                                      "zu dem gewünschten Eintrag.\n\n"+ 
@@ -187,98 +188,9 @@ public class G2_Introduction : GLib.Object {
                                           " sicher fühlst, betätige die Leertaste."));
 
                 break;
+                
             case 4: 
-                instruction.set_text(heading("Das Trace-Menu") + 
-                                     "So viel zu diesem Menü. Machen wir weiter mit dem nächsten Menütyp."+
-                                     hint("Leertaste um mit dem nächsten Typ zu beginnen!"));
-                                     
-                if (trainings.size > 0) {
-                    int index = GLib.Random.int_range(0, trainings.size);
-                    set_stage(trainings.get(index));
-                    trainings.remove_at(index); 
-                } else {
-                    set_stage(4);
-                }  
-
-                break;
-        }
-        
-        ready = true;
-    }
-    
-    private void introduction_coral() {
-        switch (page) {
-            case 1: 
-                instruction.set_text(heading("Das Coral-Menu") + 
-                                     "Das Menü, mit dem du dich nun beschäftigen wirst," +
-                                     " ist der Prototyp eines Piemenüs mit innovativer Itemanordnung.\n\n" +
-                                     "Es ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
-                                     "wählst wird das nichts bewirken, du kannst dich also austoben!"+
-                                     hint("Weiter mit Leertaste..."));
-                break;
-            case 2: 
-                instruction.set_text(heading("Das Coral-Menu") + 
-                                     "Um dich mit dem Menü vertraut zu machen, "+
-                                     "klicke mit der <b>rechten Maustaste</b> "+
-                                     "auf den Smile. Es wird sich ein Kontextmenü zu öffnen. \n\n"+
-                                     "Wähle <b>mehrmals beliebige "+
-                                     "Einträge</b> aus bis du die Funktionsweise des" +
-                                     " Menüs verstanden hast."+ 
-                                     hint("Sobald du dich im Umgang mit dem Menü"+
-                                          " sicher fühlst, betätige die Leertaste."));
-                
-                if (menu == null) menu = new MenuManager();
-                menu.init("coral", "real");
-
-                break;
-            case 3: 
-                instruction.set_text(heading("Das Coral-Menu") + 
-                                     "So viel zu diesem Menü. Machen wir weiter mit dem nächsten Menütyp."+
-                                     hint("Leertaste um mit dem nächsten Typ zu beginnen!"));
-                                     
-                if (trainings.size > 0) {
-                    int index = GLib.Random.int_range(0, trainings.size);
-                    set_stage(trainings.get(index));
-                    trainings.remove_at(index); 
-                } else {
-                    set_stage(4);
-                }  
-
-                break;
-        }
-        
-        ready = true;
-    }
-    
-    private void introduction_linear() {
-        switch (page) {
-            case 1: 
-                instruction.set_text(heading("Das Lineare Menü") + 
-                                     "Das Menü, mit dem du dich nun beschäftigen wirst," +
-                                     " ist eine Nachbildung eines normalen Menüs. Es"+
-                                     " dient als Vergleichsbasis zu den anderen Menütypen.\n\n" +
-                                     "Es ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
-                                     "wählst wird das nichts bewirken, du kannst dich also austoben!"+
-                                     hint("Weiter mit Leertaste..."));
-                break;
-            case 2: 
-                instruction.set_text(heading("Das Lineare Menü") + 
-                                     "Um dich mit dem Menü vertraut zu machen, "+
-                                     "klicke mit der <b>rechten Maustaste</b> "+
-                                     "auf den Smile. Es wird sich ein Kontextmenü zu öffnen. \n\n"+
-                                     "Wähle <b>mehrmals beliebige "+
-                                     "Einträge</b> aus bis du die Funktionsweise des" +
-                                     " Menüs verstanden hast."+ 
-                                     hint("Sobald du dich im Umgang mit dem Menü"+
-                                          " sicher fühlst, betätige die Leertaste."));
-                
-                if (menu == null) menu = new MenuManager();
-                menu.init("linear", "real");
-
-                break;
-                
-            case 3: 
-                instruction.set_text(heading("Das Lineare Menü") + 
+                instruction.set_text(heading("Das %s".printf(name)) + 
                                      "So viel zu diesem Menü. Machen wir weiter mit dem nächsten Menütyp."+
                                      hint("Leertaste um mit dem nächsten Typ zu beginnen!"));
                                      

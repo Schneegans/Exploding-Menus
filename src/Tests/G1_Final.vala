@@ -105,8 +105,8 @@ public class G1_Final : GLib.Object {
             
             case 1: 
                 instruction.set_text(heading("Einführung") + 
-                                     "Im Folgenden wirst du mit verschiedenen, "+
-                                     "unkon-ventionellen Menüarten bekannt gemacht.\n\n" +
+                                     "Im Folgenden wirst du mit verschiedenen "+
+                                     "Menüarten bekannt gemacht.\n\n" +
                                      "Dabei wird es deine Aufgabe sein, Einträge in diesen "+
                                      "Menüs zu suchen und auszuwählen."+
                                      hint("Weiter mit Leertaste..."));
@@ -153,7 +153,7 @@ public class G1_Final : GLib.Object {
         switch (page) {
             case 0: 
                 instruction.set_text(heading("Das %s".printf(name)) + 
-                                     "Das Menü, mit dem du dich nun beschäftigen wirst," +
+                                     "Das Menü, mit dem du dich nun beschäftigen wirst, " +
                                      "ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
                                      "wählst, wird das nichts bewirken, du kannst dich also austoben!"+
                                      hint("Weiter mit Leertaste..."));
@@ -195,16 +195,16 @@ public class G1_Final : GLib.Object {
                 
             case 3:
                 instruction.set_text(heading("Das %s".printf(name)) + 
-                                     "Sehr gut! Nun fangen wir mit dem eigentlichen Test an. \n\nIm folgenden"+
-                                     " werden dir Einträge gezeigt, die du so schnell wie möglich auswählen sollst."+
+                                     "Sehr gut! Nun fangen wir mit dem eigentlichen Test an. \n\nIm Folgenden"+
+                                     " werden dir Einträge gezeigt, die du so <b>schnell und präzise</b> wie möglich auswählen sollst."+
                                      hint("Weiter mit Leertaste..."));
                 ready = true;
                 break;
                 
             case 4:
                 instruction.set_text(heading("Das %s".printf(name)) + 
-                                     "Die Zeit, die du vom Öffnen des Menüs bis zur Auswahl benötigst, wird gemessen."+
-                                     " Vor dem Öffnen kannst du dir also jeweils Zeit lassen!\n\n"+
+                                     "Während der Selektion solltest du dir keine Zeit lassen, "+
+                                     " vor dem Öffnen des Menüs kannst du dich aber jeweils entspannen!\n\n"+
                                      "Außerdem ist das Menü immer ein anderes. Du kannst dir also nichts"+
                                      " merken und musst immer neu suchen.\n\n"+
                                      "Viel Spaß!"+
@@ -242,7 +242,7 @@ public class G1_Final : GLib.Object {
                         
                         target = menu.get_valid_entry();
                         instruction.set_text(heading("Das %s".printf(name)) + 
-                                             "Wähle den Eintrag <b>"+ target +"</b>"+
+                                             "Wähle den Eintrag\n\n<b>"+ target +"</b>"+
                                              hint("Sobald du das Menü öffnest, verschwindet "+
                                              "dieser Hinweis! Präge ihn dir also gut ein."));
                     }
@@ -293,7 +293,7 @@ public class G1_Final : GLib.Object {
             case 7:
                 
                 instruction.set_text(heading("Das %s".printf(name)) + 
-                                     "Wieder ist es deine Aufgabe, Einträge so schnell"+
+                                     "Wieder ist es deine Aufgabe, Einträge so schnell und präzise"+
                                      " wie möglich zu wählen. Allerdings wechseln"+
                                      " sie nun nicht ihre Position und du musst ein "+
                                      "und den selben Eintrag sehr häufig auswählen. \n\n"+
@@ -356,13 +356,13 @@ public class G1_Final : GLib.Object {
                             repetitions = REPETITIONS_FITT;
                             
                             instruction.set_text(heading("Das %s".printf(name)) + 
-                                             "Wähle den Eintrag <b>"+ target +"</b>"+
-                                             " insgesamt <b>%ix</b> aus!".printf(repetitions) + 
+                                             "Wähle den Eintrag\n\n<b>"+ target +"</b>\n\n"+
+                                             "insgesamt <b>%ix</b> aus!".printf(repetitions) + 
                                              hint("Sobald du das Menü öffnest, verschwindet "+
                                              "dieser Hinweis! Präge ihn dir also gut ein."));
                         } else {
                             instruction.set_text(heading("Das %s".printf(name)) + 
-                                             "Wähle den Eintrag <b>"+ target +"</b>"+
+                                             "Wähle den Eintrag\n\n<b>"+ target +"</b>\n\n"+
                                              "noch <b>%ix</b> aus!".printf(repetitions));
                         }
                     }

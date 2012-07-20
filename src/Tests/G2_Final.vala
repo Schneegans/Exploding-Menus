@@ -98,7 +98,7 @@ public class G2_Final : GLib.Object {
                 instruction.set_text(heading("Willkommen") + 
                                      "zum abschließenden Test! Diesmal wirst du wieder"+
                                      " Items wählen müssen. Allerdings sind es diesmal andere!\n\n"+
-                                     " Anschließend gibt es noch einen Fragebogen. <b>Und Cookies</b>!"+
+                                     "Anschließend gibt es noch einen Fragebogen. <b>Und Cookies</b>!"+
                                      hint("Zum Beginnen Leertaste... wie immer..."));
                 int index = GLib.Random.int_range(0, trainings.size);
                 set_stage(trainings.get(index));
@@ -175,7 +175,7 @@ public class G2_Final : GLib.Object {
                 
                 target = targets.get(GLib.Random.int_range(0, targets.size));          
                 instruction.set_text(heading("%s-Training".printf(name)) + 
-                                     "Wähle den Eintrag <b>"+ target +"</b>"+
+                                     "Wähle den Eintrag \n\n<b>"+ target +"</b>"+
                                      hint("Sobald du das Menü öffnest, verschwindet "+
                                      "dieser Hinweis! Präge ihn dir also gut ein."));
                                      

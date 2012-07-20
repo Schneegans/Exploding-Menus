@@ -97,7 +97,7 @@ public class G2_Training : GLib.Object {
             case 0: 
                 instruction.set_text(heading("Willkommen") + 
                                      "zum ultimativen <b>Piemenü-Training</b>! \n" +
-                                     "Bitte wähle die gewünschten Einträge konzentriert aus - "+
+                                     "Bitte wähle die gewünschten Einträge konzentriert, schnell und präzise aus - "+
                                      "falls du eine Auswahl abbrichst, wird das als Fehlversuch gewertet! "+
                                      "Mach es dir bequem, diesmal beginnen mit dem..."+
                                      hint("Weiter mit Leertaste..."));
@@ -177,7 +177,7 @@ public class G2_Training : GLib.Object {
                 
                 target = targets.get(GLib.Random.int_range(0, targets.size));          
                 instruction.set_text(heading("%s-Training".printf(name)) + 
-                                     "Wähle den Eintrag <b>"+ target +"</b>"+
+                                     "Wähle den Eintrag\n\n<b>"+ target +"</b>"+
                                      hint("Sobald du das Menü öffnest, verschwindet "+
                                      "dieser Hinweis! Präge ihn dir also gut ein."));
                                      
