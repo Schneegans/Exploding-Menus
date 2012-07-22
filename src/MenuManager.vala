@@ -30,6 +30,8 @@ public class MenuManager : GLib.Object {
     private int depth;
     private int width;
     
+    private bool enabled = true;
+    
     private ulong cancel_handler;
     private ulong select_handler;
     
@@ -39,7 +41,7 @@ public class MenuManager : GLib.Object {
         bindings.bind(new Trigger.from_string("button3"), "button2");
         
         bindings.on_press.connect((id) => {
-            if (!menu.is_open()) {
+            if (!menu.is_open() && enabled) {
                 on_open();
                 menu.set_structure(model);
                 menu.show();
@@ -75,6 +77,14 @@ public class MenuManager : GLib.Object {
     
     public string get_valid_entry() {
         return model.get_valid_entry();
+    }
+    
+    public string get_path_numbers(string path) {
+        return model.get_path_numbers(path);
+    }
+    
+    public void enable(bool enable) {
+        this.enabled = enable;
     }
     
     private MenuItem setup_menu(string menu_mode) {

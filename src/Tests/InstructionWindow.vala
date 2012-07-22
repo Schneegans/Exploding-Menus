@@ -23,7 +23,7 @@ public class InstructionWindow : Gtk.Window {
     
     private Gtk.Label instruction;
     
-    private const int WINDOW_WIDTH = 600;
+    private const int WINDOW_WIDTH = 800;
     private const int WINDOW_HEIGHT = 200;
 
     public InstructionWindow() {

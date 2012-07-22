@@ -93,6 +93,10 @@ public class CoralMenu: GLib.Object, Menu {
         return window.visible;
     }
     
+    public string get_mouse_path() {
+        return "";
+    }
+    
     public void set_structure(MenuItem top) {
         root = create_items(top);
         root.realize(0,0,0);

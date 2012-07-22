@@ -24,4 +24,6 @@ public interface Menu : GLib.Object {
     public abstract void show();
     
     public abstract bool is_open();
+    
+    public abstract string get_mouse_path();
 }

@@ -89,6 +89,14 @@ public class Logger {
         }
     }
     
+    public static string simplify(string s) {
+        var result = s;
+        result = result.replace(" ", "_");
+        result = result.replace("|", "_");
+        result = result.down();
+        return result;
+    }
+    
     /////////////////////////////////////////////////////////////////////
     /// Displays a message.
     /////////////////////////////////////////////////////////////////////

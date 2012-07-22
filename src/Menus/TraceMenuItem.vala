@@ -326,40 +326,8 @@ public class TraceMenuItem {
             case State.INSPECT:
             case State.SELECTABLE:
             
-                var mouse = window.get_mouse_pos(false);
-                
                 // draw label
                 if (!marking_mode) {
-//                    if (prelight) {
-//                        if (state == State.INSPECT) {
-//                            for (int i=0; i<children.size; ++i) {
-//                                var child_center = direction_to_coords(children[i].direction, TraceMenu.SELECTABLE_PIE_RADIUS);
-//                                    child_center = Vector.sum(child_center, Vector.direction(center, mouse));
-//                                children[i].update_position(child_center, 0.05);
-//                            }
-//                        } else if (mouse.x != last_mouse_location.x || mouse.y != last_mouse_location.y) {
-//                            last_mouse_location = mouse;
-//                            last_motion_time = Time.get_now();
-//                        } else if (Time.get_now() - last_motion_time > 250) {
-//                            if (state != State.INSPECT) {
-//                                this.set_state(State.INSPECT);
-//                                for (int i=0; i<children.size; ++i) {
-//                                    var child_center = direction_to_coords(children[i].direction, TraceMenu.SELECTABLE_PIE_RADIUS);
-//                                        child_center = Vector.sum(child_center, Vector.direction(center, mouse));
-//                                    children[i].update_position(child_center, TraceMenu.ANIMATION_TIME);
-//                                }
-//                            } 
-//                        }
-//                    } else {
-//                        if (state == State.INSPECT) {
-//                            set_state(State.SELECTABLE);
-//                            for (int i=0; i<children.size; ++i) {
-//                                var child_center = direction_to_coords(children[i].direction, TraceMenu.PREVIEW_PIE_RADIUS);
-//                                children[i].update_position(child_center, TraceMenu.ANIMATION_TIME);
-//                            }
-//                        }
-//                    }
-                    
                     if (is_meta)  draw_meta_label(ctx, window, center, direction, prelight);
                     else          draw_label(ctx, window, center, direction, prelight);
                 }
@@ -1085,22 +1053,6 @@ public class TraceMenuItem {
         }
         
         return rel;
-    }
-    
-    private LabelDirection get_label_direction(Direction in_direction) {
-        switch (in_direction) {
-            case Direction.N:   return LabelDirection.TOP_LEFT;
-            case Direction.E:   return LabelDirection.RIGHT;
-            case Direction.S:   return LabelDirection.BOTTOM_RIGHT;
-            case Direction.W:   return LabelDirection.LEFT;
-            case Direction.NE:  return LabelDirection.RIGHT;
-            case Direction.NW:  return LabelDirection.LEFT;
-            case Direction.SE:  return LabelDirection.RIGHT;
-            case Direction.SW:  return LabelDirection.LEFT;
-        }
-        
-        //stub!
-        return LabelDirection.BOTTOM_RIGHT;
     }
     
     private bool a_slice_is_active(InvisibleWindow window, Vector center) {

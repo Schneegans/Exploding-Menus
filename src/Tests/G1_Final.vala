@@ -25,6 +25,7 @@ public class G1_Final : GLib.Object {
     private MenuManager         menu = null;
     
     private bool ready = false;
+    private bool semi_ready = false;
     private int stage = 0;
     private int page = 0;
     
@@ -32,8 +33,8 @@ public class G1_Final : GLib.Object {
     private ulong select_handler = 0;
     private ulong open_handler = 0;
     
-    private const int REPETITIONS_SEARCH = 5;
     private const int REPETITIONS_FITT = 5;
+    private Gee.ArrayList<string?> targets;
     
     private delegate void next();
     
@@ -43,7 +44,7 @@ public class G1_Final : GLib.Object {
         instruction = new InstructionWindow();
         smile = new SmileWindow();
         trainings = new Gee.ArrayList<int>();
-        
+        targets = new Gee.ArrayList<string?>();
         
         trainings.add(1);
         trainings.add(2);
@@ -51,10 +52,16 @@ public class G1_Final : GLib.Object {
         
         bindings = new BindingManager();
         bindings.bind(new Trigger.from_string("space"), "next");
+        bindings.bind(new Trigger.from_string("<ctrl>space"), "semi_next");
         
         bindings.on_press.connect((id) => {
             if (ready && id=="next") {
                 ready = false;
+                next_page();
+            } 
+            
+            if (semi_ready && id=="semi_next") {
+                semi_ready = false;
                 next_page();
             } 
         });
@@ -157,10 +164,7 @@ public class G1_Final : GLib.Object {
                                      "ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
                                      "wählst, wird das nichts bewirken, du kannst dich also austoben!"+
                                      hint("Weiter mit Leertaste..."));
-                                     
-                if (menu == null) menu = new MenuManager();
-                menu.init(type, "real");                     
-                
+
                 ready = true;
                 break;
                 
@@ -168,29 +172,43 @@ public class G1_Final : GLib.Object {
                 instruction.set_text(heading("Das %s".printf(name)) + 
                                      "Um dich mit dem Menü vertraut zu machen, "+
                                      "klicke mit der <b>rechten Maustaste "+
-                                     "auf den Smile</b>. Es wird sich ein Menü öffnen. \n\n"+
-                                     "Wähle <b>mehrmals beliebige "+
-                                     "Einträge</b> aus, bis du die Funktionsweise des" +
-                                     " Menüs verstanden hast."+ 
+                                     "auf den Smile</b>. Es wird sich ein Menü zu öffnen. "+
+                                     "Um die Funktionsweise des" +
+                                     " Menüs zu verstehen, wähle die Einträge \n\n"+
+                                     "<b>Ansicht|Vollbild</b>\n"+
+                                     "<b>Datei|Druckvorschau..</b>\n"+
+                                     "<b>Ansicht|Hervorhebungsmodus|Auszeichnung|Latex</b>\n\n"+
+                                     "jeweils mindestens einmal aus!"+
                                      hint("Sobald du dich im Umgang mit dem Menü"+
-                                          " sicher fühlst, betätige die Leertaste."));
+                                          " sicher fühlst, sag dem Versuchsleiter Bescheid!"));
+                
+                if (menu == null) menu = new MenuManager();
+                menu.init(type, "real");   
+                smile.set_smile_position(new Vector(smile.width()/2, smile.height()/2));
+                smile.show_smile(true);
+                smile.show_smile(true);
+                            menu.enable(true);
                 
                 if (type != "trace")
                     ++page;
                 
-                ready = true;
+                semi_ready = true;
                 break;
                 
             case 2: 
                 instruction.set_text(heading("Das %s".printf(name)) + 
                                      "Dieser Menütyp hat einen Expertenmodus. Um ihn zu benutzen, "+
                                      "halte die rechte Maustaste gedrückt und <b>zeichne den Pfad</b> "+
-                                     "zu dem gewünschten Eintrag.\n\n"+ 
-                                     "<b>Mach dich mit dem Modus vertraut</b> indem du diverse Einträge "+
-                                     "auswählst, wie zum Beispiel \"Ansicht|Vollbild\"!"+
-                                     hint("Sobald du dich im Umgang mit dem Experten-Modus"+
-                                          " sicher fühlst, betätige die Leertaste."));
-                ready = true;
+                                     "zu dem gewünschten Eintrag."+ 
+                                     "Um den Modus" +
+                                     " zu verstehen, wähle die Einträge \n\n"+
+                                     "<b>Ansicht|Vollbild</b>\n"+
+                                     "<b>Datei|Druckvorschau..</b>\n"+
+                                     "<b>Ansicht|Hervorhebungsmodus|Auszeichnung|Latex</b>\n\n"+
+                                     "jeweils mindestens einmal im Tracing-Mode aus!"+
+                                     hint("Sobald du dich im Umgang mit dem Menü"+
+                                          " sicher fühlst, sag dem Versuchsleiter Bescheid!"));
+                semi_ready = true;
                 break;
                 
             case 3:
@@ -214,31 +232,47 @@ public class G1_Final : GLib.Object {
                                 
             case 5:
                 
-                int repetitions = 0;
+                var breadth_depths = new Gee.ArrayList<Vector?>();
+        
+                for (int i=0; i<3; ++i) {
+                    breadth_depths.add(new Vector(7, 1));
+                    breadth_depths.add(new Vector(7, 2));
+                    breadth_depths.add(new Vector(7, 3));
+                    
+                    breadth_depths.add(new Vector(14, 1));
+                    breadth_depths.add(new Vector(14, 2));
+                    breadth_depths.add(new Vector(14, 3));
+                }
+                
+                int breadth = 0;
                 int depth = 0;
-                int width = 0;
+                
                 string target = "";
                 
                 Logger.write("#%s_SEARCH_TEST# ".printf(type.up()));
 
                 next request_next = () => {
-                    if (repetitions == REPETITIONS_SEARCH) {
+                    if (breadth_depths.size == 0) {
                         instruction.set_text(heading("Das %s".printf(name)) + 
                                              "Sehr gut! Das hast du echt gut gemacht! \n\n"+
                                              "Nun ist es an der Zeit mit einem weiteren Test zu beginnen. "+
                                              hint("Weiter mit Leertaste..."));
-                        
+                                             
+                        smile.show_smile(false);
+                        menu.enable(false);
                         disconnect_handlers();
                         ready = true;
                         
                     } else {
-                    
-                        ++repetitions;
                         
-                        width = GLib.Random.int_range(5, 15);
-                        depth = GLib.Random.int_range(1, 4);
+                        int index = GLib.Random.int_range(0, breadth_depths.size);
+                        var breadth_depth = breadth_depths.get(index);
+                        breadth_depths.remove_at(index); 
                         
-                        menu.init(type, "random", width, depth);
+                        breadth = (int)breadth_depth.x;
+                        depth = (int)breadth_depth.y;
+                        
+                        menu.init(type, "random", breadth, depth);
                         
                         target = menu.get_valid_entry();
                         instruction.set_text(heading("Das %s".printf(name)) + 
@@ -255,21 +289,21 @@ public class G1_Final : GLib.Object {
                 disconnect_handlers();
                 
                 select_handler = menu.on_select.connect((item, time) => {
-                    debug("%s %s", item, target);
                     if (item == target) {
-                        Logger.write("%s: %u %u %u".printf(target, time, width, depth));
-                        smile.notify(true);
+                        Logger.write("success|%s|%s|%u|%u|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, breadth, depth));
+                        smile.make_happy(true);
                     } else {
-                        Logger.write("%s: -1 %u %u".printf(target, width, depth));
-                        smile.notify(false);
+                        
+                        Logger.write("fail|%s|%s|%u|%u|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, breadth, depth));
+                        smile.make_happy(false);
                     }
 
                     request_next();
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    Logger.write("%s: -1 %u %u".printf(target, width, depth));
-                    smile.notify(false);
+                    Logger.write("fail|%s|%s|%u|%u|%u".printf(menu.get_path_numbers(target), "-1", -1, breadth, depth));
+                    smile.make_happy(false);
                     
                     request_next();
                 });
@@ -305,26 +339,28 @@ public class G1_Final : GLib.Object {
                 
             case 8:
                 
-                int repetitions = 1;
-                var targets = new Gee.ArrayList<string?>();
-                
-                if (type == "trace") {
-                    targets.add("Avocados|Verwenden als|Nachtisch");
-                    targets.add("Zitronen|Pressen");
-                    targets.add("Pizza bestellen");
-                } else if (type == "coral") {
-                    targets.add("Wellensittich|Futter geben|Weizen");
-                    targets.add("Hund|Waschen");
-                    targets.add("Ameisenfarm versorgen");
-                } else if (type == "linear") {
-                    targets.add("Lastkraftwagen|Verkaufen bei|Flohmarkt");
-                    targets.add("Personenkraftwagen|Verschrotten");
-                    targets.add("Zur Fahrschule gehen");
-                }
+                if (targets.size == 0) {
+                    if (type == "trace") {
+                        targets.add("Avocados|Verwenden als|Nachtisch");
+                        targets.add("Zitronen|Pressen");
+                        targets.add("Pizza bestellen");
+                    } else if (type == "coral") {
+                        targets.add("Wellensittich|Futter geben|Weizen");
+                        targets.add("Hund|Waschen");
+                        targets.add("Ameisenfarm versorgen");
+                    } else if (type == "linear") {
+                        targets.add("Lastkraftwagen|Verkaufen bei|Flohmarkt");
+                        targets.add("Personenkraftwagen|Verschrotten");
+                        targets.add("Zur Fahrschule gehen");
+                    }
                     
-                string target = "";
+                    Logger.write("#%s_FITT_TEST# ".printf(type.up()));
+                }
                 
-                Logger.write("#%s_FITT_TEST# ".printf(type.up()));
+                int repetitions = REPETITIONS_FITT+1;
+                
+                string target = targets.get(GLib.Random.int_range(0, targets.size));                
+                targets.remove(target);
 
                 next request_next = () => {
                     --repetitions;
@@ -335,6 +371,10 @@ public class G1_Final : GLib.Object {
                                              "Nun ist es an der Zeit, mit dem nächsten"+
                                              " Menütyp weiterzumachen."+
                                              hint("Weiter mit Leertaste..."));
+                        
+                        disconnect_handlers();
+                        smile.show_smile(false);
+                        menu.enable(false);
                         
                         if (trainings.size > 0) {
                             int index = GLib.Random.int_range(0, trainings.size);
@@ -350,17 +390,18 @@ public class G1_Final : GLib.Object {
                     } else {
                     
                         if (repetitions == 0) {
-                            target = targets.get(GLib.Random.int_range(0, targets.size));                
-                            targets.remove(target);
-                            
-                            repetitions = REPETITIONS_FITT;
-                            
                             instruction.set_text(heading("Das %s".printf(name)) + 
-                                             "Wähle den Eintrag\n\n<b>"+ target +"</b>\n\n"+
-                                             "insgesamt <b>%ix</b> aus!".printf(repetitions) + 
-                                             hint("Sobald du das Menü öffnest, verschwindet "+
-                                             "dieser Hinweis! Präge ihn dir also gut ein."));
+                                             "Sehr gut! Auf zum nächsten Eintrag! "+
+                                             hint("Beginnen mit Leertaste..."));
+                            
+                            disconnect_handlers();
+                            smile.show_smile(false);
+                            menu.enable(false);
+                            --page;   
+                            ready = true;
                         } else {
+                            smile.show_smile(true);
+                            menu.enable(true);
                             instruction.set_text(heading("Das %s".printf(name)) + 
                                              "Wähle den Eintrag\n\n<b>"+ target +"</b>\n\n"+
                                              "noch <b>%ix</b> aus!".printf(repetitions));
@@ -377,19 +418,19 @@ public class G1_Final : GLib.Object {
                 
                 select_handler = menu.on_select.connect((item, time) => {
                     if (item == target) {
-                        Logger.write("%s: %u".printf(target, time));
-                        smile.notify(true);
+                        Logger.write("success|%s|%s|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time));
+                        smile.make_happy(true);
                     } else {
-                        Logger.write("%s: -1".printf(target));
-                        smile.notify(false);
+                        Logger.write("fail|%s|%s|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time));
+                        smile.make_happy(false);
                     }
 
                     request_next();
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    Logger.write("%s: -1".printf(target));
-                    smile.notify(false);
+                    Logger.write("fail|%s|%s|%u".printf(menu.get_path_numbers(target), "-1", -1));
+                    smile.make_happy(false);
                     
                     request_next();
                 });

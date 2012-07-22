@@ -20,13 +20,13 @@ public class Mark : GLib.Object {
     public signal void on_direction_changed();
     public signal void on_long_stroke();
     public signal void on_paused();
-    public signal void on_stutter();
     
     private const int SAMPLING_DISTANCE = 5;
     
     private const double THRESHOLD_ANGLE = GLib.Math.PI/30.0;
     
     private Vector[] stroke;
+    private Vector[] mark;
     private uint last_motion_time = 0;
     
     public Mark() {
@@ -35,6 +35,7 @@ public class Mark : GLib.Object {
     
     public void reset() {
         stroke = {};
+        mark = {};
     }
     
     public void draw(Cairo.Context ctx) {
@@ -45,12 +46,26 @@ public class Mark : GLib.Object {
             ctx.fill();
         }
     }
-
+    
+    public string print() {
+        string result = "{";
+        
+        for(int i=0; i<mark.length;++i) {
+            if (i==0) result += "%i,%i".printf((int)mark[i].x, (int)mark[i].y);
+            else      result += "|%i,%i".printf((int)mark[i].x, (int)mark[i].y);
+        }
+        
+        result += "}";
+        
+        return result;
+    }
+    
     public void update(Vector mouse) {
     
 
         if (stroke.length == 0) {
             stroke += mouse;
+            mark += mouse;
             last_motion_time = Time.get_now();
             return;
         } 
@@ -65,6 +80,9 @@ public class Mark : GLib.Object {
                 double t = (double)i/insert_samples;
                 stroke += new Vector(t*mouse.x + (1-t)*last.x, t*mouse.y + (1-t)*last.y);
             }
+            
+            mark += mouse;
+            
             last_motion_time = Time.get_now();
         }
             
@@ -74,25 +92,23 @@ public class Mark : GLib.Object {
             
             if (angle > THRESHOLD_ANGLE) {
                 on_direction_changed();        
-                reset();
+                break_stroke();
                 return;
             }
         }
         
-//        if (Time.get_now() - last_motion_time > 100) {
-//            on_stutter();    
-//            reset();
-//            return;
-//        }
-        
         if (Time.get_now() - last_motion_time > 200) {
             on_paused();    
-            reset();
+            break_stroke();
             return;
         }
         
         
 
+    }
+    
+    private void break_stroke() {
+        stroke = {};
     }
     
     private Vector get_stroke_direction() {

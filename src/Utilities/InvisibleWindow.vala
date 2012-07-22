@@ -53,8 +53,8 @@ public class InvisibleWindow : Gtk.Window {
         this.set_accept_focus(false);
         
         var screen = Gdk.Screen.get_default();
-        this.set_size_request(screen.get_width(), screen.get_height());
-        
+        this.set_default_size(screen.get_width(), screen.get_height());
+        this.fullscreen();
         
         this.mouse = new Vector(0,0);
         
@@ -105,8 +105,8 @@ public class InvisibleWindow : Gtk.Window {
     
     public void open() {
         // capture the input focus
-        this.show();
-
+        this.show_all();
+        
         // start the timer
         this.timer = new GLib.Timer();
         this.timer.start();

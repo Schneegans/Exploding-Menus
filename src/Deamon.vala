@@ -45,7 +45,7 @@ public class Deamon : GLib.Object {
     
     private const GLib.OptionEntry[] options = {
         { "type", 't', 0, GLib.OptionArg.STRING, out menu_type, 
-          "Possible values: test, g1_final, g2_training, g2_introduction, g2_final, trace, coral, linear" },
+          "Possible values: test, normalize, g1_final, g2_training, g2_introduction, g2_final, trace, coral, linear" },
         { "mode", 'm', 0, GLib.OptionArg.STRING, out menu_mode, 
           "Possible values: real, random, static" },
         { "colorize", 'c', 0, GLib.OptionArg.NONE, out colorize, 
@@ -114,6 +114,16 @@ public class Deamon : GLib.Object {
         } else if (menu_type == "g2_final") {
         
             var test = new G2_Final();
+            test.on_finish.connect(() => {
+                Gtk.main_quit();
+            });
+            test.init(); 
+            Gtk.main();
+            
+            
+        } else if (menu_type == "normalize") {
+        
+            var test = new NormalizeTest();
             test.on_finish.connect(() => {
                 Gtk.main_quit();
             });

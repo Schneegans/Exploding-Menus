@@ -134,6 +134,9 @@ public class G2_Final : GLib.Object {
         string target = "";
         
         Logger.write("#%s_INTERFERENCE_TEST# ".printf(type.up()));
+        
+        smile.set_smile_position(new Vector(smile.width()/2, smile.height()/2));
+        smile.show_smile(true);
 
         next request_next = () => {
             if (repetitions == REPETITIONS && targets.size == 0) {
@@ -141,6 +144,9 @@ public class G2_Final : GLib.Object {
                                      "Sehr gut! Du wirst immer besser! "+
                                      "Wir machen weiter mit dem..."+
                                      hint("Weiter mit Leertaste..."));
+                
+                smile.show_smile(false);
+                menu.enable(false);
                 
                 if (trainings.size > 0) {
                     int index = GLib.Random.int_range(0, trainings.size);
@@ -188,23 +194,26 @@ public class G2_Final : GLib.Object {
         if (menu == null) menu = new MenuManager();
         menu.init(type, type);
         
+        smile.show_smile(true);
+        menu.enable(true);
+        
         disconnect_handlers();
         
         select_handler = menu.on_select.connect((item, time) => {
             if (item == target) {
-                Logger.write("%s: %u".printf(target, time));
-                smile.notify(true);
+                Logger.write("success|%s|%s|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time));
+                smile.make_happy(true);
             } else {
-                Logger.write("%s: -1".printf(target));
-                smile.notify(false);
+                Logger.write("fail|%s|%s|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time));
+                smile.make_happy(false);
             }
 
             request_next();
         });
         
         cancel_handler = menu.on_cancel.connect(() => {
-            Logger.write("%s: -1".printf(target));
-            smile.notify(false);
+            Logger.write("fail|%s|%s|%u".printf(menu.get_path_numbers(target), "-1", -1));
+            smile.make_happy(false);
             
             request_next();
         });

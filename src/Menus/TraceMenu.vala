@@ -79,10 +79,6 @@ public class TraceMenu: GLib.Object, Menu {
             }
         });
         
-        mark.on_stutter.connect(() => {
-            do_action(false);
-        });
-        
         window.on_motion.connect((x, y, state) => {
             if (!released && !root.in_marking_mode() && (state & Gdk.ModifierType.BUTTON3_MASK) != 0) {
                 if (Vector.direction(window.get_mouse_pos(true), pause_location).length() > SELECTABLE_PIE_RADIUS) {
@@ -160,6 +156,10 @@ public class TraceMenu: GLib.Object, Menu {
     
     public bool is_open() {
         return window.visible;
+    }
+    
+    public string get_mouse_path() {
+        return mark.print();
     }
     
     public void set_structure(MenuItem top) {

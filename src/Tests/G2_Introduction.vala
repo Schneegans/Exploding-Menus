@@ -25,12 +25,9 @@ public class G2_Introduction : GLib.Object {
     private MenuManager         menu = null;
     
     private bool ready = false;
+    private bool semi_ready = false;
     private int stage = 0;
     private int page = 0;
-    
-    private ulong cancel_handler = 0;
-    private ulong select_handler = 0;
-    private ulong open_handler = 0;
     
     private const int REPETITIONS = 5;
     
@@ -50,10 +47,16 @@ public class G2_Introduction : GLib.Object {
         
         bindings = new BindingManager();
         bindings.bind(new Trigger.from_string("space"), "next");
+        bindings.bind(new Trigger.from_string("<ctrl>space"), "semi_next");
         
         bindings.on_press.connect((id) => {
             if (ready && id=="next") {
                 ready = false;
+                next_page();
+            } 
+            
+            if (semi_ready && id=="semi_next") {
+                semi_ready = false;
                 next_page();
             } 
         });
@@ -157,43 +160,61 @@ public class G2_Introduction : GLib.Object {
                                      "ist <b>nur ein Prototyp</b>: Wenn du Einträge des Menüs "+
                                      "wählst wird das nichts bewirken, du kannst dich also austoben!"+
                                      hint("Weiter mit Leertaste..."));
+                ready = true;
                 break;
             case 2: 
                 instruction.set_text(heading("Das %s".printf(name)) + 
                                      "Um dich mit dem Menü vertraut zu machen, "+
-                                     "klicke mit der <b>rechten Maustaste</b> "+
-                                     "auf den Smile. Es wird sich ein Menü zu öffnen. \n\n"+
-                                     "Wähle <b>mehrmals beliebige "+
-                                     "Einträge</b> aus bis du die Funktionsweise des" +
-                                     " Menüs verstanden hast."+ 
+                                     "klicke mit der <b>rechten Maustaste "+
+                                     "auf den Smile</b>. Es wird sich ein Menü zu öffnen. "+
+                                     "Um die Funktionsweise des" +
+                                     " Menüs zu verstehen, wähle die Einträge \n\n"+
+                                     "<b>Ansicht|Vollbild</b>\n"+
+                                     "<b>Datei|Druckvorschau..</b>\n"+
+                                     "<b>Ansicht|Hervorhebungsmodus|Auszeichnung|Latex</b>\n\n"+
+                                     "jeweils mindestens einmal aus!"+
                                      hint("Sobald du dich im Umgang mit dem Menü"+
-                                          " sicher fühlst, betätige die Leertaste."));
+                                          " sicher fühlst, sag dem Versuchsleiter Bescheid!"));
+                
+                smile.set_smile_position(new Vector(smile.width()/2, smile.height()/2));
+                
                 
                 if (menu == null) menu = new MenuManager();
                 menu.init(type, "real");
                 
+                smile.show_smile(true);
+                menu.enable(true);
+                
                 if (type != "trace")
                     page++;
-
+                
+                semi_ready = true;
                 break;
                 
             case 3: 
                 instruction.set_text(heading("Das %s".printf(name)) + 
                                      "Dieser Menütyp hat einen Expertenmodus. Um ihn zu benutzen, "+
                                      "halte die rechte Maustaste gedrückt und <b>zeichne den Pfad</b> "+
-                                     "zu dem gewünschten Eintrag.\n\n"+ 
-                                     "<b>Mach dich mit dem Modus vertraut</b> indem du diverse Einträge "+
-                                     "auswählst, wie zum Beispiel \"Ansicht|Vollbild\"!"+
-                                     hint("Sobald du dich im Umgang mit dem Experten-Modus"+
-                                          " sicher fühlst, betätige die Leertaste."));
-
+                                     "zu dem gewünschten Eintrag."+ 
+                                     "Um den Modus" +
+                                     " zu verstehen, wähle die Einträge \n\n"+
+                                     "<b>Ansicht|Vollbild</b>\n"+
+                                     "<b>Datei|Druckvorschau..</b>\n"+
+                                     "<b>Ansicht|Hervorhebungsmodus|Auszeichnung|Latex</b>\n\n"+
+                                     "jeweils mindestens einmal im Tracing-Mode aus!"+
+                                     hint("Sobald du dich im Umgang mit dem Menü"+
+                                          " sicher fühlst, sag dem Versuchsleiter Bescheid!"));
+                semi_ready = true;
                 break;
                 
             case 4: 
                 instruction.set_text(heading("Das %s".printf(name)) + 
                                      "So viel zu diesem Menü. Machen wir weiter mit dem nächsten Menütyp."+
                                      hint("Leertaste um mit dem nächsten Typ zu beginnen!"));
-                                     
+                
+                smile.show_smile(false);
+                menu.enable(false);
+                            
                 if (trainings.size > 0) {
                     int index = GLib.Random.int_range(0, trainings.size);
                     set_stage(trainings.get(index));
@@ -201,11 +222,12 @@ public class G2_Introduction : GLib.Object {
                 } else {
                     set_stage(4);
                 }  
-
+                
+                ready = true;
                 break;
         }
         
-        ready = true;
+        
     }
 
     

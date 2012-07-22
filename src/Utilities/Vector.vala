@@ -45,6 +45,15 @@ public class Vector : GLib.Object {
         }
     }
     
+    public void set_length(double length) {
+        double curr_length = this.length();
+        
+        if (curr_length > 0) {
+            x /= curr_length/length;
+            y /= curr_length/length;
+        }
+    }
+    
     public static Vector direction(Vector from, Vector to) {
         return new Vector(to.x - from.x, to.y - from.y);
     }

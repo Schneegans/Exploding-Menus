@@ -48,4 +48,24 @@ public class MenuItem {
         return name;
         
     }
+    
+    public string get_path_numbers(string path) {
+        string[] entries = path.split("|");
+        string result = "";
+        
+        MenuItem curr = this;
+        
+        for (int e=0; e<entries.length; ++e) {
+            for(int i=0; i<curr.children.size; ++i) {
+                if (curr.children[i].name == entries[e]) {
+                    if (e==0) result += "%i".printf(i);
+                    else      result += ",%i".printf(i);
+                    curr = curr.children[i];
+                    break;
+                }
+            }
+        }
+        
+        return result;
+    }
 }

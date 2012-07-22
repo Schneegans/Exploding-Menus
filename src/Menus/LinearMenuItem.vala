@@ -125,12 +125,12 @@ public class LinearMenuItem {
         
         var pos = topleft.copy();
         
-        if (pos.x + menu_size.x > window.width()) {
+        if (pos.x + menu_size.x > window.width()-50) {
             pos.x = pos.x - parent_width - menu_size.x + OVERLAP_WIDTH;
         }
         
-        if (pos.y + menu_size.y > window.height()) {
-            pos.y = window.height() - menu_size.y;
+        if (pos.y + menu_size.y > window.height()-50) {
+            pos.y = window.height()-50 - menu_size.y;
         }
         
         // get hovered item
@@ -192,11 +192,6 @@ public class LinearMenuItem {
         foreach (var child in children) {
         
             // draw selected bg
-//            
-//            if (child.label == "Karl" || child.label == "Heinz" || child.label == "Bauer") {
-//                ctx.set_source_rgb(1, 1, 0);
-//                draw_round_rectangle(ctx, top_left, Vector.sum(top_left, new Vector(menu_size.x, ITEM_HEIGHT)), 5);
-//            }
             
             if (child.state == State.HOVERED || child.state == State.SELECTED) {
                 ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
@@ -206,12 +201,12 @@ public class LinearMenuItem {
             
             
             // draw icon
-            if (child.icon_name != "") {
-                int icon_size = ITEM_HEIGHT-8;
-                var icon = new Icon(child.icon_name, icon_size);
-                
-                //window.get_style_context().render_icon(ctx, icon.to_pixbuf(), top_left.x+4, top_left.y+4);
-            }
+//            if (child.icon_name != "") {
+//                int icon_size = ITEM_HEIGHT-8;
+//                var icon = new Icon(child.icon_name, icon_size);
+//                
+//                //window.get_style_context().render_icon(ctx, icon.to_pixbuf(), top_left.x+4, top_left.y+4);
+//            }
             
             
             // draw label

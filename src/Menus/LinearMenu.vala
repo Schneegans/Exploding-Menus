@@ -67,6 +67,10 @@ public class LinearMenu: GLib.Object, Menu {
         return window.visible;
     }
     
+    public string get_mouse_path() {
+        return "";
+    }
+    
     public void set_structure(MenuItem top) {
         root = create_items(top);
         root.set_state(LinearMenuItem.State.SELECTED);
