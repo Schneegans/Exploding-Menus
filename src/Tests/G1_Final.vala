@@ -290,11 +290,11 @@ public class G1_Final : GLib.Object {
                 
                 select_handler = menu.on_select.connect((item, time) => {
                     if (item == target) {
-                        Logger.write("success|%s|%s|%u|%u|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, breadth, depth));
+                        Logger.write("success|%s|%s|%u|%u|%u|%s".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, breadth, depth, menu.get_mouse_path()));
                         smile.make_happy(true);
                     } else {
                         
-                        Logger.write("fail|%s|%s|%u|%u|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, breadth, depth));
+                        Logger.write("fail|%s|%s|%u|%u|%u|%s".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, breadth, depth, menu.get_mouse_path()));
                         smile.make_happy(false);
                     }
 
@@ -302,7 +302,7 @@ public class G1_Final : GLib.Object {
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    Logger.write("fail|%s|%s|%u|%u|%u".printf(menu.get_path_numbers(target), "-1", -1, breadth, depth));
+                    Logger.write("fail|%s|%s|%u|%u|%u|%s".printf(menu.get_path_numbers(target), "-1", -1, breadth, depth, menu.get_mouse_path()));
                     smile.make_happy(false);
                     
                     request_next();
@@ -418,10 +418,10 @@ public class G1_Final : GLib.Object {
                 
                 select_handler = menu.on_select.connect((item, time) => {
                     if (item == target) {
-                        Logger.write("success|%s|%s|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time));
+                        Logger.write("success|%s|%s|%u|%s".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, menu.get_mouse_path()));
                         smile.make_happy(true);
                     } else {
-                        Logger.write("fail|%s|%s|%u".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time));
+                        Logger.write("fail|%s|%s|%u|%s".printf(menu.get_path_numbers(target), menu.get_path_numbers(item), time, menu.get_mouse_path()));
                         smile.make_happy(false);
                     }
 
@@ -429,7 +429,7 @@ public class G1_Final : GLib.Object {
                 });
                 
                 cancel_handler = menu.on_cancel.connect(() => {
-                    Logger.write("fail|%s|%s|%u".printf(menu.get_path_numbers(target), "-1", -1));
+                    Logger.write("fail|%s|%s|%u|%s".printf(menu.get_path_numbers(target), "-1", -1, menu.get_mouse_path()));
                     smile.make_happy(false);
                     
                     request_next();

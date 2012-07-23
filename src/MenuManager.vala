@@ -83,6 +83,10 @@ public class MenuManager : GLib.Object {
         return model.get_path_numbers(path);
     }
     
+    public string get_mouse_path() {
+        return menu.get_mouse_path();
+    }
+    
     public void enable(bool enable) {
         this.enabled = enable;
     }

@@ -42,6 +42,7 @@ public class TraceMenu: GLib.Object, Menu {
     private InvisibleWindow window;
     private TraceMenuItem root;
     private Mark mark;
+    private MousePath path;
     private AnimatedValue alpha;
     
     private uint open_time;
@@ -56,6 +57,7 @@ public class TraceMenu: GLib.Object, Menu {
         center = new Vector(0, 0);
         pause_location = new Vector(0, 0);
         mark   = new Mark();
+        path   = new MousePath();
         alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
 
         mark.on_direction_changed.connect(() => {
@@ -110,6 +112,11 @@ public class TraceMenu: GLib.Object, Menu {
                 warp_pointer();
                 root.update_position(center, 0.0);
                 mark.update(center);
+                path.clicked(window.get_mouse_pos(false));
+            }
+            
+            if (!closing) {
+                path.moved(window.get_mouse_pos(false));
             }
             
             root.draw(ctx, window, new Vector(0,0), false, frame_time);
@@ -139,13 +146,14 @@ public class TraceMenu: GLib.Object, Menu {
         window.on_release.connect((button) => {
             if (!closing) {
                 if (!released && root.in_marking_mode()) {                    
-                    
                     do_action(true);
                 } else if (released) {
                     root.update_position(center, 0.0);
+                    path.clicked(window.get_mouse_pos(false));
                     do_action(true);
                 }
                 released = true;
+                
             }
         });
         
@@ -159,7 +167,7 @@ public class TraceMenu: GLib.Object, Menu {
     }
     
     public string get_mouse_path() {
-        return mark.print();
+        return path.print();
     }
     
     public void set_structure(MenuItem top) {
@@ -204,6 +212,7 @@ public class TraceMenu: GLib.Object, Menu {
     
     public void show() {
         mark.reset();
+        path.reset();
         center = null;
         
         released = false;

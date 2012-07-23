@@ -26,7 +26,7 @@ public class Mark : GLib.Object {
     private const double THRESHOLD_ANGLE = GLib.Math.PI/30.0;
     
     private Vector[] stroke;
-    private Vector[] mark;
+    
     private uint last_motion_time = 0;
     
     public Mark() {
@@ -35,7 +35,6 @@ public class Mark : GLib.Object {
     
     public void reset() {
         stroke = {};
-        mark = {};
     }
     
     public void draw(Cairo.Context ctx) {
@@ -47,25 +46,11 @@ public class Mark : GLib.Object {
         }
     }
     
-    public string print() {
-        string result = "{";
-        
-        for(int i=0; i<mark.length;++i) {
-            if (i==0) result += "%i,%i".printf((int)mark[i].x, (int)mark[i].y);
-            else      result += "|%i,%i".printf((int)mark[i].x, (int)mark[i].y);
-        }
-        
-        result += "}";
-        
-        return result;
-    }
-    
     public void update(Vector mouse) {
     
 
         if (stroke.length == 0) {
             stroke += mouse;
-            mark += mouse;
             last_motion_time = Time.get_now();
             return;
         } 
@@ -81,8 +66,6 @@ public class Mark : GLib.Object {
                 stroke += new Vector(t*mouse.x + (1-t)*last.x, t*mouse.y + (1-t)*last.y);
             }
             
-            mark += mouse;
-            
             last_motion_time = Time.get_now();
         }
             
@@ -92,23 +75,16 @@ public class Mark : GLib.Object {
             
             if (angle > THRESHOLD_ANGLE) {
                 on_direction_changed();        
-                break_stroke();
+                reset();
                 return;
             }
         }
         
         if (Time.get_now() - last_motion_time > 200) {
             on_paused();    
-            break_stroke();
+            reset();
             return;
         }
-        
-        
-
-    }
-    
-    private void break_stroke() {
-        stroke = {};
     }
     
     private Vector get_stroke_direction() {

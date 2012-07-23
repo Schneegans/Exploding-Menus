@@ -36,6 +36,8 @@ public class CoralMenu: GLib.Object, Menu {
     private CoralMenuItem root;
     private AnimatedValue alpha;
     
+    private MousePath path;
+    
     private uint open_time;
     
     private Vector center = null;
@@ -45,6 +47,7 @@ public class CoralMenu: GLib.Object, Menu {
     public CoralMenu() {
         window = new InvisibleWindow();
         alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
+        path   = new MousePath();
         
         window.on_draw.connect((ctx, frame_time) => {
             
@@ -55,17 +58,21 @@ public class CoralMenu: GLib.Object, Menu {
             
             alpha.update(frame_time);
             
-            if (center == null)
+            if (center == null) {
                 center = window.get_mouse_pos(false);
+                path.clicked(window.get_mouse_pos(false));
+            }
+            
+            if (!closing) {
+                path.moved(window.get_mouse_pos(false));
+            }
             
             root.update(window, center, frame_time);
             
             ctx.push_group();
             ctx.set_source_rgba(0,0,0, 0.3);
             ctx.paint();
-            
-            
-            
+
             root.draw_labels_bg(ctx, window, center);
             root.draw_labels(ctx, window, center);
             root.draw_bg(ctx, window, center);
@@ -82,6 +89,7 @@ public class CoralMenu: GLib.Object, Menu {
         window.on_release.connect((button) => {
             if (!closing) {
                 if (released) {
+                    path.clicked(window.get_mouse_pos(false));
                     do_action(true);
                 }
                 released = true;
@@ -94,7 +102,7 @@ public class CoralMenu: GLib.Object, Menu {
     }
     
     public string get_mouse_path() {
-        return "";
+        return path.print();
     }
     
     public void set_structure(MenuItem top) {
@@ -115,6 +123,7 @@ public class CoralMenu: GLib.Object, Menu {
     }
     
     public void show() {
+        path.reset();
         released = false;
         closing = false;
         center = null;

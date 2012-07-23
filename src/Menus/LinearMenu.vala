@@ -26,12 +26,15 @@ public class LinearMenu: GLib.Object, Menu {
     
     private uint open_time;
     
+    private MousePath path;
+    
     private Vector center = null;
     private bool closing;
     
     public LinearMenu() {
         window = new InvisibleWindow();
         alpha  = new AnimatedValue.linear(0, 1, ANIMATION_TIME);
+        path   = new MousePath();
         
         window.on_draw.connect((ctx, frame_time) => {
             
@@ -44,8 +47,15 @@ public class LinearMenu: GLib.Object, Menu {
             
             ctx.push_group();
             
-            if (center == null)
+            if (center == null) {
                 center = window.get_mouse_pos(false);
+                path.clicked(window.get_mouse_pos(false));
+            }
+            
+            if (!closing) {
+                path.moved(window.get_mouse_pos(false));
+            }
+            
             root.draw(ctx, window, center, 0, frame_time);
             
             ctx.pop_group_to_source();
@@ -54,12 +64,9 @@ public class LinearMenu: GLib.Object, Menu {
         
         window.on_press.connect((button) => {
             if (!closing) {
+                path.clicked(window.get_mouse_pos(false));
                 do_action();
             }
-        });
-        
-        window.on_release.connect((button) => {
-
         });
     }
     
@@ -68,7 +75,7 @@ public class LinearMenu: GLib.Object, Menu {
     }
     
     public string get_mouse_path() {
-        return "";
+        return path.print();
     }
     
     public void set_structure(MenuItem top) {
@@ -88,6 +95,7 @@ public class LinearMenu: GLib.Object, Menu {
     }
     
     public void show() {
+        path.reset();
         closing = false;
         center = null;
         
