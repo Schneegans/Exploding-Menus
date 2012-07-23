@@ -33,7 +33,7 @@ public class G1_Final : GLib.Object {
     private ulong select_handler = 0;
     private ulong open_handler = 0;
     
-    private const int REPETITIONS_FITT = 5;
+    private const int REPETITIONS_FITT = 20;
     private Gee.ArrayList<string?> targets;
     
     private delegate void next();

@@ -87,7 +87,7 @@ public class NormalizeTest : GLib.Object {
                                      "Du wirst gleich gelbe <b>Smilies</b> auf dem"+
                                      " Bildschirm erscheinen sehen. \n\n"+
                                      "Sobald du eins siehst, <b>klicke mit der Maus"+
-                                     " darauf</b>. Aber Achtung: Solange kein Smile"+
+                                     " so schnell wie möglich darauf</b>! Aber Achtung: Solange kein Smile"+
                                      " sichtbar ist, kannst du deine Maus nicht bewegen!"+ 
                                      hint("Beginnen mit Leertaste!"));
                 
@@ -122,6 +122,14 @@ public class NormalizeTest : GLib.Object {
         
         instruction.set_text("");
         
+        targets.add(new Vector(1, 0));
+        targets.add(new Vector(-1, 0));
+        targets.add(new Vector(1, 1));
+        targets.add(new Vector(1, -1));
+        targets.add(new Vector(-1, 1));
+        targets.add(new Vector(-1, -1));
+        targets.add(new Vector(0, 1));
+        targets.add(new Vector(0, -1));
         targets.add(new Vector(1, 0));
         targets.add(new Vector(-1, 0));
         targets.add(new Vector(1, 1));
