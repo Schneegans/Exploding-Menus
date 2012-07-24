@@ -196,18 +196,7 @@ public class LinearMenuItem {
             if (child.state == State.HOVERED || child.state == State.SELECTED) {
                 ctx.set_source_rgb(SEL_R, SEL_G, SEL_B);
                 draw_round_rectangle(ctx, top_left, Vector.sum(top_left, new Vector(menu_size.x, ITEM_HEIGHT)), 5);
-            }
-            
-            
-            
-            // draw icon
-//            if (child.icon_name != "") {
-//                int icon_size = ITEM_HEIGHT-8;
-//                var icon = new Icon(child.icon_name, icon_size);
-//                
-//                //window.get_style_context().render_icon(ctx, icon.to_pixbuf(), top_left.x+4, top_left.y+4);
-//            }
-            
+            }   
             
             // draw label
             ctx.set_source_rgb(0.0, 0.0, 0.0);
@@ -222,7 +211,19 @@ public class LinearMenuItem {
             
             // draw arrow
             if (child.children.size > 0) {
-                window.get_style_context().render_arrow(ctx, GLib.Math.PI*0.5, top_left.x-25+menu_size.x, top_left.y+6, ITEM_HEIGHT/2);
+
+                ctx.save();
+                
+                    ctx.set_source_rgb(FG_R, FG_G, FG_B);
+                    
+                    ctx.move_to(top_left.x-20+menu_size.x, top_left.y+7);
+                    ctx.line_to(top_left.x-20+menu_size.x, top_left.y+17);
+                    ctx.line_to(top_left.x-13+menu_size.x, top_left.y+12);
+                    
+                    ctx.close_path();
+                    ctx.fill();
+                
+                ctx.restore();
             }
 
             top_left.y += ITEM_HEIGHT;
