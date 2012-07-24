@@ -1,6 +1,7 @@
 *.c
 *.h
 build/*
+logs/*
 prototype
 prototype_01
 prototype_02

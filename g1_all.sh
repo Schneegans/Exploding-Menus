@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./prototype -t normalize
-./prototype -t g1_final
+./prototype -t normalize -i $1
+./prototype -t g1_final -i $1

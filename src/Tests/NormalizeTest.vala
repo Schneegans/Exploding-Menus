@@ -75,7 +75,7 @@ public class NormalizeTest : GLib.Object {
         switch (page) {
             case 0: 
                 instruction.set_text(heading("Willkommen") + 
-                                     "zum ultimativen <b>Piemenü-Test</b>! \n" +
+                                     "zum spannenden <b>Einführungstest</b>! \n" +
                                      "Mach es dir gemütlich; diese Textmeldungen werden"+
                                      " dich Stück für Stück durch den gesamten Test führen."+ 
                                      hint("Weiter mit Leertaste..."));

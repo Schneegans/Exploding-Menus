@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./prototype -t g2_final
+./prototype -t g2_final -i $1

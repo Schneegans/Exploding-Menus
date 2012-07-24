@@ -30,7 +30,9 @@ public class Logger {
     private static const bool display_debug = true; 
     private static const bool display_warning = true; 
     private static const bool display_error = true; 
-    private static const bool display_message = true; 
+    private static const bool display_message = true;
+    
+    private static string file_name = "test.log"; 
     
     /////////////////////////////////////////////////////////////////////
     /// If true, a time stamp is shown in each message.
@@ -77,12 +79,16 @@ public class Logger {
         GLib.Log.set_handler(null, GLib.LogLevelFlags.LEVEL_MASK, log_func);
     }
     
+    public static void set_id(int id) {
+        file_name = "logs/%i.log".printf(id);
+    }
+    
     /////////////////////////////////////////////////////////////////////
     /// Appends a line to the log file
     /////////////////////////////////////////////////////////////////////
     
     public static void write(string line) {
-        var log = GLib.FileStream.open("training.log", "a");
+        var log = GLib.FileStream.open(file_name, "a");
             
         if (log != null) {
             log.puts(line + "\n");

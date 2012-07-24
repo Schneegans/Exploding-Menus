@@ -42,6 +42,7 @@ public class Deamon : GLib.Object {
     private static bool colorize = false;
     private static int depth = 2;
     private static int width = 7;
+    private static int id = 0;
     
     private const GLib.OptionEntry[] options = {
         { "type", 't', 0, GLib.OptionArg.STRING, out menu_type, 
@@ -54,6 +55,8 @@ public class Deamon : GLib.Object {
           "The width of the non-real menu." },
         { "depth", 'd', 0, GLib.OptionArg.INT, out depth, 
           "The depth of the non-real menu." },
+        { "ID", 'i', 0, GLib.OptionArg.INT, out id, 
+          "The current user's ID" },
         { null }
     };
 
@@ -83,6 +86,8 @@ public class Deamon : GLib.Object {
 	
 	    // finished loading... so run the prog!
 	    message("Started happily...");
+	    
+	    Logger.set_id(id);
         
         if (menu_type == "g1_final") {
         

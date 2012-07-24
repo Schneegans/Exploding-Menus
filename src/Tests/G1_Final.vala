@@ -105,8 +105,8 @@ public class G1_Final : GLib.Object {
             case 0: 
                 instruction.set_text(heading("Willkommen") + 
                                      "zum ultimativen <b>Piemenü-Test</b>! \n" +
-                                     "Mach es dir gemütlich; diese Textmeldungen werden"+
-                                     " dich Stück für Stück durch den gesamten Test führen."+ 
+                                     "Sitzt du nach wie vor gemütlich? Diese Textmeldungen werden"+
+                                     " dich Stück für Stück durch den weiteren Test führen."+ 
                                      hint("Weiter mit Leertaste..."));
                 break;
             
