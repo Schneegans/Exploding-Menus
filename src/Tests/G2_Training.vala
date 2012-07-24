@@ -118,7 +118,7 @@ public class G2_Training : GLib.Object {
             case 0: 
                 instruction.set_text(heading("Ach nee..") + 
                                      "Du bist ja schon durch jedes Menü durch! "+
-                                     "Dann hab herzlichen Dank und bis zum bächsten mal!" + 
+                                     "Dann hab herzlichen Dank und bis zum nächsten Mal!" + 
                                      hint("Beenden mit Leertaste!"));
                 break;
             default:
