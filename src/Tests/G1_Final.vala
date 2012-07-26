@@ -200,7 +200,7 @@ public class G1_Final : GLib.Object {
                                      "Dieser Menütyp hat einen Expertenmodus. Um ihn zu benutzen, "+
                                      "halte die rechte Maustaste gedrückt und <b>zeichne den Pfad</b> "+
                                      "zu dem gewünschten Eintrag."+ 
-                                     "Um den Modus" +
+                                     " Um den Modus" +
                                      " zu verstehen, wähle die Einträge \n\n"+
                                      "<b>Ansicht|Vollbild</b>\n"+
                                      "<b>Datei|Druckvorschau..</b>\n"+
