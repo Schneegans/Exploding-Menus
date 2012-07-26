@@ -170,7 +170,7 @@ public class G2_Introduction : GLib.Object {
                                      "Um die Funktionsweise des" +
                                      " Menüs zu verstehen, wähle die Einträge \n\n"+
                                      "<b>Ansicht|Vollbild</b>\n"+
-                                     "<b>Datei|Druckvorschau..</b>\n"+
+                                     "<b>Datei|Druckvorschau</b>\n"+
                                      "<b>Ansicht|Hervorhebungsmodus|Auszeichnung|Latex</b>\n\n"+
                                      "jeweils mindestens einmal aus!"+
                                      hint("Sobald du dich im Umgang mit dem Menü"+
