@@ -104,6 +104,7 @@ public class NormalizeTest : GLib.Object {
     private void next_page_finish() {
         switch (page) {
             case 0: 
+                instruction.show();
                 instruction.set_text(heading("Sehr gut!") + 
                                      "Soviel zur Einführung. Beginnen wir mit dem spannenden Teil..." + 
                                      hint("Weiter mit Leertaste..."));
@@ -121,6 +122,7 @@ public class NormalizeTest : GLib.Object {
         Vector target = null;
         
         instruction.set_text("");
+        instruction.hide();
         
         targets.add(new Vector(1, 0));
         targets.add(new Vector(-1, 0));
