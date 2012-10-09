@@ -17,7 +17,7 @@ Clone the repo:
 
 ~~~~
 git clone https://github.com/Simmesimme/Exploding-Menus.git
-cd Exploding-Menus && git checkout worm-menus
+cd Exploding-Menus 
 ~~~~
 
 
