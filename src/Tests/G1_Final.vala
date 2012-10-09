@@ -172,7 +172,7 @@ public class G1_Final : GLib.Object {
                 instruction.set_text(heading("Das %s".printf(name)) + 
                                      "Um dich mit dem Menü vertraut zu machen, "+
                                      "klicke mit der <b>rechten Maustaste "+
-                                     "auf den Smile</b>. Es wird sich ein Menü zu öffnen. "+
+                                     "auf den Smile</b>. Es wird sich ein Menü öffnen. "+
                                      "Um die Funktionsweise des" +
                                      " Menüs zu verstehen, wähle die Einträge \n\n"+
                                      "<b>Ansicht|Vollbild</b>\n"+
