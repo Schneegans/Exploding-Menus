@@ -106,6 +106,9 @@ public class MenuManager : GLib.Object {
             
         if (menu_mode == "linear")       
             return setup_linear_menu();
+            
+        if (menu_mode == "blender")       
+            return setup_blender_menu();
         
         return setup_gedit_menu();
     }
@@ -302,6 +305,43 @@ public class MenuManager : GLib.Object {
         return root;
     }
 
+    private MenuItem setup_blender_menu() {
+    
+        var view = new MenuItem("View", "");
+        
+        view.add_child(new MenuItem("Properties", "file_new")); 
+        view.add_child(new MenuItem("Tool Shelf", "file_new")); 
+        view.add_child(new MenuItem("Camera", "file_new")); 
+        view.add_child(new MenuItem("Top", "file_new")); 
+        view.add_child(new MenuItem("Bottom", "file_new")); 
+        view.add_child(new MenuItem("Front", "file_new")); 
+        view.add_child(new MenuItem("Back", "file_new")); 
+        view.add_child(new MenuItem("Right", "file_new")); 
+        view.add_child(new MenuItem("Left", "file_new")); 
+        
+            var cams = new MenuItem("Cameras", "");
+                cams.add_child(new MenuItem("Set Active Object as Camera", "file_new"));
+                cams.add_child(new MenuItem("Active Camera", "fileopen"));
+                
+            
+            view.add_child(cams);
+            
+        view.add_child(new MenuItem("View Persp/Ortho", "file_new")); 
+        view.add_child(new MenuItem("Navigation", "file_new")); 
+        view.add_child(new MenuItem("Align View", "file_new")); 
+        view.add_child(new MenuItem("Clipping Border...", "file_new")); 
+        view.add_child(new MenuItem("Zoom Border...", "file_new")); 
+        view.add_child(new MenuItem("Show All Layers", "file_new")); 
+        view.add_child(new MenuItem("View Global/Local", "file_new")); 
+        view.add_child(new MenuItem("View Selected", "file_new")); 
+        view.add_child(new MenuItem("View All", "file_new")); 
+        view.add_child(new MenuItem("Playback Animation", "file_new")); 
+        view.add_child(new MenuItem("Duplicate Area Into New Window", "file_new")); 
+        view.add_child(new MenuItem("Toggle Quad View", "file_new")); 
+        view.add_child(new MenuItem("Toggle Full Screen", "file_new")); 
+  
+        return view;
+    }
 
     private MenuItem setup_gedit_menu() {
     

@@ -806,10 +806,10 @@ public class TraceMenuItem {
             var gradient = new Cairo.Pattern.radial(center.x, center.y, TraceMenu.ACTIVE_ITEM_RADIUS, center.x, center.y, TraceMenu.SLICE_HINT_RADIUS);
             
             if (prelight) {
-                gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.8*alpha);
+                gradient.add_color_stop_rgba(0.0, SEL_R, SEL_G, SEL_B, 0.6*alpha);
                 gradient.add_color_stop_rgba(1.0, SEL_R, SEL_G, SEL_B, 0.0*alpha);
             } else {
-                gradient.add_color_stop_rgba(0.0, FG_R, FG_G, FG_B, 0.3*alpha);
+                gradient.add_color_stop_rgba(0.0, FG_R, FG_G, FG_B, 0.2*alpha);
                 gradient.add_color_stop_rgba(1.0, FG_R, FG_G, FG_B, 0.0*alpha);
             }
             ctx.set_source(gradient);

@@ -25,9 +25,9 @@ public class LinearMenuItem {
     public const double BG_G = 0.9;
     public const double BG_B = 0.9;
     
-    public const double SEL_R = 0.8;
-    public const double SEL_G = 0.2;
-    public const double SEL_B = 0.3;
+    public const double SEL_R = 0.9;
+    public const double SEL_G = 0.4;
+    public const double SEL_B = 0.6;
     
     public const int ITEM_HEIGHT = 24;
     public const int ADD_WIDTH = 55;

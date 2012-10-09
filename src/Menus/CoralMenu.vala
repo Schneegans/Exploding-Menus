@@ -70,8 +70,8 @@ public class CoralMenu: GLib.Object, Menu {
             root.update(window, center, frame_time);
             
             ctx.push_group();
-            ctx.set_source_rgba(0,0,0, 0.3);
-            ctx.paint();
+            //ctx.set_source_rgba(0,0,0, 0.15);
+            //ctx.paint();
 
             root.draw_labels_bg(ctx, window, center);
             root.draw_labels(ctx, window, center);

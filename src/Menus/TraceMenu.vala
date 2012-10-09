@@ -104,8 +104,8 @@ public class TraceMenu: GLib.Object, Menu {
             alpha.update(frame_time);
             
             ctx.push_group();
-            ctx.set_source_rgba(0,0,0, 0.3);
-            ctx.paint();
+            //ctx.set_source_rgba(0,0,0, 0.15);
+            //ctx.paint();
             
             if (center == null) {
                 center = window.get_mouse_pos(false);
