@@ -37,12 +37,17 @@ public class NormalizeTest : GLib.Object {
 
         bindings = new BindingManager();
         bindings.bind(new Trigger.from_string("space"), "next");
+        bindings.bind(new Trigger.from_string("r"), "menu");
 
         bindings.on_press.connect((id) => {
+
+            if (id=="menu") {
+                menu.open();
+            }
+
             if (ready && id=="next") {
                 ready = false;
                 next_page();
-                menu.open();
             }
         });
 
