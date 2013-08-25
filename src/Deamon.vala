@@ -37,24 +37,15 @@ public class Deamon : GLib.Object {
     /// Available command line options.
     /////////////////////////////////////////////////////////////////////
 
-    private static string menu_type = "trace";
-    private static string menu_mode = "real";
-    private static bool colorize = false;
-    private static int depth = 2;
-    private static int width = 7;
+    private static string mode = "test";
+    private static bool schematize = false;
     private static int id = 0;
 
     private const GLib.OptionEntry[] options = {
-        { "type", 't', 0, GLib.OptionArg.STRING, out menu_type,
-          "Possible values: test, normalize, g1_final, g2_training, g2_introduction, g2_final, trace, coral, linear" },
-        { "mode", 'm', 0, GLib.OptionArg.STRING, out menu_mode,
-          "Possible values: real, random, static" },
-        { "colorize", 'c', 0, GLib.OptionArg.NONE, out colorize,
-          "If set, one particular item will be highlighted." },
-        { "width", 'w', 0, GLib.OptionArg.INT, out width,
-          "The width of the non-real menu." },
-        { "depth", 'd', 0, GLib.OptionArg.INT, out depth,
-          "The depth of the non-real menu." },
+        { "mode", 'm', 0, GLib.OptionArg.STRING, out mode,
+          "Possible values: normalize, test" },
+        { "schematize", 's', 0, GLib.OptionArg.NONE, out schematize,
+          "If set, the touchmenu will be schematized." },
         { "ID", 'i', 0, GLib.OptionArg.INT, out id,
           "The current user's ID" },
         { null }
@@ -89,44 +80,7 @@ public class Deamon : GLib.Object {
 
 	    Logger.set_id(id);
 
-        if (menu_type == "g1_final") {
-
-            // var test = new G1_Final();
-            // test.on_finish.connect(() => {
-            //     Gtk.main_quit();
-            // });
-            // test.init();
-            // Gtk.main();
-
-        } else if (menu_type == "g2_introduction") {
-
-            // var test = new G2_Introduction();
-            // test.on_finish.connect(() => {
-            //     Gtk.main_quit();
-            // });
-            // test.init();
-            // Gtk.main();
-
-        } else if (menu_type == "g2_training") {
-
-            // var test = new G2_Training();
-            // test.on_finish.connect(() => {
-            //     Gtk.main_quit();
-            // });
-            // test.init();
-            // Gtk.main();
-
-        } else if (menu_type == "g2_final") {
-
-            // var test = new G2_Final();
-            // test.on_finish.connect(() => {
-            //     Gtk.main_quit();
-            // });
-            // test.init();
-            // Gtk.main();
-
-
-        } else if (menu_type == "normalize") {
+        if (mode == "normalize") {
 
             var test = new NormalizeTest();
             test.on_finish.connect(() => {

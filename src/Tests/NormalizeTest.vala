@@ -22,6 +22,7 @@ public class NormalizeTest : GLib.Object {
     private InstructionWindow   instruction;
     private SmileWindow         smile;
     private BindingManager      bindings = null;
+    private Menu                menu = null;
 
     private bool ready = false;
     private int stage = 0;
@@ -32,6 +33,7 @@ public class NormalizeTest : GLib.Object {
     public void init() {
         instruction = new InstructionWindow();
         smile = new SmileWindow(false);
+        menu = new Menu();
 
         bindings = new BindingManager();
         bindings.bind(new Trigger.from_string("space"), "next");
@@ -40,6 +42,7 @@ public class NormalizeTest : GLib.Object {
             if (ready && id=="next") {
                 ready = false;
                 next_page();
+                menu.open();
             }
         });
 

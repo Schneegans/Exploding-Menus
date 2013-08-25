@@ -32,6 +32,7 @@ pkg_check_modules(CAIRO REQUIRED cairo)
 pkg_check_modules(GEE REQUIRED gee-1.0)
 pkg_check_modules(X11 REQUIRED x11)
 pkg_check_modules(XTST REQUIRED xtst)
+pkg_check_modules(JSON json-glib-1.0)
 
 find_library(M_LIB m)
 find_library(GTHREAD_LIB gthread-2.0)
@@ -56,7 +57,8 @@ set(LIBS
 	${XTST_LIBRARIES}
 	${X11_LIBRARIES}
 	${M_LIB}
-	${GTHREAD_LIB}
+    ${GTHREAD_LIB}
+	${JSON_LIBRARIES}
 )
 link_libraries(${LIBS})
 
@@ -67,7 +69,8 @@ set(LIB_PATHS
 	${CAIRO_LIBRARY_DIRS}
 	${GEE_LIBRARY_DIRS}
 	${XTST_LIBRARY_DIRS}
-	${X11_LIBRARY_DIRS}
+    ${X11_LIBRARY_DIRS}
+	${JSON_LIBRARY_DIRS}
 )
 link_directories(${LIB_PATHS})
 
@@ -76,8 +79,9 @@ set(INCLUDE_PATHS
 	${GTK3_INCLUDE_DIRS}
 	${CAIRO_INCLUDE_DIRS}
 	${GEE_INCLUDE_DIRS}
-	${XTST_INCLUDE_DIRS}	
-	${X11_INCLUDE_DIRS}
+	${XTST_INCLUDE_DIRS}
+    ${X11_INCLUDE_DIRS}
+	${JSON_INCLUDE_DIRS}
 )
 include_directories(${INCLUDE_PATHS})
 
@@ -94,6 +98,7 @@ set(VALA_PKGS
   gio-unix-2.0
   posix
   xtst
+  json-glib-1.0
 )
 
 LIST(APPEND VALA_PKGS gtk+-3.0)
