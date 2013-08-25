@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2011-2012 by Simon Schneegans
 
 This program is free software: you can redistribute it and/or modify it
@@ -12,17 +12,17 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 more details.
 
 You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>. 
+this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 public class InstructionWindow : Gtk.Window {
-    
+
     /////////////////////////////////////////////////////////////////////
     /// C'tor, sets up the window.
     /////////////////////////////////////////////////////////////////////
-    
+
     private Gtk.Label instruction;
-    
+
     private const int WINDOW_WIDTH = 800;
     private const int WINDOW_HEIGHT = 200;
 
@@ -36,7 +36,7 @@ public class InstructionWindow : Gtk.Window {
         this.set_size_request(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.set_app_paintable(true);
         this.set_visual(this.screen.get_rgba_visual());
-        
+
         instruction = new Gtk.Label("");
         instruction.wrap_mode = Pango.WrapMode.WORD;
         instruction.wrap = true;
@@ -44,26 +44,26 @@ public class InstructionWindow : Gtk.Window {
         instruction.justify = Gtk.Justification.FILL;
         this.add(instruction);
         instruction.show();
-  
+
         this.draw.connect(this.draw_window);
     }
-    
+
     public void open() {
         this.show();
         this.move((this.screen.get_width()-WINDOW_WIDTH)/2, 100);
     }
-    
+
     public void set_text(string text) {
-        this.instruction.set_markup("<span size='20000' color='black'>" + text + "</span>");
+        this.instruction.set_markup("<span size='20000' color='white'>" + text + "</span>");
     }
 
-    private bool draw_window(Cairo.Context ctx) { 
+    private bool draw_window(Cairo.Context ctx) {
         ctx.set_operator (Cairo.Operator.CLEAR);
         ctx.paint();
         ctx.set_operator (Cairo.Operator.OVER);
-        
+
         instruction.draw(ctx);
-        
+
         return true;
     }
 }
