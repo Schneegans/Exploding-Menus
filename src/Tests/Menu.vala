@@ -12,10 +12,12 @@ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 more details.
 
 You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.
+this program.  If not, see <http://wwdfw.gnu.org/licenses/>.
 */
 
 public class Menu : GLib.Object {
+
+    public signal void on_select(string path);
 
     private OpenPie open_pie = null;
 
@@ -23,6 +25,12 @@ public class Menu : GLib.Object {
 
     construct {
         open_pie = new OpenPie();
+
+        open_pie.on_select.connect((id, path) => {
+          if (id == menu_id) {
+            on_select(path);
+          }
+        });
     }
 
     public void open() {
@@ -85,7 +93,7 @@ public class Menu : GLib.Object {
       b.set_member_name("text").add_string_value("Torten");
       b.set_member_name("subs").begin_array();
       b.begin_object(); b.set_member_name("text").add_string_value("Blaubeer-torte"); b.end_object();
-      b.begin_object(); b.set_member_name("text").add_string_value("Erdbeertorte"); b.end_object();
+      b.begin_object(); b.set_member_name("text").add_string_value("Erdbeer-torte"); b.end_object();
       b.begin_object(); b.set_member_name("text").add_string_value("Kirschtorte"); b.end_object();
       b.begin_object(); b.set_member_name("text").add_string_value("Marzipan-torte"); b.end_object();
       b.begin_object(); b.set_member_name("text").add_string_value("Schokotorte"); b.end_object();
@@ -164,7 +172,7 @@ public class Menu : GLib.Object {
       b.set_member_name("text").add_string_value("Biere");
       b.set_member_name("subs").begin_array();
       b.begin_object(); b.set_member_name("text").add_string_value("Becks"); b.end_object();
-      b.begin_object(); b.set_member_name("text").add_string_value("Ehringsdorfer"); b.end_object();
+      b.begin_object(); b.set_member_name("text").add_string_value("Ehrings-dorfer"); b.end_object();
       b.begin_object(); b.set_member_name("text").add_string_value("Heineken"); b.end_object();
       b.begin_object(); b.set_member_name("text").add_string_value("Köstritzer"); b.end_object();
       b.end_array();
@@ -298,7 +306,7 @@ public class Menu : GLib.Object {
       b.end_object();
 
       b.begin_object();
-      b.set_member_name("text").add_string_value("Fertiggerichte");
+      b.set_member_name("text").add_string_value("Fertig-gerichte");
       b.set_member_name("subs").begin_array();
       b.begin_object(); b.set_member_name("text").add_string_value("Tiefkühl-Chinapfanne"); b.end_object();
       b.begin_object(); b.set_member_name("text").add_string_value("Tiefkühl-Paella"); b.end_object();
@@ -330,12 +338,8 @@ public class Menu : GLib.Object {
       b.end_object();
 
 
-        b.end_array();
+    b.end_array();
     b.end_object();
-
-
-
-
 
     b.end_array();
     b.end_object();

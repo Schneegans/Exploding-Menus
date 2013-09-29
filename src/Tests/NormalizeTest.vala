@@ -32,7 +32,7 @@ public class NormalizeTest : GLib.Object {
 
     public void init() {
         instruction = new InstructionWindow();
-        smile = new SmileWindow(false);
+        smile = new SmileWindow();
         menu = new Menu();
 
         bindings = new BindingManager();
@@ -170,7 +170,6 @@ public class NormalizeTest : GLib.Object {
                     pos.set_length(300);
 
                     smile.set_smile_position(Vector.sum(new Vector(smile.width()/2, smile.height()/2), pos));
-                    smile.show_smile(true);
 
                     show_time = Time.get_now();
 
@@ -181,20 +180,7 @@ public class NormalizeTest : GLib.Object {
 
         request_next();
 
-        smile.on_mouse_moved.connect(()=>{
-            if (target == null && stage == 1) {
-                center_mouse();
-            }
-        });
 
-        smile.on_smile_clicked.connect(()=>{
-            smile.show_smile(false);
-
-            Logger.write("%i|%i|%u".printf((int)target.x, (int)target.y, Time.get_now() - show_time));
-
-            target = null;
-            request_next();
-        });
     }
 
     private string heading(string text) {

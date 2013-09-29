@@ -39,6 +39,7 @@ public class Deamon : GLib.Object {
 
     private static string mode = "test";
     private static bool schematize = false;
+    private static bool hidemouse = false;
     private static int id = 0;
 
     private const GLib.OptionEntry[] options = {
@@ -46,6 +47,8 @@ public class Deamon : GLib.Object {
           "Possible values: normalize, test" },
         { "schematize", 's', 0, GLib.OptionArg.NONE, out schematize,
           "If set, the touchmenu will be schematized." },
+        { "hidemouse", 'h', 0, GLib.OptionArg.NONE, out hidemouse,
+          "If set, the pointer will be hidden." },
         { "ID", 'i', 0, GLib.OptionArg.INT, out id,
           "The current user's ID" },
         { null }
@@ -80,6 +83,10 @@ public class Deamon : GLib.Object {
 
 	    Logger.set_id(id);
 
+        var settings  = new GLib.Settings("org.gnome.openpie.touchmenu");
+        settings.set_boolean("schematize", schematize);
+        settings.set_boolean("hidemouse", hidemouse);
+
         if (mode == "normalize") {
 
             var test = new NormalizeTest();
@@ -87,6 +94,15 @@ public class Deamon : GLib.Object {
                 Gtk.main_quit();
             });
             test.init();
+            Gtk.main();
+
+        } else if (mode == "test") {
+
+            var test = new Test();
+            test.on_finish.connect(() => {
+                Gtk.main_quit();
+            });
+            test.init(hidemouse);
             Gtk.main();
 
         } else {
@@ -104,6 +120,8 @@ public class Deamon : GLib.Object {
 
             // Gtk.main();
         }
+
+        settings.set_boolean("hidemouse", false);
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -112,7 +130,7 @@ public class Deamon : GLib.Object {
 
     private static void sig_handler(int sig) {
         stdout.printf("\n");
-		message("Caught signal (%d), bye!".printf(sig));
-		Gtk.main_quit();
-	}
+        message("Caught signal (%d), bye!".printf(sig));
+        Gtk.main_quit();
+    }
 }

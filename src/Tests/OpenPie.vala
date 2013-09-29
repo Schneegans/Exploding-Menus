@@ -55,7 +55,13 @@ public class OpenPie : GLib.Object {
 
   // ---------------------------------------------------------------------------
   public int show_menu(string menu) {
-    return dbus_.show_menu(menu);
+    try {
+      return dbus_.show_menu(menu);
+    } catch (GLib.Error e) {
+      warning("Failed to show menu: %s", e.message);
+    }
+
+    return -1;
   }
 
   //////////////////////////////////////////////////////////////////////////////

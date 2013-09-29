@@ -21,22 +21,24 @@ public class SmileWindow : Gtk.Window {
     /// C'tor, sets up the window.
     /////////////////////////////////////////////////////////////////////
 
-    public signal void on_smile_clicked();
-    public signal void on_mouse_moved();
+    public signal void on_touch();
+
+    public enum State { HIDDEN, HELLO, NORMAL, HAPPY, ANGRY }
 
     private Image bg;
     private Image normal;
-    private Image state;
+    private Image overlay;
 
-    private bool smile_visible;
+    private State state;
     private Vector smile_position;
 
     private AnimatedValue alpha;
 
-    public SmileWindow(bool smile_visible = false) {
+    public SmileWindow() {
         this.set_title("Test");
         this.set_decorated(false);
         this.set_focus_on_map(false);
+        this.set_size_request(1920, 980);
         this.set_app_paintable(true);
         this.set_position(Gtk.WindowPosition.CENTER);
         this.maximize();
@@ -45,11 +47,11 @@ public class SmileWindow : Gtk.Window {
                         Gdk.EventMask.BUTTON_PRESS_MASK |
                         Gdk.EventMask.POINTER_MOTION_MASK);
 
-        this.smile_visible = smile_visible;
+        this.state = State.HIDDEN;
 
-        bg = new Image.from_file("background.jpg");
-        normal = new Image.from_file("normal.png");
-        state = new Image.from_file("normal.png");
+        bg      = new Image.from_file("data/bg.jpg");
+        normal  = new Image.from_file("data/normal.png");
+        overlay = new Image.from_file("data/normal.png");
 
         this.draw.connect(this.draw_window);
 
@@ -57,16 +59,11 @@ public class SmileWindow : Gtk.Window {
 
         this.button_press_event.connect ((e) => {
 
-            if (this.smile_visible) {
+            if (this.state != State.HIDDEN) {
                 var mouse = new Vector(e.x, e.y);
-                if (Vector.distance(mouse, smile_position) < 32)
-                    on_smile_clicked();
+                if (Vector.distance(mouse, smile_position) < 70)
+                    on_touch();
             }
-            return true;
-        });
-
-        this.motion_notify_event.connect((e) => {
-            on_mouse_moved();
             return true;
         });
     }
@@ -76,8 +73,8 @@ public class SmileWindow : Gtk.Window {
 
         set_smile_position(new Vector(width()/2, height()/2));
 
-        GLib.Timeout.add(100, () => {
-            alpha.update(100);
+        GLib.Timeout.add(50, () => {
+            alpha.update(50);
             queue_draw();
             return visible;
         });
@@ -87,20 +84,22 @@ public class SmileWindow : Gtk.Window {
         smile_position = position;
     }
 
-    public void show_smile(bool show) {
-        smile_visible = show;
-    }
+    public void set_grandma_state(State state) {
+        this.state = state;
 
-    public void make_happy(bool happy) {
-        if (happy) {
-            state = new Image.from_file("happy.png");
-        } else {
-            state = new Image.from_file("sad.png");
+        if (state == State.HAPPY) {
+            overlay = new Image.from_file("data/happy.png");
+        } else if (state == State.ANGRY) {
+            overlay = new Image.from_file("data/angry.png");
+        } else if (state == State.HELLO) {
+            overlay = new Image.from_file("data/hello.png");
+        } else if (state == State.NORMAL) {
+            overlay = new Image.from_file("data/normal.png");
         }
 
         alpha = new AnimatedValue.linear(1, 1, 0);
 
-        GLib.Timeout.add(1000, ()=>{
+        GLib.Timeout.add(2000, ()=>{
             alpha = new AnimatedValue.linear(1, 0, 500);
             return false;
         });
@@ -122,11 +121,11 @@ public class SmileWindow : Gtk.Window {
             bg.paint_on(ctx);
         ctx.restore();
 
-        if (smile_visible) {
+        if (state != State.HIDDEN) {
             ctx.save();
                 ctx.translate(smile_position.x, smile_position.y);
-                normal.paint_on(ctx);
-                state.paint_on(ctx, alpha.val);
+                normal.paint_on(ctx, 1.0 - alpha.val);
+                overlay.paint_on(ctx, alpha.val);
             ctx.restore();
         }
 
